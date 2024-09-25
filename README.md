@@ -26,6 +26,8 @@ I will list what I used, just incase for anyone wondering what I used/platform c
 - nvm version ```nvm -v``` 0.39.0
 
 ## Project Dependencies
+  - **GL-Matrix**
+    - X
   - **Typescript**
     - For obvious reasons.  
   - **Vite**
