@@ -14,7 +14,7 @@ function main() {
   }
 
   console.log("WebGL is available, proceed with initialization and rendering");
-  StartMessages(canvasId, "Voxxer");
+  StartMessages(canvasId, "Voxel Rendering Engine");
   console.log("Voxxer started successfully, starting renderer...");
   EngineRenderer(gl);
 }

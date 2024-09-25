@@ -1,0 +1,2 @@
+- These grass textures are not made by me! credits go to the faithful team/the open source project > https://github.com/Faithful-Resource-Pack
+- You can also check out their website here > https://faithfulpack.net/
