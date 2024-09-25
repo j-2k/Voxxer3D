@@ -99,61 +99,15 @@ This is here to list important topics & showcase some things I went through whil
   - Column Major Order vs Row Major Order
   - Matrix Inverse (No need to go in deep but try to understand this concept for the camera!)
 
-
 # Progress Log
 - Following the guide of WebGL Fundamentals on https://webglfundamentals.org/
 - Showcasing my progress through the guide. I'm mostly going by order but sometimes I skip around.
 
-## Part 1 - Hello WebGL!
+## Part 1 - Interpolated Triangle
+### Fully refactored the backend from the *ORIGINALLY* forked repository *[(Webgl-trial)](https://github.com/j-2k/webgl-trial)*!
+
 <p align="center">
-<img width=50% src="webgl-main/img-progress/1-HelloWorld.png">
+  <img src="voxxer/readme-images/1-Hello-World-Interpolated.png" width=50%>
 </p>
 
-## Part 2 - Multiple Rectangles with double Triangles
-<p align="center">
-<img width=50% src="webgl-main/img-progress/2-2DRectangles.png">
-</p>
-
-## Part 2 - Math Overhaul using 2D Matricies + Orthographic Projection
-<p align="center">
-<img width=50% src="webgl-main/img-progress/3-F2D.png">
-</p>
-
-## Part 3 - 3D Matrices + Depth Buffer + Backface Culling/Triangle Order
-<p align="center">
-<img width=50% src="webgl-main/img-progress/4-F3D.png">
-</p>
-
-## Part 4 - Prespective Projection
-<p align="center">
-<img width=50% src="webgl-main/img-progress/5-F3D-Perspective.png">
-</p>
-
-## Part 5 - Camera Study - Look At
-<p align="center">
-<img width=50% src="webgl-main/img-progress/6-F3D-Camera-Lookat.gif">
-</p>
-
-## Part 6 - Delta Time & Texture Sampling
-<p align="center">
-  <img src="webgl-main/img-progress/7-F3D-deltatime.gif" width=49%> <img src="webgl-main/img-progress/8-F3D-Texture-Sampling.gif" width=49%>
-</p>
-
-## Part 7 - Procedural Texture Generation + Cube
-<p align="center">
-  <img src="webgl-main/img-progress/9-3D-TextureGeneration.png" width=49%> <img src="webgl-main/img-progress/8-F3D-Texture-Sampling.gif" width=49%>
-</p>
-
-# Restart! - Voxel Time!
-
-## Part 1 - Interpolated Triangle - Full refactored backend
-<p align="center">
-  <img src="voxxer/readme-images/1-Hello-World-Interpolated.png" width=49%>
-</p>
-
-***I have decided to move this project entirely into a different repository as this repository already holds 3 different folders with different "projects/aims" & this structure for a repository is obviously wrong, so I just got a triangle boilerplate done with some very big backend refactors since I didnt like how my render loop & structure was back then. The continuation repos for this project plan is below!***
-
-### WebGL 1.0 Hello world triangle project : https://github.com/j-2k/WebGL-Triangle-Boilerplate
-
-### Voxxer Project Continuation : https://github.com/j-2k/VoxxerWebGL
 
