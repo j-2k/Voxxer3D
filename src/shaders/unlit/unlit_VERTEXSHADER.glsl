@@ -10,9 +10,10 @@ void main() {
     
     v_color = a_color;
 
-    vec2 scaledAspectRatio = a_position.xy * vec2(u_resolution.y / u_resolution.x,1.0);
+    //vec2 scaledAspectRatio = a_position.xy * vec2(u_resolution.y / u_resolution.x,1.0);
+    //gl_Position = u_modelMatrix * vec4(scaledAspectRatio.xy,a_position.z, 1.0);
 
-    gl_Position = u_modelMatrix * vec4(scaledAspectRatio.xy,a_position.z, 1.0);
+    gl_Position = u_modelMatrix * vec4(a_position, 1.0);
 }
 
 /* 
