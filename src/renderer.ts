@@ -36,13 +36,54 @@ function Start(gl : WebGLRenderingContext)
 
     //Create Vertex Array
     const vertexPosData = new Float32Array([
+        //Front
         -0.5,  0.5, 0.0,  // Top-left
         -0.5, -0.5, 0.0,  // Bottom-left
          0.5, -0.5, 0.0,  // Bottom-right
     
          0.5, -0.5, 0.0,  // Bottom-right
          0.5,  0.5, 0.0,  // Top-right
-        -0.5,  0.5, 0.0   // Top-left
+        -0.5,  0.5, 0.0,   // Top-left
+
+        //Right
+        0.5,  0.5, 0.0,  // Top-left of right
+        0.5, -0.5, 0.0,  // Bottom-left of right
+        0.5, -0.5, -1.0,  // Bottom-right of right
+    
+        0.5, -0.5, -1.0,  // Bottom-right of right
+        0.5, 0.5, -1.0,  // Top-right of right
+        0.5, 0.5, 0.0,   // Top-left of right
+
+        //Back
+        -0.5,  0.5, -1.0,  // Top-left 
+        0.5, -0.5, -1.0,  // Bottom-right flipped front
+        -0.5, -0.5, -1.0,  // Bottom-left flipped front
+    
+        0.5, -0.5, -1.0,  // Bottom-right
+        -0.5,  0.5, -1.0,   // Top-left flipped front
+        0.5,  0.5, -1.0,  // Top-right flipped front
+
+        //Left
+        -0.5,  0.5, -1.0,  // Top-left of Left
+        -0.5, -0.5, -1.0,  // Bottom-left of Left
+        -0.5, -0.5, 0.0,  // Bottom-right of Left
+
+        -0.5, -0.5, 0.0,  // Bottom-right of Left
+        -0.5, 0.5, 0.0,  // Top-right of Left
+        -0.5, 0.5, -1.0,   // Top-left of Left
+
+        //Hat
+        -0.5,  0.5, -1.0,  // Top-left
+        -0.5, 0.5, 0.0,  // Bottom-left
+         0.5, 0.5, 0.0,  // Bottom-right
+    
+         0.5, 0.5, 0.0,  // Bottom-right
+         0.5,  0.5, -1.0,  // Top-right
+        -0.5,  0.5, -1.0,   // Top-left
+        
+        //Bottom
+
+
     ]);
     gl.bufferData(gl.ARRAY_BUFFER, vertexPosData, gl.STATIC_DRAW);
 
@@ -64,7 +105,50 @@ function Start(gl : WebGLRenderingContext)
     
         1.0, 0.0,   // Bottom-right (u, v)
         1.0, 1.0,   // Top-right (u, v)
-        0.0, 1.0    // Top-left (u, v)
+        0.0, 1.0,    // Top-left (u, v)
+
+        //
+
+        0.0, 1.0,   // Top-left (u, v)
+        0.0, 0.0,   // Bottom-left (u, v)
+        1.0, 0.0,   // Bottom-right (u, v)
+    
+        1.0, 0.0,   // Bottom-right (u, v)
+        1.0, 1.0,   // Top-right (u, v)
+        0.0, 1.0,    // Top-left (u, v)
+
+        //
+
+        0.0, 1.0,   // Top-left (u, v)
+        1.0, 0.0,   // Bottom-right (u, v)
+        0.0, 0.0,   // Bottom-left (u, v)
+            
+        1.0, 0.0,   // Bottom-right (u, v)
+        0.0, 1.0,    // Top-left (u, v)
+        1.0, 1.0,   // Top-right (u, v)
+
+        //
+
+        0.0, 1.0,   // Top-left (u, v)
+        0.0, 0.0,   // Bottom-left (u, v)
+        1.0, 0.0,   // Bottom-right (u, v)
+
+            
+        1.0, 0.0,   // Bottom-right (u, v)
+        1.0, 1.0,   // Top-right (u, v)
+        0.0, 1.0,    // Top-left (u, v)
+
+        //
+
+        0.0, 1.0,   // Top-left (u, v)
+        0.0, 0.0,   // Bottom-left (u, v)
+        1.0, 0.0,   // Bottom-right (u, v)
+    
+        1.0, 0.0,   // Bottom-right (u, v)
+        1.0, 1.0,   // Top-right (u, v)
+        0.0, 1.0,    // Top-left (u, v)
+
+        // Bottom
     ]);
     gl.bufferData(gl.ARRAY_BUFFER, uvPosData, gl.STATIC_DRAW);
 
@@ -142,11 +226,14 @@ function Update(gl: WebGLRenderingContext,)
     let projectionMatrix = glMatrix.mat4.create();
     glMatrix.mat4.ortho(projectionMatrix, -aspectRatio, aspectRatio, -1, 1, -1, 1);
 
-
     let modelMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.translate(modelMatrix, modelMatrix, [Math.cos(Time.time*2)*0.5, Math.sin(Time.time*2)*0.5, 0.0]);
-    glMatrix.mat4.rotateZ(modelMatrix, modelMatrix, Time.time*2);
+    //glMatrix.mat4.translate(modelMatrix, modelMatrix, [Math.cos(Time.time*2)*0.5, Math.sin(Time.time*2)*0.5, 0.0]);
+    //glMatrix.mat4.rotateX(modelMatrix, modelMatrix, Time.time*2);
+    glMatrix.mat4.rotateX(modelMatrix, modelMatrix, 3.14*0.15);
+    glMatrix.mat4.rotateY(modelMatrix, modelMatrix, (3.14*0.3 + Time.time*0.5)*2);
 
+    glMatrix.mat4.scale(modelMatrix, modelMatrix, [0.5, 0.5, 0.5]);
+    glMatrix.mat4.translate(modelMatrix, modelMatrix, [0, 0, 0.5]); //Centering offset
     //gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, modelMatrix);
 
     let finalMatrix = glMatrix.mat4.create();
@@ -154,8 +241,9 @@ function Update(gl: WebGLRenderingContext,)
     gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, finalMatrix);
     
 
+
     //Draw
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    gl.drawArrays(gl.TRIANGLES, 0, 6*5);
 }
 
 
