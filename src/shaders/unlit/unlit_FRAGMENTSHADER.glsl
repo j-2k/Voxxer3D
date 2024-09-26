@@ -1,11 +1,11 @@
 precision mediump float;
 
-varying vec3 v_color;
+varying vec2 v_color;       // Get the color from the vertex shader
 
-uniform vec4 u_color;
+uniform vec4 u_color;       // The color uniform
 void main() {
     //gl_FragColor = u_color;
-    gl_FragColor = vec4(v_color,1.0);
+    gl_FragColor = vec4(v_color,0.0,1.0);
 }
 
 

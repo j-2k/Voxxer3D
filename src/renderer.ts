@@ -27,26 +27,16 @@ function Start(gl : WebGLRenderingContext)
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
 
     //Create Vertex Array
-    const vertexPosArray = new Float32Array([
-        0.0, 0.8, 0.0,  // Top vertex
-        -0.8, -0.8, 0.0,  // Bottom-left vertex
-        0.8, -0.8, 0.0   // Bottom-right vertex
-    ]);
-    gl.bufferData(gl.ARRAY_BUFFER, vertexPosArray, gl.STATIC_DRAW);
-
-
+    const vertexPosData = new Float32Array([
+        -0.5,  0.5, 0.0,  // Top-left
+        -0.5, -0.5, 0.0,  // Bottom-left
+         0.5, -0.5, 0.0,  // Bottom-right
     
-    //Create Color Buffer
-    const vertexColBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);
-
-    //Create Vertex Colors Array
-    const vertexColArray = new Float32Array([
-        1.0, 0.0, 0.0,  // Top vertex
-        0.0, 1.0, 0.0,  // Bottom-left vertex
-        0.0, 0.0, 1.0   // Bottom-right vertex
+         0.5, -0.5, 0.0,  // Bottom-right
+         0.5,  0.5, 0.0,  // Top-right
+        -0.5,  0.5, 0.0   // Top-left
     ]);
-    gl.bufferData(gl.ARRAY_BUFFER, vertexColArray, gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, vertexPosData, gl.STATIC_DRAW);
 
     // --- Set up Vertex Attribute for Positions ---
     const positionAttributeLocation = gl.getAttribLocation(shaderProgram, "a_position");
@@ -54,11 +44,27 @@ function Start(gl : WebGLRenderingContext)
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
     gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
     
+    //Create Color Buffer
+    const vertexColBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);
+
+    //Create Vertex Colors Array
+    const uvPosData = new Float32Array([
+        0.0, 1.0,   // Top-left (u, v)
+        0.0, 0.0,   // Bottom-left (u, v)
+        1.0, 0.0,   // Bottom-right (u, v)
+    
+        1.0, 0.0,   // Bottom-right (u, v)
+        1.0, 1.0,   // Top-right (u, v)
+        0.0, 1.0    // Top-left (u, v)
+    ]);
+    gl.bufferData(gl.ARRAY_BUFFER, uvPosData, gl.STATIC_DRAW);
+
     // --- Set up Vertex Attribute for Colors ---
     const colorAttributeLocation = gl.getAttribLocation(shaderProgram, "a_color");
     gl.enableVertexAttribArray(colorAttributeLocation);
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);    //I missed this and it gave me some big issues! Buffers must be binded before setting up the vertex attributes.
-    gl.vertexAttribPointer(colorAttributeLocation, 3, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(colorAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
     //Create Uniforms
     const resolutionUniformLocation = gl.getUniformLocation(shaderProgram, "u_resolution");
@@ -74,8 +80,10 @@ function Start(gl : WebGLRenderingContext)
     let modelMatrixUniformLocation = gl.getUniformLocation(shaderProgram, "u_modelMatrix");
     gl.uniformMatrix4fv(modelMatrixUniformLocation, false, modelMatrix);
 
+    
+
     //Draw
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
 }
 
 

@@ -1,21 +1,18 @@
-attribute vec3 a_position;
-attribute vec3 a_color;
+attribute vec3 a_position;  // Attribute to hold the position of the vertex
+attribute vec2 a_color;     // Attribute to hold the color of the vertex
 
-varying vec3 v_color;
+varying vec2 v_color;       // Pass the color to the fragment shader
 
-uniform mat4 u_modelMatrix;
-uniform vec2 u_resolution;
+uniform mat4 u_modelMatrix; // Model transformation matrix
+uniform vec2 u_resolution;  // Resolution of the canvas to normalize the position if canvas size changes/is not 1:1
 
 void main() {
-    /*
-    vec4 transformedPosition = u_modelMatrix * vec4(a_position, 1.0);
-    vec2 clipSpace = (transformedPosition.xy / u_resolution) * 2.0 - 1.0;
-    gl_Position = vec4(clipSpace, 0.0, 1.0);
-    */
-
+    
     v_color = a_color;
 
-    gl_Position = u_modelMatrix * vec4(a_position, 1.0);
+    vec2 scaledAspectRatio = a_position.xy * vec2(u_resolution.y / u_resolution.x,1.0);
+
+    gl_Position = u_modelMatrix * vec4(scaledAspectRatio.xy,a_position.z, 1.0);
 }
 
 /* 
