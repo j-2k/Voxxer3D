@@ -1,12 +1,7 @@
 function StartMessages(
-  canvasId: string,
+  canvas: HTMLCanvasElement,
   titleWeb: string = "Title Page",
 ): void {
-  const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
-  if (!canvas) {
-    console.error(`Canvas with id '${canvasId}' not found`);
-    return;
-  }
 
   // Create a new text element (e.g., a paragraph)
   let message: string = titleWeb;

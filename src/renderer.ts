@@ -3,7 +3,7 @@ import * as glMatrix from "gl-matrix";
 import ShaderUtilites from './renderer-utils';
 import Materials from './shader-materials';
 import { Cube3D } from './shapes-data';
-
+import { InputManager } from './input-manager';
 
 function EngineRenderer(gl : WebGLRenderingContext)
 {
@@ -18,6 +18,13 @@ class GlobalWebGLItems{
     public static samplerUniformLocation : WebGLUniformLocation | null = null;
     public static grassTexture : WebGLTexture | null = null;
     public static modelMatrixUniformLocation : WebGLUniformLocation | null = null;
+
+    public static Camera = {
+        cameraPosition: new Float32Array([0, 0, 0]),  // Initial camera position
+        cameraTarget: new Float32Array([0, 0, 0]),    // Camera target
+        upDirection: new Float32Array([0, 1, 0])      // Up direction
+    };
+    public static viewMatrix : glMatrix.mat4 = glMatrix.mat4.create();
 }
 
 
@@ -105,12 +112,16 @@ function Start(gl : WebGLRenderingContext)
 
     //Create Model Matrix
     let modelMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.translate(modelMatrix, modelMatrix, [0.0, 0.0, 0.0]);
+    glMatrix.mat4.translate(modelMatrix, modelMatrix, [0.0, 0.0, 0.0]); // not needed
 
     let modelMatrixUniformLocation = gl.getUniformLocation(shaderProgram, "u_modelMatrix");
     GlobalWebGLItems.modelMatrixUniformLocation = modelMatrixUniformLocation;
-    gl.uniformMatrix4fv(modelMatrixUniformLocation, false, modelMatrix);
+    gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, modelMatrix);
 
+    //Create View Matrix
+    let viewMatrix = glMatrix.mat4.create();
+    glMatrix.mat4.lookAt(viewMatrix, GlobalWebGLItems.Camera.cameraPosition, GlobalWebGLItems.Camera.cameraTarget, GlobalWebGLItems.Camera.upDirection);
+    GlobalWebGLItems.viewMatrix = viewMatrix;
 }
 
 function Update(gl: WebGLRenderingContext,)
@@ -128,28 +139,47 @@ function Update(gl: WebGLRenderingContext,)
     glMatrix.mat4.ortho(projectionMatrix, -aspectRatio, aspectRatio, -1, 1, -1, 1);
     
     //If prespective view make sure the object is behind the camera in the -z direction!
-    const fov = 70;
-    const fovRADIAN = fov * Math.PI / 180;
+    const fovRADIAN = 70 * Math.PI / 180;
     glMatrix.mat4.perspective(projectionMatrix, fovRADIAN, aspectRatio, 0.1, 100.0);
-    
-    let modelMatrix = glMatrix.mat4.create();
 
-    glMatrix.mat4.translate(modelMatrix, modelMatrix, [0, 0, -1]);//moving final pos in the world
-    //glMatrix.mat4.translate(modelMatrix, modelMatrix, [Math.cos(Time.time*2)*0.5, Math.sin(Time.time*2)*0.5, 0.0]);
-    //glMatrix.mat4.rotateX(modelMatrix, modelMatrix, Time.time*2);
+    // View matrix (camera transformation)
+    let viewMatrix = GlobalWebGLItems.viewMatrix; // Retrieve the camera view matrix
+
+    InputManager.isKeyPressed("w") ? GlobalWebGLItems.Camera.cameraPosition[2] -= 5*Time.deltaTime : null;  // Move the camera forward
+    InputManager.isKeyPressed("s") ? GlobalWebGLItems.Camera.cameraPosition[2] += 5*Time.deltaTime : null;  // Move the camera backward
+    InputManager.isKeyPressed("a") ? GlobalWebGLItems.Camera.cameraPosition[0] -= 5*Time.deltaTime : null;  // Move the camera left
+    InputManager.isKeyPressed("d") ? GlobalWebGLItems.Camera.cameraPosition[0] += 5*Time.deltaTime : null;  // Move the camera right
+    InputManager.isKeyPressed("q") ? GlobalWebGLItems.Camera.cameraPosition[1] -= 5*Time.deltaTime : null;  // Move the camera up
+    InputManager.isKeyPressed("e") ? GlobalWebGLItems.Camera.cameraPosition[1] += 5*Time.deltaTime : null;  // Move the camera down
+
+    const cubePos = new Float32Array([0, 0, -1]);
+
+    // Update the view matrix
+    glMatrix.mat4.lookAt(viewMatrix, 
+        GlobalWebGLItems.Camera.cameraPosition, 
+        cubePos, 
+        GlobalWebGLItems.Camera.upDirection);
+
+    // Model matrix (object transformation)
+    let modelMatrix = glMatrix.mat4.create();
+    glMatrix.mat4.translate(modelMatrix, modelMatrix, cubePos);//moving final pos in the world
     glMatrix.mat4.rotateX(modelMatrix, modelMatrix, (Math.sin(Time.time*2)*Math.PI*0.75)*0.25);
     glMatrix.mat4.rotateY(modelMatrix, modelMatrix, (3.14*0.3 + Time.time*0.5)*2);
 
     glMatrix.mat4.scale(modelMatrix, modelMatrix, [0.5, 0.5, 0.5]);
     glMatrix.mat4.translate(modelMatrix, modelMatrix, [0, 0, 0.5]); //First Centering offset
-    //gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, modelMatrix);
 
+    // Final Model-View-Projection matrix
     let finalMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.multiply(finalMatrix, projectionMatrix, modelMatrix);
+    glMatrix.mat4.multiply(finalMatrix, projectionMatrix, viewMatrix);
+    glMatrix.mat4.multiply(finalMatrix, finalMatrix, modelMatrix);
     gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, finalMatrix);
     
     //Draw
     gl.drawArrays(gl.TRIANGLES, 0, 6*6);
+
+    const textOverlay = document.getElementById('textOverlay') as HTMLElement;
+    textOverlay.innerHTML = `Camera Position: ${GlobalWebGLItems.Camera.cameraPosition[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[2].toFixed(2)}`;    
 }
 
 
@@ -180,7 +210,6 @@ function RenderingSettings(gl : WebGLRenderingContext)
     //Set Clear Color
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    
     //Enable Backface Culling
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
@@ -189,7 +218,6 @@ function RenderingSettings(gl : WebGLRenderingContext)
     //Enable Depth Testing
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
-    
 }
 
 export {

@@ -1,21 +1,25 @@
 import { initializeCanvas } from "./canvas";
 import { StartMessages } from "./messages";
 import { EngineRenderer } from "./renderer";
+import { InitializeInputManager } from "./input-manager";
 
 function main() {
   const canvasId = "webglCanvas";
-  const gl = initializeCanvas(canvasId) as WebGLRenderingContext | null;
+  const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+  
+  const gl = initializeCanvas(canvas);
   //const gl = false;
 
   if (!gl) {
     console.warn("WebGL context not available. Renderer will not start.");
-    StartMessages(canvasId, "⚠️ CHECK CONSOLE! ⚠️ GL IS FALSE! ⚠️");
+    StartMessages(canvas, "⚠️ CHECK CONSOLE! ⚠️ GL IS FALSE! ⚠️");
     return; // Early return if gl is null
   }
 
   console.log("WebGL is available, proceed with initialization and rendering");
-  StartMessages(canvasId, "Voxel Rendering Engine");
+  StartMessages(canvas, "Voxel Rendering Engine");
   console.log("Voxxer started successfully, starting renderer...");
+  InitializeInputManager(canvas);
   EngineRenderer(gl);
 }
 

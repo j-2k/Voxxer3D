@@ -1,10 +1,4 @@
-function initializeCanvas(canvasId: string): WebGLRenderingContext | null {
-    const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
-    if (!canvas) {
-        console.error(`Canvas with id '${canvasId}' not found`);
-        return null;
-    }
-
+function initializeCanvas(canvas: HTMLCanvasElement): WebGLRenderingContext | null {
     const gl = canvas.getContext("webgl");
     //const gl = false; //For testing purposes
     
