@@ -10,7 +10,7 @@ function EngineRenderer(gl : WebGLRenderingContext)
     RenderingSettings(gl);
     
     Start(gl);
-
+    
     UpdateCore(gl);
 }
 

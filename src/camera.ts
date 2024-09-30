@@ -7,7 +7,7 @@ function CameraManager()
 {
   // Update camera position based on input
   // Variables to hold mouse movement data
-  let mouseSensitivity = 3; // Adjust this for sensitivity
+  let mouseSensitivity = 0.01; // Adjust this for sensitivity
   let yaw = 0; // Rotation around the Y-axis
   let pitch = 0; // Rotation around the X-axis
   const cameraSpeed = 5 * Time.deltaTime; // Define camera speed
@@ -31,8 +31,8 @@ function CameraManager()
   }
 
   // Use mouse delta to update yaw and pitch for camera rotation
-  //GlobalWebGLItems.Camera.cameraTarget[0] += InputManager.mouse.deltaX * sensitivity;
-  //GlobalWebGLItems.Camera.cameraTarget[1] -= InputManager.mouse.deltaY * sensitivity;
+  GlobalWebGLItems.Camera.cameraTarget[0] += InputManager.mouse.deltaX * mouseSensitivity;
+  //GlobalWebGLItems.Camera.cameraTarget[1] -= InputManager.mouse.deltaY * mouseSensitivity;
 
   // Clamp pitch to prevent flipping
   //pitch = Math.max(-89, Math.min(89, pitch)); // Limit pitch to prevent flipping
