@@ -2,6 +2,7 @@ import Time from './time-manager';
 import * as glMatrix from "gl-matrix";
 import ShaderUtilites from './renderer-utils';
 import Materials from './shader-materials';
+import { Cube3D } from './shapes-data';
 
 
 function EngineRenderer(gl : WebGLRenderingContext)
@@ -34,58 +35,8 @@ function Start(gl : WebGLRenderingContext)
     const vertexPosBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
 
-    //Create Vertex Array
-    const vertexPosData = new Float32Array([
-        //Front
-        -0.5,  0.5, 0.0,  // Top-left
-        -0.5, -0.5, 0.0,  // Bottom-left
-         0.5, -0.5, 0.0,  // Bottom-right
-    
-         0.5, -0.5, 0.0,  // Bottom-right
-         0.5,  0.5, 0.0,  // Top-right
-        -0.5,  0.5, 0.0,   // Top-left
 
-        //Right
-        0.5,  0.5, 0.0,  // Top-left of right
-        0.5, -0.5, 0.0,  // Bottom-left of right
-        0.5, -0.5, -1.0,  // Bottom-right of right
-    
-        0.5, -0.5, -1.0,  // Bottom-right of right
-        0.5, 0.5, -1.0,  // Top-right of right
-        0.5, 0.5, 0.0,   // Top-left of right
-
-        //Back
-        -0.5,  0.5, -1.0,  // Top-left 
-        0.5, -0.5, -1.0,  // Bottom-right flipped front
-        -0.5, -0.5, -1.0,  // Bottom-left flipped front
-    
-        0.5, -0.5, -1.0,  // Bottom-right
-        -0.5,  0.5, -1.0,   // Top-left flipped front
-        0.5,  0.5, -1.0,  // Top-right flipped front
-
-        //Left
-        -0.5,  0.5, -1.0,  // Top-left of Left
-        -0.5, -0.5, -1.0,  // Bottom-left of Left
-        -0.5, -0.5, 0.0,  // Bottom-right of Left
-
-        -0.5, -0.5, 0.0,  // Bottom-right of Left
-        -0.5, 0.5, 0.0,  // Top-right of Left
-        -0.5, 0.5, -1.0,   // Top-left of Left
-
-        //Hat
-        -0.5,  0.5, -1.0,  // Top-left
-        -0.5, 0.5, 0.0,  // Bottom-left
-         0.5, 0.5, 0.0,  // Bottom-right
-    
-         0.5, 0.5, 0.0,  // Bottom-right
-         0.5,  0.5, -1.0,  // Top-right
-        -0.5,  0.5, -1.0,   // Top-left
-        
-        //Bottom
-
-
-    ]);
-    gl.bufferData(gl.ARRAY_BUFFER, vertexPosData, gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, Cube3D.vertexPosData, gl.STATIC_DRAW);
 
     // --- Set up Vertex Attribute for Positions ---
     const positionAttributeLocation = gl.getAttribLocation(shaderProgram, "a_position");
@@ -97,60 +48,8 @@ function Start(gl : WebGLRenderingContext)
     const vertexColBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);
 
-    //Create Vertex Colors Array
-    const uvPosData = new Float32Array([
-        0.0, 1.0,   // Top-left (u, v)
-        0.0, 0.0,   // Bottom-left (u, v)
-        1.0, 0.0,   // Bottom-right (u, v)
-    
-        1.0, 0.0,   // Bottom-right (u, v)
-        1.0, 1.0,   // Top-right (u, v)
-        0.0, 1.0,    // Top-left (u, v)
 
-        //
-
-        0.0, 1.0,   // Top-left (u, v)
-        0.0, 0.0,   // Bottom-left (u, v)
-        1.0, 0.0,   // Bottom-right (u, v)
-    
-        1.0, 0.0,   // Bottom-right (u, v)
-        1.0, 1.0,   // Top-right (u, v)
-        0.0, 1.0,    // Top-left (u, v)
-
-        //
-
-        0.0, 1.0,   // Top-left (u, v)
-        1.0, 0.0,   // Bottom-right (u, v)
-        0.0, 0.0,   // Bottom-left (u, v)
-            
-        1.0, 0.0,   // Bottom-right (u, v)
-        0.0, 1.0,    // Top-left (u, v)
-        1.0, 1.0,   // Top-right (u, v)
-
-        //
-
-        0.0, 1.0,   // Top-left (u, v)
-        0.0, 0.0,   // Bottom-left (u, v)
-        1.0, 0.0,   // Bottom-right (u, v)
-
-            
-        1.0, 0.0,   // Bottom-right (u, v)
-        1.0, 1.0,   // Top-right (u, v)
-        0.0, 1.0,    // Top-left (u, v)
-
-        //
-
-        0.0, 1.0,   // Top-left (u, v)
-        0.0, 0.0,   // Bottom-left (u, v)
-        1.0, 0.0,   // Bottom-right (u, v)
-    
-        1.0, 0.0,   // Bottom-right (u, v)
-        1.0, 1.0,   // Top-right (u, v)
-        0.0, 1.0,    // Top-left (u, v)
-
-        // Bottom
-    ]);
-    gl.bufferData(gl.ARRAY_BUFFER, uvPosData, gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, Cube3D.uvPosData, gl.STATIC_DRAW);
 
     // --- Set up Vertex Attribute for Colors ---
     const colorAttributeLocation = gl.getAttribLocation(shaderProgram, "a_color");
@@ -164,7 +63,8 @@ function Start(gl : WebGLRenderingContext)
     GlobalWebGLItems.grassTexture = grassTexture; 
     
     const grassImage = new Image();
-    grassImage.src = "/grassblock/Faithful-x64/side-faithful-grass.png";
+    //grassImage.src = "/grassblock/Faithful-x64/side-faithful-grass.png";
+    grassImage.src = "/grassblock/grass-atlas/GrassAtlas-256.png";
 
     grassImage.onload = () => {
         gl.bindTexture(gl.TEXTURE_2D, grassTexture);
@@ -229,7 +129,7 @@ function Update(gl: WebGLRenderingContext,)
     let modelMatrix = glMatrix.mat4.create();
     //glMatrix.mat4.translate(modelMatrix, modelMatrix, [Math.cos(Time.time*2)*0.5, Math.sin(Time.time*2)*0.5, 0.0]);
     //glMatrix.mat4.rotateX(modelMatrix, modelMatrix, Time.time*2);
-    glMatrix.mat4.rotateX(modelMatrix, modelMatrix, 3.14*0.15);
+    glMatrix.mat4.rotateX(modelMatrix, modelMatrix, (Math.sin(Time.time*2)*Math.PI*0.75)*0.25);
     glMatrix.mat4.rotateY(modelMatrix, modelMatrix, (3.14*0.3 + Time.time*0.5)*2);
 
     glMatrix.mat4.scale(modelMatrix, modelMatrix, [0.5, 0.5, 0.5]);
@@ -240,10 +140,8 @@ function Update(gl: WebGLRenderingContext,)
     glMatrix.mat4.multiply(finalMatrix, projectionMatrix, modelMatrix);
     gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, finalMatrix);
     
-
-
     //Draw
-    gl.drawArrays(gl.TRIANGLES, 0, 6*5);
+    gl.drawArrays(gl.TRIANGLES, 0, 6*6);
 }
 
 
