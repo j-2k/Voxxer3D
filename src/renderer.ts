@@ -124,16 +124,24 @@ function Update(gl: WebGLRenderingContext,)
     //Aspect Ratio
     const aspectRatio = gl.canvas.width / gl.canvas.height;
     let projectionMatrix = glMatrix.mat4.create();
+    //If orthographic view make sure the object is within the view of the camera, which is a cube between -1 and 1
     glMatrix.mat4.ortho(projectionMatrix, -aspectRatio, aspectRatio, -1, 1, -1, 1);
-
+    
+    //If prespective view make sure the object is behind the camera in the -z direction!
+    const fov = 70;
+    const fovRADIAN = fov * Math.PI / 180;
+    glMatrix.mat4.perspective(projectionMatrix, fovRADIAN, aspectRatio, 0.1, 100.0);
+    
     let modelMatrix = glMatrix.mat4.create();
+
+    glMatrix.mat4.translate(modelMatrix, modelMatrix, [0, 0, -1]);//moving final pos in the world
     //glMatrix.mat4.translate(modelMatrix, modelMatrix, [Math.cos(Time.time*2)*0.5, Math.sin(Time.time*2)*0.5, 0.0]);
     //glMatrix.mat4.rotateX(modelMatrix, modelMatrix, Time.time*2);
     glMatrix.mat4.rotateX(modelMatrix, modelMatrix, (Math.sin(Time.time*2)*Math.PI*0.75)*0.25);
     glMatrix.mat4.rotateY(modelMatrix, modelMatrix, (3.14*0.3 + Time.time*0.5)*2);
 
     glMatrix.mat4.scale(modelMatrix, modelMatrix, [0.5, 0.5, 0.5]);
-    glMatrix.mat4.translate(modelMatrix, modelMatrix, [0, 0, 0.5]); //Centering offset
+    glMatrix.mat4.translate(modelMatrix, modelMatrix, [0, 0, 0.5]); //First Centering offset
     //gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, modelMatrix);
 
     let finalMatrix = glMatrix.mat4.create();
