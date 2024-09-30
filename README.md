@@ -58,10 +58,7 @@ I will list what I used, just incase for anyone wondering what I used/platform c
 - [chatgpt.com](https://chatgpt.com/)
   - I'm going to use GPT to help me clarify shit while learning some of the topics below + I will need it especially when doing matrix multiplication & when I need an explanation on what happens when an object goes through 50 transformation calcs lmfao
 - Important things to learn!
-  - [stenciljs.com](https://stenciljs.com/)
-  - [MDN Docs - Web Components](https://developer.mozilla.org/en-US/docs/Web/API/Web_components)
   - [MDN Docs - Web DOM](https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Introduction)
-  - [Awesome Web Components - Learn](https://github.com/web-padawan/awesome-web-components)
 - WebGL Resources
   - [learnwebgl.brown37.net](https://learnwebgl.brown37.net/rendering/introduction.html)
   - [webglfundamentals.org](https://webglfundamentals.org/)
@@ -76,9 +73,13 @@ I will list what I used, just incase for anyone wondering what I used/platform c
   - [freecodecamp/learn-js&ts](https://www.freecodecamp.org/learn/) I have seen this as popularly suggested as the above resource!
   - [typescriptlang.org-ts](https://www.typescriptlang.org/docs/) a very good website for typescript related docs & learning ts in general!
   - [theodinproject-js](https://www.theodinproject.com/) popular suggestions I have seen multiple times about learning javascript!
-- Hosting Notes (Ignore):
+- Other Personal Learning Notes (Can ignore/skip this section):
+  - [stenciljs.com](https://stenciljs.com/)
+  - [MDN Docs - Web Components](https://developer.mozilla.org/en-US/docs/Web/API/Web_components)
+  - [Awesome Web Components - Learn](https://github.com/web-padawan/awesome-web-components)
   - Was looking into hosting services and found this, its a nice website! > https://wheretohostmy.app/free-tier-comparison
-  - Used Netlify and it was really fast to setup. Just drag & drop the built project dist files into the host service & thats it! You can get the dist file by doing ```npm run build``` and the dist file will be created.
+    - Used Netlify and it was really fast to setup. Just drag & drop the built project dist files into the host service & thats it! You can get the dist file by doing ```npm run build``` and the dist file will be created.
+
  
 # Graphics Rendering Pipeline Process
 Very important, I will write this out once I fully/almost understand everything in the pipeline.
