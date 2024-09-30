@@ -3,7 +3,7 @@ import * as glMatrix from "gl-matrix";
 import ShaderUtilites from './renderer-utils';
 import Materials from './shader-materials';
 import { Cube3D } from './shapes-data';
-import { InputManager } from './input-manager';
+import { CameraManager } from './camera';
 
 function EngineRenderer(gl : WebGLRenderingContext)
 {
@@ -20,11 +20,11 @@ class GlobalWebGLItems{
     public static modelMatrixUniformLocation : WebGLUniformLocation | null = null;
 
     public static Camera = {
-        cameraPosition: new Float32Array([0, 0, 0]),  // Initial camera position
+        cameraPosition: new Float32Array([0, 0, 1]),  // Initial camera position
         cameraTarget: new Float32Array([0, 0, 0]),    // Camera target
-        upDirection: new Float32Array([0, 1, 0])      // Up direction
+        upDirection: new Float32Array([0, 1, 0]),      // Up direction
+        viewMatrix : glMatrix.mat4.create(),
     };
-    public static viewMatrix : glMatrix.mat4 = glMatrix.mat4.create();
 }
 
 
@@ -121,7 +121,7 @@ function Start(gl : WebGLRenderingContext)
     //Create View Matrix
     let viewMatrix = glMatrix.mat4.create();
     glMatrix.mat4.lookAt(viewMatrix, GlobalWebGLItems.Camera.cameraPosition, GlobalWebGLItems.Camera.cameraTarget, GlobalWebGLItems.Camera.upDirection);
-    GlobalWebGLItems.viewMatrix = viewMatrix;
+    GlobalWebGLItems.Camera.viewMatrix = viewMatrix;
 }
 
 function Update(gl: WebGLRenderingContext,)
@@ -141,28 +141,18 @@ function Update(gl: WebGLRenderingContext,)
     //If prespective view make sure the object is behind the camera in the -z direction!
     const fovRADIAN = 70 * Math.PI / 180;
     glMatrix.mat4.perspective(projectionMatrix, fovRADIAN, aspectRatio, 0.1, 100.0);
-
+    
     // View matrix (camera transformation)
-    let viewMatrix = GlobalWebGLItems.viewMatrix; // Retrieve the camera view matrix
-
-    InputManager.isKeyPressed("w") ? GlobalWebGLItems.Camera.cameraPosition[2] -= 5*Time.deltaTime : null;  // Move the camera forward
-    InputManager.isKeyPressed("s") ? GlobalWebGLItems.Camera.cameraPosition[2] += 5*Time.deltaTime : null;  // Move the camera backward
-    InputManager.isKeyPressed("a") ? GlobalWebGLItems.Camera.cameraPosition[0] -= 5*Time.deltaTime : null;  // Move the camera left
-    InputManager.isKeyPressed("d") ? GlobalWebGLItems.Camera.cameraPosition[0] += 5*Time.deltaTime : null;  // Move the camera right
-    InputManager.isKeyPressed("q") ? GlobalWebGLItems.Camera.cameraPosition[1] -= 5*Time.deltaTime : null;  // Move the camera up
-    InputManager.isKeyPressed("e") ? GlobalWebGLItems.Camera.cameraPosition[1] += 5*Time.deltaTime : null;  // Move the camera down
-
-    const cubePos = new Float32Array([0, 0, -1]);
-
-    // Update the view matrix
+    /*let viewMatrix = GlobalWebGLItems.Camera.viewMatrix;
     glMatrix.mat4.lookAt(viewMatrix, 
         GlobalWebGLItems.Camera.cameraPosition, 
-        cubePos, 
-        GlobalWebGLItems.Camera.upDirection);
+        GlobalWebGLItems.Camera.cameraTarget, 
+        GlobalWebGLItems.Camera.upDirection);*/
+    CameraManager();
 
     // Model matrix (object transformation)
     let modelMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.translate(modelMatrix, modelMatrix, cubePos);//moving final pos in the world
+    glMatrix.mat4.translate(modelMatrix, modelMatrix, [0, 0, 0]);//moving final pos in the world
     glMatrix.mat4.rotateX(modelMatrix, modelMatrix, (Math.sin(Time.time*2)*Math.PI*0.75)*0.25);
     glMatrix.mat4.rotateY(modelMatrix, modelMatrix, (3.14*0.3 + Time.time*0.5)*2);
 
@@ -171,7 +161,7 @@ function Update(gl: WebGLRenderingContext,)
 
     // Final Model-View-Projection matrix
     let finalMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.multiply(finalMatrix, projectionMatrix, viewMatrix);
+    glMatrix.mat4.multiply(finalMatrix, projectionMatrix, GlobalWebGLItems.Camera.viewMatrix);
     glMatrix.mat4.multiply(finalMatrix, finalMatrix, modelMatrix);
     gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, finalMatrix);
     
@@ -179,7 +169,10 @@ function Update(gl: WebGLRenderingContext,)
     gl.drawArrays(gl.TRIANGLES, 0, 6*6);
 
     const textOverlay = document.getElementById('textOverlay') as HTMLElement;
-    textOverlay.innerHTML = `Camera Position: ${GlobalWebGLItems.Camera.cameraPosition[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[2].toFixed(2)}`;    
+    textOverlay.textContent = `Camera Position: ${GlobalWebGLItems.Camera.cameraPosition[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[2].toFixed(2)}`;  
+    
+    const textOverlay2 = document.getElementById('textOverlay2') as HTMLElement;
+    textOverlay2.textContent = `Camera Target: ${GlobalWebGLItems.Camera.cameraTarget[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraTarget[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraTarget[2].toFixed(2)}`;
 }
 
 
@@ -221,5 +214,6 @@ function RenderingSettings(gl : WebGLRenderingContext)
 }
 
 export {
-    EngineRenderer
+    EngineRenderer,
+    GlobalWebGLItems
 }
