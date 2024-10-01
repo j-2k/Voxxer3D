@@ -151,7 +151,9 @@ function Update(gl: WebGLRenderingContext,)
     for(let x = 0; x < 4; x++)  {
         for(let y = 0; y < 4; y++) {
             for(let z = 0; z < 4; z++) {
+                if(IsBlockVisible(x, y, z)){
                 DrawGrassBlock(gl, projectionMatrix, glMatrix.vec3.fromValues((x-1.5)*0.5,(y-5)*0.5,(z*0.5)-3));
+                }
             }
             //DrawGrassBlock(gl, projectionMatrix, glMatrix.vec3.fromValues((i-1.5)*0.5, -1, -j*0.5));
         }
@@ -175,6 +177,15 @@ function DrawGrassBlock(gl: WebGLRenderingContext, projectionMatrix: glMatrix.ma
     
     //Draw
     gl.drawArrays(gl.TRIANGLES, 0, 6*6);
+}
+
+function IsBlockVisible(x:number, y:number, z:number) {
+    // Check if this block is not fully surrounded by other blocks
+    return !(
+        x > 0 && x < 3 &&
+        y > 0 && y < 3 &&
+        z > 0 && z < 3
+    );
 }
 
 function DrawRotatingGrassBlock(gl: WebGLRenderingContext, projectionMatrix: glMatrix.mat4, finalPosition: glMatrix.vec3, rotationSpeed: number = 2){
