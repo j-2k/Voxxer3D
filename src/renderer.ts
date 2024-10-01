@@ -20,8 +20,8 @@ class GlobalWebGLItems{
     public static modelMatrixUniformLocation : WebGLUniformLocation | null = null;
 
     public static Camera = {
-        cameraPosition: new Float32Array([0, 0, 1]),  // Initial camera position
-        cameraTarget: new Float32Array([0, 0, 0]),    // Camera target
+        cameraPosition: new Float32Array([0, 0, 3]),  // Initial camera position
+        cameraTarget: new Float32Array([0, 0, 0]),    // Camera target //CHECK THE CAMERA SCRIPT, THE YAW IS STARTING ON -90 DEGREES TO POINT IN THE -Z DIRECTION
         upDirection: new Float32Array([0, 1, 0]),      // Up direction
         viewMatrix : glMatrix.mat4.create(),
     };
@@ -133,7 +133,7 @@ function Update(gl: WebGLRenderingContext,)
     const aspectRatio = gl.canvas.width / gl.canvas.height;
     let projectionMatrix = glMatrix.mat4.create();
     //If orthographic view make sure the object is within the view of the camera, which is a cube between -1 and 1
-    glMatrix.mat4.ortho(projectionMatrix, -aspectRatio, aspectRatio, -1, 1, -1, 1);
+    //glMatrix.mat4.ortho(projectionMatrix, -aspectRatio, aspectRatio, -1, 1, -1, 1);
     
     //If prespective view make sure the object is behind the camera in the -z direction!
     const fovRADIAN = 70 * Math.PI / 180;
@@ -147,44 +147,58 @@ function Update(gl: WebGLRenderingContext,)
         GlobalWebGLItems.Camera.upDirection);*/
     CameraManager();
 
-    for(let i = 0; i < 6; i++){
-        // Model matrix (object transformation)
-        let modelMatrix = glMatrix.mat4.create();
-        glMatrix.mat4.translate(modelMatrix, modelMatrix, [0, 0, -i]);//moving final pos in the world
-        glMatrix.mat4.rotateX(modelMatrix, modelMatrix, (Math.sin(Time.time*2)*Math.PI*0.75)*0.25);
-        glMatrix.mat4.rotateY(modelMatrix, modelMatrix, (3.14*0.3 + Time.time*0.5)*2);
-
-        glMatrix.mat4.scale(modelMatrix, modelMatrix, [0.5, 0.5, 0.5]);
-        glMatrix.mat4.translate(modelMatrix, modelMatrix, [0, 0, 0.5]); //First Centering offset
-
-        // Final Model-View-Projection matrix
-        let finalMatrix = glMatrix.mat4.create();
-        glMatrix.mat4.multiply(finalMatrix, projectionMatrix, GlobalWebGLItems.Camera.viewMatrix);
-        glMatrix.mat4.multiply(finalMatrix, finalMatrix, modelMatrix);
-        gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, finalMatrix);
-        
-        //Draw
-        gl.drawArrays(gl.TRIANGLES, 0, 6*6);
+    DrawRotatingGrassBlock(gl, projectionMatrix, glMatrix.vec3.fromValues(0, 1, 0));
+    for(let x = 0; x < 4; x++)  {
+        for(let y = 0; y < 4; y++) {
+            for(let z = 0; z < 4; z++) {
+                DrawGrassBlock(gl, projectionMatrix, glMatrix.vec3.fromValues((x-1.5)*0.5,(y-5)*0.5,(z*0.5)-3));
+            }
+            //DrawGrassBlock(gl, projectionMatrix, glMatrix.vec3.fromValues((i-1.5)*0.5, -1, -j*0.5));
+        }
     }
 
     DebugMode();
 }
 
-
-function DebugMode()
-{
-    textOverlay1.textContent = `Camera Position: ${GlobalWebGLItems.Camera.cameraPosition[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[2].toFixed(2)}`;  
-    textOverlay2.textContent = `Camera Target From Position: ${GlobalWebGLItems.Camera.cameraTarget[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraTarget[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraTarget[2].toFixed(2)}`;
-    if(timeFuture <= Time.time)
-    {
-        timeFuture = Time.time + 0.1;
-        textOverlay3.textContent = "Debug Mode - FPS: " + Time.GetFPS().toFixed(2);
-    }
+function DrawGrassBlock(gl: WebGLRenderingContext, projectionMatrix: glMatrix.mat4, finalPosition: glMatrix.vec3){
+    // Model matrix (object transformation)
+    let modelMatrix = glMatrix.mat4.create();
+    glMatrix.mat4.translate(modelMatrix, modelMatrix, finalPosition);   //moving final pos in the world
+    glMatrix.mat4.scale(modelMatrix, modelMatrix, [0.5, 0.5, 0.5]);
+    glMatrix.mat4.translate(modelMatrix, modelMatrix, [0, 0, 0.5]);     //First Centering offset
+    
+    // Final Model-View-Projection matrix
+    let finalMatrix = glMatrix.mat4.create();
+    glMatrix.mat4.multiply(finalMatrix, projectionMatrix, GlobalWebGLItems.Camera.viewMatrix);
+    glMatrix.mat4.multiply(finalMatrix, finalMatrix, modelMatrix);
+    gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, finalMatrix);
+    
+    //Draw
+    gl.drawArrays(gl.TRIANGLES, 0, 6*6);
 }
-let timeFuture = 0;
-const textOverlay1 = document.getElementById('textOverlay1') as HTMLElement;
-const textOverlay2 = document.getElementById('textOverlay2') as HTMLElement;
-const textOverlay3 = document.getElementById('textOverlay3') as HTMLElement;
+
+function DrawRotatingGrassBlock(gl: WebGLRenderingContext, projectionMatrix: glMatrix.mat4, finalPosition: glMatrix.vec3, rotationSpeed: number = 2){
+    // Model matrix (object transformation)
+    let modelMatrix = glMatrix.mat4.create();
+    glMatrix.mat4.translate(modelMatrix, modelMatrix, finalPosition);   //moving final pos in the world
+    glMatrix.mat4.rotateX(modelMatrix, modelMatrix, (Math.sin(Time.time*rotationSpeed)*Math.PI*0.75)*0.25);
+    glMatrix.mat4.rotateY(modelMatrix, modelMatrix, (3.14*0.3 + Time.time*(rotationSpeed*0.25))*2);
+    
+    glMatrix.mat4.scale(modelMatrix, modelMatrix, [0.5, 0.5, 0.5]);
+    glMatrix.mat4.translate(modelMatrix, modelMatrix, [0, 0, 0.5]);     //First Centering offset
+    
+    // Final Model-View-Projection matrix
+    let finalMatrix = glMatrix.mat4.create();
+    glMatrix.mat4.multiply(finalMatrix, projectionMatrix, GlobalWebGLItems.Camera.viewMatrix);
+    glMatrix.mat4.multiply(finalMatrix, finalMatrix, modelMatrix);
+    gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, finalMatrix);
+    
+    //Draw
+    gl.drawArrays(gl.TRIANGLES, 0, 6*6);
+}
+
+
+
 
 
 
@@ -215,6 +229,21 @@ function RenderingSettings(gl : WebGLRenderingContext)
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
 }
+
+function DebugMode()
+{
+    textOverlay1.textContent = `Camera Position: ${GlobalWebGLItems.Camera.cameraPosition[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[2].toFixed(2)}`;  
+    textOverlay2.textContent = `Camera Target From Position: ${GlobalWebGLItems.Camera.cameraTarget[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraTarget[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraTarget[2].toFixed(2)}`;
+    if(timeFuture <= Time.time)
+    {
+        timeFuture = Time.time + 0.1;
+        textOverlay3.textContent = "Debug Mode - FPS: " + Time.GetFPS().toFixed(2);
+    }
+}
+let timeFuture = 0;
+const textOverlay1 = document.getElementById('textOverlay1') as HTMLElement;
+const textOverlay2 = document.getElementById('textOverlay2') as HTMLElement;
+const textOverlay3 = document.getElementById('textOverlay3') as HTMLElement;
 
 export {
     EngineRenderer,
