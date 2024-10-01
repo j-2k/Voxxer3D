@@ -7,9 +7,6 @@ class InputManager {
         deltaY: number,
         isPressed: boolean
     } = { x: 0, y: 0, deltaX: 0, deltaY: 0, isPressed: false };
-    
-    static previousMouseX: number = 0;
-    static previousMouseY: number = 0;
 
     static init(canvas: HTMLCanvasElement) {
         // Keyboard event listeners
@@ -24,12 +21,14 @@ class InputManager {
         // Mouse event listeners
         canvas.addEventListener('mouseup', () => {
             InputManager.mouse.isPressed = false;
-            canvas.requestPointerLock(); // Lock the pointer on mouse down
+            this.mouse.deltaX = 0;
+            this.mouse.deltaY = 0;
+            //canvas.requestPointerLock(); // Lock the pointer on mouse down
         });
 
         canvas.addEventListener('mousedown', () => {
             InputManager.mouse.isPressed = true;
-            canvas.requestPointerLock(); // Lock the pointer on mouse down
+            //canvas.requestPointerLock(); // Lock the pointer on mouse down
         });
 
         // Listen for pointer lock change events
@@ -41,27 +40,32 @@ class InputManager {
             }
         });
 
-
-
         textOverlay5.textContent = "IsMouseDown : " + InputManager.mouse.isPressed;
 
         // Initialize previous mouse position
         canvas.addEventListener('mousemove', (event: MouseEvent) => {
-            if(!this.isMousePressed()) {
-                textOverlay5.textContent = "IsMouseDown : " + InputManager.mouse.isPressed;
+            if(!InputManager.mouse.isPressed) {
+                textOverlay5.textContent = "IsMouseDown : " + this.mouse.isPressed;
                 return;
             }
             const rect = canvas.getBoundingClientRect();
+
+            textOverlay5.textContent = "IsMouseDown : " + this.mouse.isPressed;
+
             InputManager.mouse.x = event.clientX - rect.left;
             InputManager.mouse.y = event.clientY - rect.top;
 
             // Calculate mouse delta
-            InputManager.mouse.deltaX = event.movementX; // New way to get delta
-            InputManager.mouse.deltaY = event.movementY;
+            InputManager.mouse.deltaX = event.movementX*0.5; // New way to get delta
+            InputManager.mouse.deltaY = event.movementY*0.5; // So I removed the other garbage that was used to calc delta the old way
+        });
 
-            // Update previous mouse position
-            InputManager.previousMouseX = InputManager.mouse.x;
-            InputManager.previousMouseY = InputManager.mouse.y;
+        canvas.addEventListener('mouseleave', (event: MouseEvent) => {
+            // Handle mouse leaving the canvas
+            textOverlay5.textContent = "Mouse left the canvas";
+            InputManager.mouse.isPressed = false; // Optionally reset mouse pressed state
+            InputManager.mouse.deltaX = 0;
+            InputManager.mouse.deltaY = 0;
         });
     }
 
