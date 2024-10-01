@@ -173,6 +173,9 @@ function Update(gl: WebGLRenderingContext,)
     
     const textOverlay2 = document.getElementById('textOverlay2') as HTMLElement;
     textOverlay2.textContent = `Camera Target: ${GlobalWebGLItems.Camera.cameraTarget[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraTarget[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraTarget[2].toFixed(2)}`;
+
+    const textOverlay3 = document.getElementById('textOverlay3') as HTMLElement;
+    textOverlay3.textContent = "FPS: " + Time.GetFPS().toFixed(2);
 }
 
 

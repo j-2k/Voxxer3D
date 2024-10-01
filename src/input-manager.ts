@@ -28,7 +28,7 @@ class InputManager {
 
         canvas.addEventListener('mousedown', () => {
             InputManager.mouse.isPressed = true;
-            //canvas.requestPointerLock(); // Lock the pointer on mouse down
+            canvas.requestPointerLock(); // Lock the pointer on mouse down
         });
 
         // Listen for pointer lock change events
@@ -56,8 +56,8 @@ class InputManager {
             InputManager.mouse.y = event.clientY - rect.top;
 
             // Calculate mouse delta
-            InputManager.mouse.deltaX = event.movementX*0.5; // New way to get delta
-            InputManager.mouse.deltaY = event.movementY*0.5; // So I removed the other garbage that was used to calc delta the old way
+            InputManager.mouse.deltaX = event.movementX; // New way to get delta
+            InputManager.mouse.deltaY = event.movementY; // So I removed the other garbage that was used to calc delta the old way
         });
 
         canvas.addEventListener('mouseleave', (event: MouseEvent) => {
@@ -86,9 +86,6 @@ class InputManager {
 function InitializeInputManager(canvas: HTMLCanvasElement) {
     InputManager.init(canvas);
 }
-
-const textOverlay3 = document.getElementById('textOverlay3') as HTMLElement;
-textOverlay3.textContent = "textOverlay3";
 
 const textOverlay4 = document.getElementById('textOverlay4') as HTMLElement;
 textOverlay4.textContent = "textOverlay4";
