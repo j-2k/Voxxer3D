@@ -42,7 +42,6 @@ function Start(gl : WebGLRenderingContext)
     const vertexPosBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
 
-
     gl.bufferData(gl.ARRAY_BUFFER, Cube3D.vertexPosData, gl.STATIC_DRAW);
 
     // --- Set up Vertex Attribute for Positions ---
@@ -55,7 +54,6 @@ function Start(gl : WebGLRenderingContext)
     const vertexColBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);
 
-
     gl.bufferData(gl.ARRAY_BUFFER, Cube3D.uvPosData, gl.STATIC_DRAW);
 
     // --- Set up Vertex Attribute for Colors ---
@@ -63,7 +61,6 @@ function Start(gl : WebGLRenderingContext)
     gl.enableVertexAttribArray(colorAttributeLocation);
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);    //I missed this and it gave me some big issues! Buffers must be binded before setting up the vertex attributes.
     gl.vertexAttribPointer(colorAttributeLocation, 2, gl.FLOAT, false, 0, 0);
-
 
     //Create Texture Loader
     const grassTexture = gl.createTexture();
@@ -150,23 +147,25 @@ function Update(gl: WebGLRenderingContext,)
         GlobalWebGLItems.Camera.upDirection);*/
     CameraManager();
 
-    // Model matrix (object transformation)
-    let modelMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.translate(modelMatrix, modelMatrix, [0, 0, 0]);//moving final pos in the world
-    glMatrix.mat4.rotateX(modelMatrix, modelMatrix, (Math.sin(Time.time*2)*Math.PI*0.75)*0.25);
-    glMatrix.mat4.rotateY(modelMatrix, modelMatrix, (3.14*0.3 + Time.time*0.5)*2);
+    for(let i = 0; i < 6; i++){
+        // Model matrix (object transformation)
+        let modelMatrix = glMatrix.mat4.create();
+        glMatrix.mat4.translate(modelMatrix, modelMatrix, [0, 0, -i]);//moving final pos in the world
+        glMatrix.mat4.rotateX(modelMatrix, modelMatrix, (Math.sin(Time.time*2)*Math.PI*0.75)*0.25);
+        glMatrix.mat4.rotateY(modelMatrix, modelMatrix, (3.14*0.3 + Time.time*0.5)*2);
 
-    glMatrix.mat4.scale(modelMatrix, modelMatrix, [0.5, 0.5, 0.5]);
-    glMatrix.mat4.translate(modelMatrix, modelMatrix, [0, 0, 0.5]); //First Centering offset
+        glMatrix.mat4.scale(modelMatrix, modelMatrix, [0.5, 0.5, 0.5]);
+        glMatrix.mat4.translate(modelMatrix, modelMatrix, [0, 0, 0.5]); //First Centering offset
 
-    // Final Model-View-Projection matrix
-    let finalMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.multiply(finalMatrix, projectionMatrix, GlobalWebGLItems.Camera.viewMatrix);
-    glMatrix.mat4.multiply(finalMatrix, finalMatrix, modelMatrix);
-    gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, finalMatrix);
-    
-    //Draw
-    gl.drawArrays(gl.TRIANGLES, 0, 6*6);
+        // Final Model-View-Projection matrix
+        let finalMatrix = glMatrix.mat4.create();
+        glMatrix.mat4.multiply(finalMatrix, projectionMatrix, GlobalWebGLItems.Camera.viewMatrix);
+        glMatrix.mat4.multiply(finalMatrix, finalMatrix, modelMatrix);
+        gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, finalMatrix);
+        
+        //Draw
+        gl.drawArrays(gl.TRIANGLES, 0, 6*6);
+    }
 
     DebugMode();
 }

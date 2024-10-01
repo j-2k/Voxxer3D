@@ -13,6 +13,10 @@ void main() {
     //vec2 scaledAspectRatio = a_position.xy * vec2(u_resolution.y / u_resolution.x,1.0);
     //gl_Position = u_modelMatrix * vec4(scaledAspectRatio.xy,a_position.z, 1.0);
 
+
+    //gl_pos excepts clip space, which is from -1 to 1 in x and y
+    //gl_Position = (projectionMatrix * viewMatrix * modelMatrix) * vec4(position, 1.0);
+    //The above enclosed brackets with the MVP matricies are all in u_modelMatrix already!
     gl_Position = u_modelMatrix * vec4(a_position, 1.0);
 }
 
