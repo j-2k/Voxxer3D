@@ -40,8 +40,6 @@ class InputManager {
             }
         });
 
-        textOverlay5.textContent = "IsMouseDown : " + InputManager.mouse.isPressed;
-
         // Initialize previous mouse position
         canvas.addEventListener('mousemove', (event: MouseEvent) => {
             if(!InputManager.mouse.isPressed) {
@@ -82,15 +80,12 @@ class InputManager {
     }
 }
 
-
+//Funny function please dont kill me for this
 function InitializeInputManager(canvas: HTMLCanvasElement) {
-    InputManager.init(canvas);
+    InputManager.init(canvas); 
 }
 
-const textOverlay4 = document.getElementById('textOverlay4') as HTMLElement;
-textOverlay4.textContent = "textOverlay4";
-
 const textOverlay5 = document.getElementById('textOverlay5') as HTMLElement;
-textOverlay5.textContent = "textOverlay5";
+textOverlay5.textContent = "IsMouseDown : " + InputManager.mouse.isPressed;
 
 export { InitializeInputManager, InputManager };

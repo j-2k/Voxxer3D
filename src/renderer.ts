@@ -168,23 +168,24 @@ function Update(gl: WebGLRenderingContext,)
     //Draw
     gl.drawArrays(gl.TRIANGLES, 0, 6*6);
 
-    const textOverlay = document.getElementById('textOverlay') as HTMLElement;
-    textOverlay.textContent = `Camera Position: ${GlobalWebGLItems.Camera.cameraPosition[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[2].toFixed(2)}`;  
-    
-    const textOverlay2 = document.getElementById('textOverlay2') as HTMLElement;
-    textOverlay2.textContent = `Camera Target: ${GlobalWebGLItems.Camera.cameraTarget[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraTarget[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraTarget[2].toFixed(2)}`;
-
-    const textOverlay3 = document.getElementById('textOverlay3') as HTMLElement;
-    textOverlay3.textContent = "FPS: " + Time.GetFPS().toFixed(2);
+    DebugMode();
 }
 
 
-
-
-
-
-
-
+function DebugMode()
+{
+    textOverlay1.textContent = `Camera Position: ${GlobalWebGLItems.Camera.cameraPosition[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[2].toFixed(2)}`;  
+    textOverlay2.textContent = `Camera Target From Position: ${GlobalWebGLItems.Camera.cameraTarget[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraTarget[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraTarget[2].toFixed(2)}`;
+    if(timeFuture <= Time.time)
+    {
+        timeFuture = Time.time + 0.1;
+        textOverlay3.textContent = "Debug Mode - FPS: " + Time.GetFPS().toFixed(2);
+    }
+}
+let timeFuture = 0;
+const textOverlay1 = document.getElementById('textOverlay1') as HTMLElement;
+const textOverlay2 = document.getElementById('textOverlay2') as HTMLElement;
+const textOverlay3 = document.getElementById('textOverlay3') as HTMLElement;
 
 
 

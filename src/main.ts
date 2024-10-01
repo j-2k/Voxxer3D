@@ -16,9 +16,8 @@ function main() {
     return; // Early return if gl is null
   }
 
-  console.log("WebGL is available, proceed with initialization and rendering");
+  console.log("WebGL is available, Voxxer3D is starting with initalization then rendering...");
   StartMessages(canvas, "Voxel Rendering Engine");
-  console.log("Voxxer started successfully, starting renderer...");
   InitializeInputManager(canvas);
   EngineRenderer(gl);
 }
