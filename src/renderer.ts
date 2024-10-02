@@ -7,6 +7,8 @@ import { CameraManager } from './camera';
 
 function EngineRenderer(gl : WebGLRenderingContext)
 {
+    Preloc(gl);
+    
     RenderingSettings(gl);
     
     Start(gl);
@@ -25,8 +27,14 @@ class GlobalWebGLItems{
         upDirection: new Float32Array([0, 1, 0]),      // Up direction
         viewMatrix : glMatrix.mat4.create(),
     };
+
+    public static GL : WebGLRenderingContext;
 }
 
+function Preloc(gl : WebGLRenderingContext)
+{
+    GlobalWebGLItems.GL = gl;
+}
 
 function Start(gl : WebGLRenderingContext)
 {
