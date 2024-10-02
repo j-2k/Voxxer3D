@@ -4,11 +4,12 @@ import ShaderUtilites from './renderer-utils';
 import Materials from './shader-materials';
 import { Cube3D } from './shapes-data';
 import { CameraManager } from './camera';
+import { Chunk, ChunkManager, WorldToChunk } from './voxel-logic/chunking';
 
 function EngineRenderer(gl : WebGLRenderingContext)
 {
     Preloc(gl);
-    
+
     RenderingSettings(gl);
     
     Start(gl);
@@ -127,7 +128,18 @@ function Start(gl : WebGLRenderingContext)
     let viewMatrix = glMatrix.mat4.create();
     glMatrix.mat4.lookAt(viewMatrix, GlobalWebGLItems.Camera.cameraPosition, GlobalWebGLItems.Camera.cameraTarget, GlobalWebGLItems.Camera.upDirection);
     GlobalWebGLItems.Camera.viewMatrix = viewMatrix;
+
+
+    const chunkManager = new ChunkManager(16);
+    const chunk = chunkManager.getChunk(0, 0, 5);
+    chunk.RebuildChunk(); // Ensure the chunk is rebuilt before rendering
+    chunk.SetBlock(1, 1, 1, 1);
+    chunkManagerHolder = chunkManager;
+    chunkdebug = chunk;
 }
+
+let chunkManagerHolder : ChunkManager;
+let chunkdebug :Chunk;
 
 function Update(gl: WebGLRenderingContext,)
 {
@@ -155,19 +167,18 @@ function Update(gl: WebGLRenderingContext,)
         GlobalWebGLItems.Camera.upDirection);*/
     CameraManager();
 
+    DrawChunks(gl,projectionMatrix);
+
     DrawRotatingGrassBlock(gl, projectionMatrix, glMatrix.vec3.fromValues(0, 1, 0));
-    for(let x = 0; x < 4; x++)  {
-        for(let y = 0; y < 4; y++) {
-            for(let z = 0; z < 4; z++) {
-                if(IsBlockVisible(x, y, z)){
-                DrawGrassBlock(gl, projectionMatrix, glMatrix.vec3.fromValues((x-1.5)*0.5,(y-5)*0.5,(z*0.5)-3));
-                }
-            }
-            //DrawGrassBlock(gl, projectionMatrix, glMatrix.vec3.fromValues((i-1.5)*0.5, -1, -j*0.5));
-        }
-    }
 
     DebugMode();
+}
+
+function DrawChunks(gl: WebGLRenderingContext, projectionMatrix: glMatrix.mat4)
+{
+    chunkManagerHolder.renderChunks(gl, projectionMatrix);
+    
+
 }
 
 function DrawGrassBlock(gl: WebGLRenderingContext, projectionMatrix: glMatrix.mat4, finalPosition: glMatrix.vec3){
@@ -214,6 +225,18 @@ function DrawRotatingGrassBlock(gl: WebGLRenderingContext, projectionMatrix: glM
     
     //Draw
     gl.drawArrays(gl.TRIANGLES, 0, 6*6);
+}
+
+function Draw4x4GrassBlocks(gl: WebGLRenderingContext, projectionMatrix: glMatrix.mat4){
+    for (let x = 0; x < 4; x++) {
+        for (let y = 0; y < 4; y++) {
+            for (let z = 0; z < 4; z++) {
+                if (IsBlockVisible(x, y, z)) {
+                    DrawGrassBlock(gl, projectionMatrix, glMatrix.vec3.fromValues(x, y, z));
+                }
+            }
+        }
+    }
 }
 
 

@@ -1,7 +1,7 @@
-import { GlobalWebGLItems } from "../renderer";
+import {GlobalWebGLItems}from "../renderer";
 import * as glMatrix from "gl-matrix";
 
-const gwi = GlobalWebGLItems;
+
 
 class Chunk {
     chunkX: number;
@@ -27,7 +27,7 @@ class Chunk {
 
     // Initialize the chunk
     Initialize() {
-        this.blocks = new Array(this.chunkSize ** 3).fill(1);  // Fill 16x16x16 1D array with index 0
+        this.blocks = new Array(this.chunkSize ** 3).fill(0);  // Fill 16x16x16 1D array with index 0
     }
 
     GetBlock(x: number, y: number, z: number) {
@@ -68,11 +68,11 @@ class Chunk {
 
         // Create and bind vertex buffer
         if (!this.vertexBuffer) {
-            this.vertexBuffer = gwi.GL.createBuffer();
+            this.vertexBuffer = GlobalWebGLItems.GL.createBuffer();
         }
 
-        gwi.GL.bindBuffer(gwi.GL.ARRAY_BUFFER, this.vertexBuffer);
-        gwi.GL.bufferData(gwi.GL.ARRAY_BUFFER, vertices, gwi.GL.STATIC_DRAW);
+        GlobalWebGLItems.GL.bindBuffer(GlobalWebGLItems.GL.ARRAY_BUFFER, this.vertexBuffer);
+        GlobalWebGLItems.GL.bufferData(GlobalWebGLItems.GL.ARRAY_BUFFER, vertices, GlobalWebGLItems.GL.STATIC_DRAW);
 
         this.vertexCount = vertexIndex; // Update vertexCount with actual count
 
@@ -85,13 +85,20 @@ class Chunk {
         // Bind the vertex buffer containing the chunk's block faces
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
 
+        const positionLocation = gl.getAttribLocation(shaderProgram, "a_position");
+        gl.enableVertexAttribArray(positionLocation);
+        gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
+        
+        // Set the texture unit (0 in this case)
+        gl.uniform1i(GlobalWebGLItems.samplerUniformLocation, 0);
+
         // Prepare the final model-view-projection matrix
         let finalMatrix = glMatrix.mat4.create();
         glMatrix.mat4.multiply(finalMatrix, projectionMatrix, GlobalWebGLItems.Camera.viewMatrix);
 
         // Send the matrix to the shader
         gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, finalMatrix);
-
+        
         // Draw the chunk (assuming each block face is represented as quads or triangles)
         gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount); // Adjust the draw call based on your data
     }
@@ -237,7 +244,7 @@ class ChunkManager {
     }
 
     // Render all visible chunks (using frustum culling)
-    renderChunks(gl: WebGLRenderingContext, projectionMatrix: Float32Array): void {
+    renderChunks(gl: WebGLRenderingContext, projectionMatrix: glMatrix.mat4): void {
         for (const chunkKey in this.chunks) {
             const chunk = this.chunks[chunkKey];
             if (this.isChunkVisible(chunk)) {
@@ -253,4 +260,16 @@ class ChunkManager {
     }
 }
 
-export { Chunk, ChunkManager };
+function WorldToChunk(x:number, y:number, z:number, chunkSize:number) {
+    return {
+        chunkX: Math.floor(x / chunkSize),
+        chunkY: Math.floor(y / chunkSize),
+        chunkZ: Math.floor(z / chunkSize),
+        localX: x % chunkSize,
+        localY: y % chunkSize,
+        localZ: z % chunkSize
+    };
+}
+
+
+export { Chunk, ChunkManager, WorldToChunk };
