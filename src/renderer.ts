@@ -4,11 +4,11 @@ import ShaderUtilites from './renderer-utils';
 import Materials from './shader-materials';
 import { Cube3D } from './shapes-data';
 import { CameraManager } from './camera';
-import { Chunk, ChunkManager, WorldToChunk } from './voxel-logic/chunking';
+
 
 function EngineRenderer(gl : WebGLRenderingContext)
 {
-    Preloc(gl);
+    GlobalWebGLItems.GL = gl;
 
     RenderingSettings(gl);
     
@@ -27,26 +27,15 @@ class GlobalWebGLItems{
         cameraTarget: new Float32Array([0, 0, 0]),    // Camera target //CHECK THE CAMERA SCRIPT, THE YAW IS STARTING ON -90 DEGREES TO POINT IN THE -Z DIRECTION
         upDirection: new Float32Array([0, 1, 0]),      // Up direction
         viewMatrix : glMatrix.mat4.create(),
+        projectionMatrix : glMatrix.mat4.create()
     };
 
     public static GL : WebGLRenderingContext;
+
+    
 }
 
-function Preloc(gl : WebGLRenderingContext)
-{
-    GlobalWebGLItems.GL = gl;
-}
-
-function Start(gl : WebGLRenderingContext)
-{
-    //Create Shader Program
-    const shaderProgram = ShaderUtilites.CreateShaderMaterial(gl, Materials.Unlit.vertexShader, Materials.Unlit.fragmentShader);
-    if (!shaderProgram) {
-        console.error("Failed to create shader program in the start function of the renderer...");
-        return;
-    }
-    gl.useProgram(shaderProgram);
-
+function StartBinders(gl : WebGLRenderingContext, shaderProgram : WebGLProgram){
     //Create Position Buffer
     const vertexPosBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
@@ -70,7 +59,9 @@ function Start(gl : WebGLRenderingContext)
     gl.enableVertexAttribArray(colorAttributeLocation);
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);    //I missed this and it gave me some big issues! Buffers must be binded before setting up the vertex attributes.
     gl.vertexAttribPointer(colorAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+}
 
+function TextureLoader(gl : WebGLRenderingContext, shaderProgram : WebGLProgram){
     //Create Texture Loader
     const grassTexture = gl.createTexture();
     GlobalWebGLItems.grassTexture = grassTexture; 
@@ -106,7 +97,23 @@ function Start(gl : WebGLRenderingContext)
     GlobalWebGLItems.samplerUniformLocation = samplerUniformLocation;
     // Set the texture unit (0 in this case)
     gl.uniform1i(samplerUniformLocation, 0);
+}
 
+function Start(gl : WebGLRenderingContext)
+{
+    //Create Shader Program
+    const shaderProgram = ShaderUtilites.CreateShaderMaterial(gl, Materials.Unlit.vertexShader, Materials.Unlit.fragmentShader);
+    if (!shaderProgram) {
+        console.error("Failed to create shader program in the start function of the renderer...");
+        return;
+    }
+    gl.useProgram(shaderProgram);
+
+    //Bind Buffers
+    StartBinders(gl, shaderProgram);
+
+    //Load Textures
+    TextureLoader(gl, shaderProgram);
 
 
     //Create Uniforms
@@ -129,55 +136,27 @@ function Start(gl : WebGLRenderingContext)
     glMatrix.mat4.lookAt(viewMatrix, GlobalWebGLItems.Camera.cameraPosition, GlobalWebGLItems.Camera.cameraTarget, GlobalWebGLItems.Camera.upDirection);
     GlobalWebGLItems.Camera.viewMatrix = viewMatrix;
 
-
-    const chunkManager = new ChunkManager(16);
-    const chunk = chunkManager.getChunk(0, 0, 5);
-    chunk.RebuildChunk(); // Ensure the chunk is rebuilt before rendering
-    chunk.SetBlock(1, 1, 1, 1);
-    chunkManagerHolder = chunkManager;
-    chunkdebug = chunk;
+    //Prespective Projection
+    const aspectRatio = gl.canvas.width / gl.canvas.height;
+    const fovRADIAN = 70 * Math.PI / 180;
+    glMatrix.mat4.perspective(GlobalWebGLItems.Camera.projectionMatrix, fovRADIAN, aspectRatio, 0.1, 100.0);
 }
-
-let chunkManagerHolder : ChunkManager;
-let chunkdebug :Chunk;
 
 function Update(gl: WebGLRenderingContext,)
 {
     console.log("Update Call...");
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // Bind the texture
     gl.bindTexture(gl.TEXTURE_2D, GlobalWebGLItems.grassTexture);
 
-    //Aspect Ratio
-    const aspectRatio = gl.canvas.width / gl.canvas.height;
-    let projectionMatrix = glMatrix.mat4.create();
-    //If orthographic view make sure the object is within the view of the camera, which is a cube between -1 and 1
-    //glMatrix.mat4.ortho(projectionMatrix, -aspectRatio, aspectRatio, -1, 1, -1, 1);
-    
-    //If prespective view make sure the object is behind the camera in the -z direction!
-    const fovRADIAN = 70 * Math.PI / 180;
-    glMatrix.mat4.perspective(projectionMatrix, fovRADIAN, aspectRatio, 0.1, 100.0);
-    
-    // View matrix (camera transformation)
-    /*let viewMatrix = GlobalWebGLItems.Camera.viewMatrix;
-    glMatrix.mat4.lookAt(viewMatrix, 
-        GlobalWebGLItems.Camera.cameraPosition, 
-        GlobalWebGLItems.Camera.cameraTarget, 
-        GlobalWebGLItems.Camera.upDirection);*/
+
     CameraManager();
 
-    DrawChunks(gl,projectionMatrix);
+    DrawRotatingGrassBlock(gl, GlobalWebGLItems.Camera.projectionMatrix, glMatrix.vec3.fromValues(0, 1, 0));
 
-    DrawRotatingGrassBlock(gl, projectionMatrix, glMatrix.vec3.fromValues(0, 1, 0));
+    Draw4x4GrassBlocks(gl, GlobalWebGLItems.Camera.projectionMatrix);
 
     DebugMode();
-}
-
-function DrawChunks(gl: WebGLRenderingContext, projectionMatrix: glMatrix.mat4)
-{
-    chunkManagerHolder.renderChunks(gl, projectionMatrix);
-    
 
 }
 
@@ -232,7 +211,7 @@ function Draw4x4GrassBlocks(gl: WebGLRenderingContext, projectionMatrix: glMatri
         for (let y = 0; y < 4; y++) {
             for (let z = 0; z < 4; z++) {
                 if (IsBlockVisible(x, y, z)) {
-                    DrawGrassBlock(gl, projectionMatrix, glMatrix.vec3.fromValues(x, y, z));
+                    DrawGrassBlock(gl, projectionMatrix, glMatrix.vec3.fromValues(x*0.5-0.75, (y*0.5)-2, (z*0.5)-2));
                 }
             }
         }
@@ -286,6 +265,8 @@ let timeFuture = 0;
 const textOverlay1 = document.getElementById('textOverlay1') as HTMLElement;
 const textOverlay2 = document.getElementById('textOverlay2') as HTMLElement;
 const textOverlay3 = document.getElementById('textOverlay3') as HTMLElement;
+
+
 
 export {
     EngineRenderer,
