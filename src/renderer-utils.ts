@@ -28,7 +28,6 @@ function CompileShaderSource(gl: WebGLRenderingContext, shaderSrc: string, shade
 //(WEBGL context, vertex shader, fragment shader)
 //returns a shader program object (material?)
 function CreateShaderProgram(gl: WebGLRenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader) : WebGLProgram | null {
-    
     //Create shader program object
     const shaderProgram = gl.createProgram() as WebGLProgram | null;
     if (!shaderProgram || !vertexShader || !fragmentShader) {
