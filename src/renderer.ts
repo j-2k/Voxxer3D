@@ -4,6 +4,8 @@ import ShaderUtilites from './renderer-utils';
 import Materials from './shader-materials';
 import { Cube3D } from './shapes-data';
 import { CameraManager } from './camera';
+import { Shader } from './shader-master';
+
 
 
 function EngineRenderer(gl : WebGLRenderingContext)
@@ -32,10 +34,44 @@ class GlobalWebGLItems{
 
     public static GL : WebGLRenderingContext;
 
-    
+    public static GrassShader : Shader | undefined;
 }
 
+
 function StartBinders(gl : WebGLRenderingContext, shaderProgram : WebGLProgram){
+
+    GlobalWebGLItems.GrassShader = GrassShaderInstance(gl);
+    function GrassShaderInstance  (gl : WebGLRenderingContext)  {
+        const grassShader : Shader = new Shader(gl, Materials.Unlit.vertexShader, Materials.Unlit.fragmentShader);
+        if(!grassShader){console.error("Failed to create grass shader in the start function of the renderer...");return;}
+        grassShader.use();
+
+        //Position Buffer
+        const vertexPosBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, Cube3D.vertexPosData, gl.STATIC_DRAW);
+
+        // Set up position attribute pointers for the mesh
+        //const positionAttributeLocation = grassShader.getAttribLocation("a_position");
+        grassShader.enableAttrib("a_position");
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
+        grassShader.setAttribPointer("a_position", 3, gl.FLOAT, false, 0, 0);
+
+
+
+        //Color Buffer
+        const vertexColBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, Cube3D.uvPosData, gl.STATIC_DRAW);
+
+        // Set up color attribute pointers for the mesh
+        //const colorAttributeLocation = gl.getAttribLocation(shaderProgram, "a_color");
+        grassShader.enableAttrib("a_color");
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);    //I missed this and it gave me some big issues! Buffers must be binded before setting up the vertex attributes.
+        grassShader.setAttribPointer("a_color", 2, gl.FLOAT, false, 0, 0);
+        return grassShader;
+    }
+    /*
     //Create Position Buffer
     const vertexPosBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
@@ -59,6 +95,7 @@ function StartBinders(gl : WebGLRenderingContext, shaderProgram : WebGLProgram){
     gl.enableVertexAttribArray(colorAttributeLocation);
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);    //I missed this and it gave me some big issues! Buffers must be binded before setting up the vertex attributes.
     gl.vertexAttribPointer(colorAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+    */
 }
 
 function TextureLoader(gl : WebGLRenderingContext, shaderProgram : WebGLProgram){
@@ -93,35 +130,22 @@ function TextureLoader(gl : WebGLRenderingContext, shaderProgram : WebGLProgram)
     gl.bindTexture(gl.TEXTURE_2D, grassTexture);
 
     // Get the location of the sampler uniform in the fragment shader
-    const samplerUniformLocation = gl.getUniformLocation(shaderProgram, "u_texture");
+    const samplerUniformLocation = GlobalWebGLItems.GrassShader?.getUniformLocation("u_texture");
+    if(samplerUniformLocation == undefined){console.error("Failed to get the sampler uniform location in the start function of the renderer...");return;}
     GlobalWebGLItems.samplerUniformLocation = samplerUniformLocation;
     // Set the texture unit (0 in this case)
-    gl.uniform1i(samplerUniformLocation, 0);
+    GlobalWebGLItems.GrassShader?.setUniform1i("u_texture",0);
 }
 
-function Start(gl : WebGLRenderingContext)
-{
-    //Create Shader Program
-    const shaderProgram = ShaderUtilites.CreateShaderMaterial(gl, Materials.Unlit.vertexShader, Materials.Unlit.fragmentShader);
-    if (!shaderProgram) {
-        console.error("Failed to create shader program in the start function of the renderer...");
-        return;
-    }
-    gl.useProgram(shaderProgram);
+function ShaderUniforms(gl : WebGLRenderingContext, shaderProgram : WebGLProgram){
+    GlobalWebGLItems.GrassShader?.setUniform2f("u_resolution", gl.canvas.width, gl.canvas.height);
+    //const resolutionUniformLocation = gl.getUniformLocation(shaderProgram, "u_resolution");
+    //gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
 
-    //Bind Buffers
-    StartBinders(gl, shaderProgram);
+    //GlobalWebGLItems.GrassShader?.setUniform2f("u_resolution", gl.canvas.width, gl.canvas.height);
 
-    //Load Textures
-    TextureLoader(gl, shaderProgram);
-
-
-    //Create Uniforms
-    const resolutionUniformLocation = gl.getUniformLocation(shaderProgram, "u_resolution");
-    gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
-
-    const colorUniformLocation = gl.getUniformLocation(shaderProgram, "u_color");
-    gl.uniform4fv(colorUniformLocation, [1.0, 0.0, 0.0, 1.0]);
+    //const colorUniformLocation = gl.getUniformLocation(shaderProgram, "u_color");
+    //gl.uniform4fv(colorUniformLocation, [1.0, 0.0, 0.0, 1.0]);
 
     //Create Model Matrix
     let modelMatrix = glMatrix.mat4.create();
@@ -140,6 +164,27 @@ function Start(gl : WebGLRenderingContext)
     const aspectRatio = gl.canvas.width / gl.canvas.height;
     const fovRADIAN = 70 * Math.PI / 180;
     glMatrix.mat4.perspective(GlobalWebGLItems.Camera.projectionMatrix, fovRADIAN, aspectRatio, 0.1, 100.0);
+}
+
+function Start(gl : WebGLRenderingContext)
+{
+    //Create Shader Program
+    const shaderProgram = ShaderUtilites.CreateShaderMaterial(gl, Materials.Unlit.vertexShader, Materials.Unlit.fragmentShader);
+    if (!shaderProgram) {
+        console.error("Failed to create shader program in the start function of the renderer...");
+        return;
+    }
+    gl.useProgram(shaderProgram);
+
+    //Bind Buffers
+    StartBinders(gl, shaderProgram);
+
+    //Load Textures
+    TextureLoader(gl, shaderProgram);
+
+    //Create Uniforms
+    ShaderUniforms(gl, shaderProgram);
+
 }
 
 function Update(gl: WebGLRenderingContext,)

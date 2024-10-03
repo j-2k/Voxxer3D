@@ -2,7 +2,7 @@ precision mediump float;
 
 varying vec2 v_color;           // Get the color from the vertex shader
 
-uniform vec4 u_color;           // The color uniform (UV)
+//uniform vec4 u_color;           // The color uniform (UV)
 uniform sampler2D u_texture;    // The texture uniform
 void main() {
     //gl_FragColor = u_color;
