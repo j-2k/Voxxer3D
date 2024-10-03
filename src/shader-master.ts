@@ -1,4 +1,5 @@
 import ShaderUtilites from './renderer-utils';
+import * as glmatrix from 'gl-matrix';
 
 class Shader {
     private gl: WebGLRenderingContext;
@@ -39,7 +40,7 @@ class Shader {
     }
 
     // Set uniforms (example for different types of uniforms)
-    setUniformMatrix4fv(name: string, matrix: Float32Array) {
+    setUniformMatrix4fv(name: string, matrix: glmatrix.mat4) {
         const location = this.getUniformLocation(name);
         this.gl.uniformMatrix4fv(location, false, matrix);
     }

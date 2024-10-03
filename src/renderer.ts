@@ -38,7 +38,7 @@ class GlobalWebGLItems{
 }
 
 
-function StartBinders(gl : WebGLRenderingContext, shaderProgram : WebGLProgram){
+function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
 
     GlobalWebGLItems.GrassShader = GrassShaderInstance(gl);
     function GrassShaderInstance  (gl : WebGLRenderingContext)  {
@@ -98,7 +98,7 @@ function StartBinders(gl : WebGLRenderingContext, shaderProgram : WebGLProgram){
     */
 }
 
-function TextureLoader(gl : WebGLRenderingContext, shaderProgram : WebGLProgram){
+function TextureLoader(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
     //Create Texture Loader
     const grassTexture = gl.createTexture();
     GlobalWebGLItems.grassTexture = grassTexture; 
@@ -137,8 +137,8 @@ function TextureLoader(gl : WebGLRenderingContext, shaderProgram : WebGLProgram)
     GlobalWebGLItems.GrassShader?.setUniform1i("u_texture",0);
 }
 
-function ShaderUniforms(gl : WebGLRenderingContext, shaderProgram : WebGLProgram){
-    GlobalWebGLItems.GrassShader?.setUniform2f("u_resolution", gl.canvas.width, gl.canvas.height);
+function ShaderUniforms(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
+    //GlobalWebGLItems.GrassShader?.setUniform2f("u_resolution", gl.canvas.width, gl.canvas.height);
     //const resolutionUniformLocation = gl.getUniformLocation(shaderProgram, "u_resolution");
     //gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
 
@@ -151,9 +151,15 @@ function ShaderUniforms(gl : WebGLRenderingContext, shaderProgram : WebGLProgram
     let modelMatrix = glMatrix.mat4.create();
     glMatrix.mat4.translate(modelMatrix, modelMatrix, [0.0, 0.0, 0.0]); // not needed
 
-    let modelMatrixUniformLocation = gl.getUniformLocation(shaderProgram, "u_modelMatrix");
-    GlobalWebGLItems.modelMatrixUniformLocation = modelMatrixUniformLocation;
-    gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, modelMatrix);
+    //let modelMatrixUniformLocation = gl.getUniformLocation(shaderProgram, "u_modelMatrix");
+    //GlobalWebGLItems.modelMatrixUniformLocation = modelMatrixUniformLocation;
+    //gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, modelMatrix);
+    const uniLoc = GlobalWebGLItems.GrassShader?.getUniformLocation("u_modelMatrix")
+    if (uniLoc !== undefined) {
+        GlobalWebGLItems.modelMatrixUniformLocation = uniLoc;
+    }
+    GlobalWebGLItems.GrassShader?.setUniformMatrix4fv("u_modelMatrix", modelMatrix);
+    //GlobalWebGLItems.GrassShader?.getUniformLocation("u_modelMatrix");
 
     //Create View Matrix
     let viewMatrix = glMatrix.mat4.create();
@@ -168,6 +174,7 @@ function ShaderUniforms(gl : WebGLRenderingContext, shaderProgram : WebGLProgram
 
 function Start(gl : WebGLRenderingContext)
 {
+    /*
     //Create Shader Program
     const shaderProgram = ShaderUtilites.CreateShaderMaterial(gl, Materials.Unlit.vertexShader, Materials.Unlit.fragmentShader);
     if (!shaderProgram) {
@@ -175,15 +182,16 @@ function Start(gl : WebGLRenderingContext)
         return;
     }
     gl.useProgram(shaderProgram);
+    */
 
     //Bind Buffers
-    StartBinders(gl, shaderProgram);
+    StartBinders(gl);//, shaderProgram);
 
     //Load Textures
-    TextureLoader(gl, shaderProgram);
+    TextureLoader(gl);//, shaderProgram);
 
     //Create Uniforms
-    ShaderUniforms(gl, shaderProgram);
+    ShaderUniforms(gl);//, shaderProgram);
 
 }
 
@@ -217,6 +225,7 @@ function DrawGrassBlock(gl: WebGLRenderingContext, projectionMatrix: glMatrix.ma
     glMatrix.mat4.multiply(finalMatrix, projectionMatrix, GlobalWebGLItems.Camera.viewMatrix);
     glMatrix.mat4.multiply(finalMatrix, finalMatrix, modelMatrix);
     gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, finalMatrix);
+    //this.gl.getUniformLocation(this.program, name);
     
     //Draw
     gl.drawArrays(gl.TRIANGLES, 0, 6*6);
