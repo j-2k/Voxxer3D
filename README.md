@@ -1,5 +1,5 @@
-# WebGL Hello World - Template Project
-This section is still underconstruction, this repository is generated from another repository where I learned WebGL!
+# Voxxer3D
+Voxxer3D is a 3D Voxel World Rendering Engine written from "scratch" utilizing the WebGL Interface.
 
 # Project Requirement Notes
 - Have nodejs & npm
