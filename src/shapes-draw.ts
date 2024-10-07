@@ -37,7 +37,7 @@ function DrawRotatingGrassBlock(gl: WebGLRenderingContext, projectionMatrix: glM
     glMatrix.mat4.rotateX(modelMatrix, modelMatrix, (Math.sin(Time.time*rotationSpeed)*Math.PI*0.75)*0.25);
     glMatrix.mat4.rotateY(modelMatrix, modelMatrix, (3.14*0.3 + Time.time*(rotationSpeed*0.25))*2);
     
-    glMatrix.mat4.scale(modelMatrix, modelMatrix, [0.5, 0.5, 0.5]);
+    glMatrix.mat4.scale(modelMatrix, modelMatrix, [0.25, 0.25, 0.25]);
     glMatrix.mat4.translate(modelMatrix, modelMatrix, [0, 0, 0.5]);     //First Centering offset
     
     // Final Model-View-Projection matrix
@@ -55,7 +55,8 @@ function Draw4x4GrassBlocks(gl: WebGLRenderingContext, projectionMatrix: glMatri
         for (let y = 0; y < 4; y++) {
             for (let z = 0; z < 4; z++) {
                 if (IsBlockVisible(x, y, z)) {
-                    DrawGrassBlock(gl, projectionMatrix, glMatrix.vec3.fromValues(x*0.5-0.75, (y*0.5)-2, (z*0.5)-2));
+                    const extra = 4;
+                    DrawGrassBlock(gl, projectionMatrix, glMatrix.vec3.fromValues(x*0.5-0.75-extra, (y*0.5)-2, (z*0.5)-2-extra));
                 }
             }
         }

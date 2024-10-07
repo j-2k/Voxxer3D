@@ -12,7 +12,7 @@ let pitch = 0; // Rotation around the X-axis based on the Y-axis of the mouse
 function CameraManager() {
   const cameraSpeed = 5 * Time.deltaTime; // Define camera speed
 
-  // Calculate the right vector (perpendicular to the front vector)
+  // Calculate z/front vector
   const front = glMatrix.vec3.create();
   front[0] = Math.cos(glMatrix.glMatrix.toRadian(yaw)) * Math.cos(glMatrix.glMatrix.toRadian(pitch));
   front[1] = Math.sin(glMatrix.glMatrix.toRadian(pitch));
