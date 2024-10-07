@@ -4,7 +4,7 @@ import Materials from './shader-materials';
 import { Cube3D } from './shapes-data';
 import { CameraManager } from './camera';
 import { Shader } from './shader-master';
-
+import Draw from './shapes-draw';
 
 
 function EngineRenderer(gl : WebGLRenderingContext)
@@ -35,7 +35,6 @@ class GlobalWebGLItems{
 
     public static GrassShader : Shader | undefined;
 }
-
 
 function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
 
@@ -120,9 +119,6 @@ function TextureLoader(gl : WebGLRenderingContext){//, shaderProgram : WebGLProg
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-        // Unbind the texture
-        gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
     // Bind the texture before drawing
@@ -174,78 +170,18 @@ function Update(gl: WebGLRenderingContext,)
 {
     console.log("Update Call...");
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
     gl.bindTexture(gl.TEXTURE_2D, GlobalWebGLItems.grassTexture);
 
 
     CameraManager();
 
-    DrawRotatingGrassBlock(gl, GlobalWebGLItems.Camera.projectionMatrix, glMatrix.vec3.fromValues(0, 1, 0));
-
-    Draw4x4GrassBlocks(gl, GlobalWebGLItems.Camera.projectionMatrix);
+    Draw.DrawRotatingGrassBlock(gl, GlobalWebGLItems.Camera.projectionMatrix, glMatrix.vec3.fromValues(0, 1, 0));
+    Draw.Draw4x4GrassBlocks(gl, GlobalWebGLItems.Camera.projectionMatrix);
 
     DebugMode();
-
 }
 
-function DrawGrassBlock(gl: WebGLRenderingContext, projectionMatrix: glMatrix.mat4, finalPosition: glMatrix.vec3){
-    // Model matrix (object transformation)
-    let modelMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.translate(modelMatrix, modelMatrix, finalPosition);   //moving final pos in the world
-    glMatrix.mat4.scale(modelMatrix, modelMatrix, [0.5, 0.5, 0.5]);
-    glMatrix.mat4.translate(modelMatrix, modelMatrix, [0, 0, 0.5]);     //First Centering offset
-    
-    // Final Model-View-Projection matrix
-    let finalMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.multiply(finalMatrix, projectionMatrix, GlobalWebGLItems.Camera.viewMatrix);
-    glMatrix.mat4.multiply(finalMatrix, finalMatrix, modelMatrix);
-    gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, finalMatrix);
-    //this.gl.getUniformLocation(this.program, name);
-    
-    //Draw
-    gl.drawArrays(gl.TRIANGLES, 0, 6*6);
-}
 
-function IsBlockVisible(x:number, y:number, z:number) {
-    // Check if this block is not fully surrounded by other blocks
-    return !(
-        x > 0 && x < 3 &&
-        y > 0 && y < 3 &&
-        z > 0 && z < 3
-    );
-}
-
-function DrawRotatingGrassBlock(gl: WebGLRenderingContext, projectionMatrix: glMatrix.mat4, finalPosition: glMatrix.vec3, rotationSpeed: number = 2){
-    // Model matrix (object transformation)
-    let modelMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.translate(modelMatrix, modelMatrix, finalPosition);   //moving final pos in the world
-    glMatrix.mat4.rotateX(modelMatrix, modelMatrix, (Math.sin(Time.time*rotationSpeed)*Math.PI*0.75)*0.25);
-    glMatrix.mat4.rotateY(modelMatrix, modelMatrix, (3.14*0.3 + Time.time*(rotationSpeed*0.25))*2);
-    
-    glMatrix.mat4.scale(modelMatrix, modelMatrix, [0.5, 0.5, 0.5]);
-    glMatrix.mat4.translate(modelMatrix, modelMatrix, [0, 0, 0.5]);     //First Centering offset
-    
-    // Final Model-View-Projection matrix
-    let finalMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.multiply(finalMatrix, projectionMatrix, GlobalWebGLItems.Camera.viewMatrix);
-    glMatrix.mat4.multiply(finalMatrix, finalMatrix, modelMatrix);
-    gl.uniformMatrix4fv(GlobalWebGLItems.modelMatrixUniformLocation, false, finalMatrix);
-    
-    //Draw
-    gl.drawArrays(gl.TRIANGLES, 0, 6*6);
-}
-
-function Draw4x4GrassBlocks(gl: WebGLRenderingContext, projectionMatrix: glMatrix.mat4){
-    for (let x = 0; x < 4; x++) {
-        for (let y = 0; y < 4; y++) {
-            for (let z = 0; z < 4; z++) {
-                if (IsBlockVisible(x, y, z)) {
-                    DrawGrassBlock(gl, projectionMatrix, glMatrix.vec3.fromValues(x*0.5-0.75, (y*0.5)-2, (z*0.5)-2));
-                }
-            }
-        }
-    }
-}
 
 
 
