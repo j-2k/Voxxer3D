@@ -126,11 +126,15 @@ function TextureLoader(gl : WebGLRenderingContext){//, shaderProgram : WebGLProg
     gl.bindTexture(gl.TEXTURE_2D, grassTexture);
 
     // Get the location of the sampler uniform in the fragment shader
-    const samplerUniformLocation = GlobalWebGLItems.GrassShader?.getUniformLocation("u_texture");
-    if(samplerUniformLocation == undefined){console.error("Failed to get the sampler uniform location in the start function of the renderer...");return;}
-    GlobalWebGLItems.samplerUniformLocation = samplerUniformLocation;
-    // Set the texture unit (0 in this case)
-    GlobalWebGLItems.GrassShader?.setUniform1i("u_texture",0);
+    const isUsingTextureUniforms = false
+    if(isUsingTextureUniforms){
+        const samplerUniformLocation = GlobalWebGLItems.GrassShader?.getUniformLocation("u_texture");
+        if(samplerUniformLocation == undefined){console.error("Failed to get the sampler uniform location in the start function of the renderer...");return;}
+        GlobalWebGLItems.samplerUniformLocation = samplerUniformLocation;
+        // Set the texture unit (0 in this case)
+        GlobalWebGLItems.GrassShader?.setUniform1i("u_texture",0);
+    }
+
 }
 
 function ShaderUniforms(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
@@ -175,7 +179,7 @@ function Update(gl: WebGLRenderingContext,)
 
     CameraManager();
 
-    Draw.DrawRotatingGrassBlock(gl, GlobalWebGLItems.Camera.projectionMatrix, glMatrix.vec3.fromValues(0, 1, 0));
+    Draw.DrawRotatingGrassBlock(gl, GlobalWebGLItems.Camera.projectionMatrix, glMatrix.vec3.fromValues(0, 0, 0));
     Draw.Draw4x4GrassBlocks(gl, GlobalWebGLItems.Camera.projectionMatrix);
 
     DebugMode();
