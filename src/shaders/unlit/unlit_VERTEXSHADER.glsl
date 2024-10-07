@@ -1,5 +1,5 @@
 attribute vec3 a_position;  // Attribute to hold the position of the vertex
-attribute vec2 a_color;     // Attribute to hold the color of the vertex
+attribute vec4 a_color;     // Attribute to hold the color of the vertex
 
 varying vec2 v_color;       // Pass the color to the fragment shader
 
@@ -8,7 +8,7 @@ uniform mat4 u_modelMatrix; // Model transformation matrix
 
 void main() {
     
-    v_color = a_color;
+    v_color = a_color.xy;
 
     //gl_pos excepts clip space, which is from -1 to 1 in x and y
     //gl_Position = (projectionMatrix * viewMatrix * modelMatrix) * vec4(position, 1.0);

@@ -34,6 +34,7 @@ class GlobalWebGLItems{
     public static GL : WebGLRenderingContext;
 
     public static GrassShader : Shader | undefined;
+    public static Shader2 : Shader | undefined;
 }
 
 function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
@@ -65,11 +66,57 @@ function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgr
         // Set up color attribute pointers for the mesh
         grassShader.enableAttrib("a_color");
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);    //I missed this and it gave me some big issues! Buffers must be binded before setting up the vertex attributes.
-        grassShader.setAttribPointer("a_color", 2, gl.FLOAT, false, 0, 0);
+        grassShader.setAttribPointer("a_color", 4, gl.FLOAT, false, 0, 0);
         return grassShader;
     }
 
     
+
+    GlobalWebGLItems.Shader2 = Shader2Instance(gl);
+    function Shader2Instance  (gl : WebGLRenderingContext)  {
+        const shader : Shader = new Shader(gl, Materials.TestShader.vertexShader, Materials.TestShader.fragmentShader);
+        if(!shader){console.error("Failed to create shader2 in the start function of the renderer...");return;}
+        shader.use();
+
+        //Position Buffer
+        const vertexPosBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        0.6, 0.9, 0.0,  // Top vertex
+        0.6, 0.6, 0.0,  // Bottom-left vertex
+        0.9, 0.6, 0.0,   // Bottom-right vertex
+        
+        0.6, 0.9, 0.0,  // Top vertex
+        0.9, 0.6, 0.0,   // Bottom-right vertex
+        0.9, 0.9, 0.0,  // Top-right vertex
+        ]), gl.STATIC_DRAW);
+
+        // Set up position attribute pointers for the mesh
+        //const positionAttributeLocation = grassShader.getAttribLocation("a_position");
+        shader.enableAttrib("a_position");
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
+        shader.setAttribPointer("a_position", 3, gl.FLOAT, false, 0, 0);
+
+        //Color Buffer
+        const vertexColBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            0.0, 1.0, 0.0, 1.0,  // Top vertex
+            0.0, 0.0, 0.0, 1.0, // Bottom-left vertex
+            1.0, 0.0, 0.0, 1.0, // Bottom-right vertex
+
+            0.0, 1.0, 0.0, 1.0,  // Top-Left vertex
+            1.0, 0.0, 0.0, 1.0, // Bottom-right vertex
+            1.0, 1.0, 0.0, 1.0, // Top-right vertex
+        ]), gl.STATIC_DRAW);
+
+        // Set up color attribute pointers for the mesh
+        shader.enableAttrib("a_color");
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);    //I missed this and it gave me some big issues! Buffers must be binded before setting up the vertex attributes.
+        shader.setAttribPointer("a_color", 4, gl.FLOAT, false, 0, 0);
+        return shader;
+    }
+        
     /*
     //Create Position Buffer
     const vertexPosBuffer = gl.createBuffer();
@@ -98,6 +145,8 @@ function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgr
 }
 
 function TextureLoader(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
+    GlobalWebGLItems.GrassShader?.use();
+
     //Create Texture Loader
     const grassTexture = gl.createTexture();
     GlobalWebGLItems.grassTexture = grassTexture; 
@@ -138,6 +187,7 @@ function TextureLoader(gl : WebGLRenderingContext){//, shaderProgram : WebGLProg
 }
 
 function ShaderUniforms(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
+    //GlobalWebGLItems.GrassShader?.use();
     //Create Model Matrix
     let modelMatrix = glMatrix.mat4.create();
     const getModelUniform = GlobalWebGLItems.GrassShader?.getUniformLocation("u_modelMatrix")
@@ -178,9 +228,76 @@ function Update(gl: WebGLRenderingContext,)
 
 
     CameraManager();
+    {
+        GlobalWebGLItems.GrassShader?.use();
+        
+        //Position Buffer
+        const vertexPosBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, Cube3D.vertexPosData, gl.STATIC_DRAW);
+        GlobalWebGLItems.GrassShader?.enableAttrib("a_position");
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
+        GlobalWebGLItems.GrassShader?.setAttribPointer("a_position", 3, gl.FLOAT, false, 0, 0);
+    
+        //Color Buffer
+        const vertexColBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, Cube3D.uvPosData, gl.STATIC_DRAW);
+        GlobalWebGLItems.GrassShader?.enableAttrib("a_color");
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);
+        GlobalWebGLItems.GrassShader?.setAttribPointer("a_color", 4, gl.FLOAT, false, 0, 0);
 
-    Draw.DrawRotatingGrassBlock(gl, GlobalWebGLItems.Camera.projectionMatrix, glMatrix.vec3.fromValues(0, 0, 0));
-    Draw.Draw4x4GrassBlocks(gl, GlobalWebGLItems.Camera.projectionMatrix);
+        Draw.DrawRotatingGrassBlock(gl, GlobalWebGLItems.Camera.projectionMatrix, glMatrix.vec3.fromValues(0, 0, 0));
+        Draw.Draw4x4GrassBlocks(gl, GlobalWebGLItems.Camera.projectionMatrix);
+    }
+
+    
+    {
+        
+        GlobalWebGLItems.Shader2?.use();
+
+        //Position Buffer
+        const vertexPosBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        0.6, 0.9, 0.0,  // Top vertex
+        0.6, 0.6, 0.0,  // Bottom-left vertex
+        0.9, 0.6, 0.0,   // Bottom-right vertex
+        
+        0.6, 0.9, 0.0,  // Top vertex
+        0.9, 0.6, 0.0,   // Bottom-right vertex
+        0.9, 0.9, 0.0,  // Top-right vertex
+        ]), gl.STATIC_DRAW);
+
+        // Set up position attribute pointers for the mesh
+        //const positionAttributeLocation = grassShader.getAttribLocation("a_position");
+        GlobalWebGLItems.Shader2?.enableAttrib("a_position");
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
+        GlobalWebGLItems.Shader2?.setAttribPointer("a_position", 3, gl.FLOAT, false, 0, 0);
+
+        //Color Buffer
+        const vertexColBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            0.0, 1.0, 0.0, 1.0,  // Top vertex
+            0.0, 0.0, 0.0, 1.0, // Bottom-left vertex
+            1.0, 0.0, 0.0, 1.0, // Bottom-right vertex
+
+            0.0, 1.0, 0.0, 1.0,  // Top-Left vertex
+            1.0, 0.0, 0.0, 1.0, // Bottom-right vertex
+            1.0, 1.0, 0.0, 1.0, // Top-right vertex
+        ]), gl.STATIC_DRAW);
+
+        // Set up color attribute pointers for the mesh
+        GlobalWebGLItems.Shader2?.enableAttrib("a_color");
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);
+        GlobalWebGLItems.Shader2?.setAttribPointer("a_color", 4, gl.FLOAT, false, 0, 0);
+
+
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+    }
+    
+
 
     DebugMode();
 }

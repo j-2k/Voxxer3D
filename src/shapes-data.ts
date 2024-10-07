@@ -57,63 +57,62 @@ class Cube3D {          //Create Vertex Array
 
     //Create Vertex Colors Array
     static uvPosData = new Float32Array([
-        0.5, 1.0,   // Top-left (u, v)
-        0.5, 0.5,   // Bottom-left (u, v)
-        1.0, 0.5,   // Bottom-right (u, v)
-    
-        1.0, 0.5,   // Bottom-right (u, v)
-        1.0, 1.0,   // Top-right (u, v)
-        0.5, 1.0,    // Top-left (u, v)
+        0.5, 1.0, 0.0, 1.0,   // Top-left (u, v)
+        0.5, 0.5, 0.0, 1.0,   // Bottom-left (u, v)
+        1.0, 0.5, 0.0, 1.0,   // Bottom-right (u, v)
 
-        //
+        1.0, 0.5, 0.0, 1.0,   // Bottom-right (u, v)
+        1.0, 1.0, 0.0, 1.0,   // Top-right (u, v)
+        0.5, 1.0, 0.0, 1.0,    // Top-left (u, v)
 
-        0.5, 1.0,   // Top-left (u, v)
-        0.5, 0.5,   // Bottom-left (u, v)
-        1.0, 0.5,   // Bottom-right (u, v)
-    
-        1.0, 0.5,   // Bottom-right (u, v)
-        1.0, 1.0,   // Top-right (u, v)
-        0.5, 1.0,    // Top-left (u, v)
+        // 0.0, 1.0,
 
-        //
+        0.5, 1.0, 0.0, 1.0,   // Top-left (u, v)
+        0.5, 0.5, 0.0, 1.0,   // Bottom-left (u, v)
+        1.0, 0.5, 0.0, 1.0,   // Bottom-right (u, v)
 
-        0.5, 1.0,   // Top-left (u, v)
-        1.0, 0.5,   // Bottom-right (u, v)
-        0.5, 0.5,   // Bottom-left (u, v)
-            
-        1.0, 0.5,   // Bottom-right (u, v)
-        0.5, 1.0,    // Top-left (u, v)
-        1.0, 1.0,   // Top-right (u, v)
+        1.0, 0.5, 0.0, 1.0,   // Bottom-right (u, v)
+        1.0, 1.0, 0.0, 1.0,   // Top-right (u, v)
+        0.5, 1.0, 0.0, 1.0,    // Top-left (u, v)
 
-        //
+        // 0.0, 1.0,
 
-        0.5, 1.0,   // Top-left (u, v)
-        0.5, 0.5,   // Bottom-left (u, v)
-        1.0, 0.5,   // Bottom-right (u, v)
+        0.5, 1.0, 0.0, 1.0,   // Top-left (u, v)
+        1.0, 0.5, 0.0, 1.0,   // Bottom-right (u, v)
+        0.5, 0.5, 0.0, 1.0,   // Bottom-left (u, v)
 
-            
-        1.0, 0.5,   // Bottom-right (u, v)
-        1.0, 1.0,   // Top-right (u, v)
-        0.5, 1.0,    // Top-left (u, v)
+        1.0, 0.5, 0.0, 1.0,   // Bottom-right (u, v)
+        0.5, 1.0, 0.0, 1.0,    // Top-left (u, v)
+        1.0, 1.0, 0.0, 1.0,   // Top-right (u, v)
+
+        // 0.0, 1.0,
+
+        0.5, 1.0, 0.0, 1.0,   // Top-left (u, v)
+        0.5, 0.5, 0.0, 1.0,   // Bottom-left (u, v)
+        1.0, 0.5, 0.0, 1.0,   // Bottom-right (u, v)
+
+        1.0, 0.5, 0.0, 1.0,   // Bottom-right (u, v)
+        1.0, 1.0, 0.0, 1.0,   // Top-right (u, v)
+        0.5, 1.0, 0.0, 1.0,    // Top-left (u, v)
 
         // Hat
 
-        0.0, 1.0,   // Top-left (u, v)
-        0.0, 0.5,   // Bottom-left (u, v)
-        0.5, 0.5,   // Bottom-right (u, v)
-    
-        0.5, 0.5,   // Bottom-right (u, v)
-        0.5, 1.0,   // Top-right (u, v)
-        0.0, 1.0,    // Top-left (u, v)
+        0.0, 1.0, 0.0, 1.0,   // Top-left (u, v)
+        0.0, 0.5, 0.0, 1.0,   // Bottom-left (u, v)
+        0.5, 0.5, 0.0, 1.0,   // Bottom-right (u, v)
+
+        0.5, 0.5, 0.0, 1.0,   // Bottom-right (u, v)
+        0.5, 1.0, 0.0, 1.0,   // Top-right (u, v)
+        0.0, 1.0, 0.0, 1.0,    // Top-left (u, v)
 
         // Bottom
-        0.0, 0.5,   // Top-left (u, v)
-        0.5, 0.0,   // Bottom-right (u, v)
-        0.0, 0.0,   // Bottom-left (u, v)
-    
-        0.5, 0.0,   // Bottom-right (u, v)
-        0.0, 0.5,    // Top-left (u, v)
-        0.5, 0.5,   // Top-right (u, v)
+        0.0, 0.5, 0.0, 1.0,   // Top-left (u, v)
+        0.5, 0.0, 0.0, 1.0,   // Bottom-right (u, v)
+        0.0, 0.0, 0.0, 1.0,   // Bottom-left (u, v)
+
+        0.5, 0.0, 0.0, 1.0,   // Bottom-right (u, v)
+        0.0, 0.5, 0.0, 1.0,    // Top-left (u, v)
+        0.5, 0.5, 0.0, 1.0,   // Top-right (u, v)
     ]);
 }
 
