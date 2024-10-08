@@ -9,9 +9,9 @@ class Block {
     private active: boolean;
     private blockType: BlockType;
 
-    constructor() {
+    constructor(iniBlockType: BlockType = BlockType.Air) {
         this.active = false; // Default inactive
-        this.blockType = BlockType.Air; // Default block type
+        this.blockType = iniBlockType; // Default block type
     }
     
     // Check if block is active

@@ -231,17 +231,20 @@ function Update(gl: WebGLRenderingContext,)
     
     {
         GlobalWebGLItems.Shader2?.use();
+        // Setup uniforms
+        GlobalWebGLItems.Shader2?.setUniform2f("u_resolution", gl.canvas.width, gl.canvas.height);
+        GlobalWebGLItems.Shader2?.setUniform1f("u_time", Time.time);
 
         //Position Buffer
         const vertexPosBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-        0.6, 0.9, 0.0,  // Top vertex
-        0.6, 0.6, 0.0,  // Bottom-left vertex
-        0.9, 0.6, 0.0,   // Bottom-right vertex
+        0.4, 0.9, 0.0,  // Top vertex
+        0.4, 0.4, 0.0,  // Bottom-left vertex
+        0.9, 0.4, 0.0,   // Bottom-right vertex
         
-        0.6, 0.9, 0.0,  // Top vertex
-        0.9, 0.6, 0.0,   // Bottom-right vertex
+        0.4, 0.9, 0.0,  // Top vertex
+        0.9, 0.4, 0.0,   // Bottom-right vertex
         0.9, 0.9, 0.0,  // Top-right vertex
         ]), gl.STATIC_DRAW);
 
@@ -270,8 +273,10 @@ function Update(gl: WebGLRenderingContext,)
         GlobalWebGLItems.Shader2?.setAttribPointer("a_color", 4, gl.FLOAT, false, 0, 0);
 
 
+
         gl.drawArrays(gl.TRIANGLES, 0, 6);
 
+        //this isnt actually needed because the same exact attributes are being used in the grass shader, but i will keep it here for reference
         GlobalWebGLItems.Shader2?.disableAttrib("a_position");
         GlobalWebGLItems.Shader2?.disableAttrib("a_color");
     }
