@@ -5,6 +5,7 @@ import { Cube3D } from './shapes-data';
 import { CameraManager } from './camera';
 import { Shader } from './shader-master';
 import Draw from './shapes-draw';
+import { Chunk, Block, BlockType } from './voxel-engine/chunk-system';
 
 
 function EngineRenderer(gl : WebGLRenderingContext)
@@ -41,6 +42,8 @@ class GlobalWebGLItems{
         vertexPosBuffer : null as WebGLBuffer | null,
         vertexColBuffer : null as WebGLBuffer | null,
     }
+
+    public static chunkTest = new Chunk();
 }
 
 function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
@@ -113,6 +116,25 @@ function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgr
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);    //I missed this and it gave me some big issues! Buffers must be binded before setting up the vertex attributes.
         shader.setAttribPointer("a_color", 4, gl.FLOAT, false, 0, 0);
         return shader;
+    }
+
+    {
+        //ChunkShader
+        // Optionally, modify some blocks in the chunk
+        const chunk = GlobalWebGLItems.chunkTest;
+        for (let x = 0; x < Chunk.CHUNK_SIZE; x++) {
+            for (let y = 0; y < Chunk.CHUNK_SIZE; y++) {
+                for (let z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                    if (y === 0) { // Set the bottom layer to dirt for example
+                        chunk.m_pBlocks[x][y][z] = new Block(BlockType.Dirt);
+                    } else if (y === 1) { // Set the second layer to grass
+                        chunk.m_pBlocks[x][y][z] = new Block(BlockType.Grass);
+                    } else {
+                        chunk.m_pBlocks[x][y][z] = new Block(BlockType.Air); // Fill with air by default
+                    }
+                }
+            }
+        }
     }
         
     /*
@@ -281,7 +303,12 @@ function Update(gl: WebGLRenderingContext,)
         GlobalWebGLItems.Shader2?.disableAttrib("a_color");
     }
     
-
+    {
+        GlobalWebGLItems.Shader2?.use();
+        //Chunk
+        const chunk = GlobalWebGLItems.chunkTest;
+        chunk.render(gl, GlobalWebGLItems.Camera.viewMatrix, GlobalWebGLItems.Camera.projectionMatrix);
+    }
 
     DebugMode();
 }

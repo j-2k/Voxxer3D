@@ -8,12 +8,11 @@ uniform float u_time;
 
 //just asked mr AI about the thing I talked about above, and it said if its not used the compiler discards it LMFAO no idea if that is still real or not
 
-#define snowlayers 6.
-#define ITERS 6
+//#define snowlayers 6.
+//#define ITERS 6
 
 //Dave Hoskins 1x2 hash
-float hash12(vec2 p)
-{vec3 p3  = fract(vec3(p.xyx) * .1031);p3 += dot(p3, p3.yzx + 33.33);return fract((p3.x + p3.y) * p3.z);}
+//float hash12(vec2 p){vec3 p3  = fract(vec3(p.xyx) * .1031);p3 += dot(p3, p3.yzx + 33.33);return fract((p3.x + p3.y) * p3.z);}
 
 //Copy of my shader on Stoy https://www.shadertoy.com/view/MXBXDG
 void main() {
@@ -21,7 +20,12 @@ void main() {
     float compiler = u_time + u_resolution.x; compiler = 0.0;
     /* if the verts need to be placed better just used canvas coords or do aspect ratio calc in the vert shader.
     float aspectRatio = res.x / res.y;    */
+//
+    gl_FragColor = vec4(0.0,1.0,0.0,1.0);
+}
 
+/*
+{
     vec2 uv = v_color.xy;
     uv.x *= u_resolution.x/u_resolution.y;
     float t = u_time * 0.05;
@@ -55,4 +59,4 @@ void main() {
     
     // Set the output color
     gl_FragColor = vec4(snow,1.0);
-}
+}*/

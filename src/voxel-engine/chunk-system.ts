@@ -1,9 +1,10 @@
 import { GlobalWebGLItems } from '../renderer';
 import { Block, BlockType } from './block';
+import * as glMatrix from 'gl-matrix'
 
 class Chunk {
     static readonly CHUNK_SIZE = 16;
-    private m_pBlocks: Block[][][]; // 3D array for blocks
+    public m_pBlocks: Block[][][]; // 3D array for blocks
     private vertexBuffer: WebGLBuffer | null = null;
     private vertexCount: number = 0;
 
@@ -120,17 +121,26 @@ class Chunk {
         // Create buffers only if we have vertices to render
         if (vertices.length > 0) {
             const gl = GlobalWebGLItems.GL;
+            const s = GlobalWebGLItems.Shader2;
 
             this.vertexBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER,this.vertexBuffer);
             gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vertices),gl.STATIC_DRAW);
 
-            gl.enableVertexAttribArray(0);
-            gl.vertexAttribPointer(0 ,3 ,gl.FLOAT,false ,3 * Float32Array.BYTES_PER_ELEMENT ,0);
+            s?.enableAttrib("a_position");
+            gl.bindBuffer(gl.ARRAY_BUFFER,this.vertexBuffer);
+            s?.setAttribPointer("a_position" ,3 ,gl.FLOAT,false ,3 * Float32Array.BYTES_PER_ELEMENT ,0);
+            
+            // Set up color attribute pointers for the mesh
+            s?.enableAttrib("a_color");
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+            s?.setAttribPointer("a_color", 3, gl.FLOAT, false, 0, 0);
 
+            
             const indexBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,indexBuffer);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(indices),gl.STATIC_DRAW);
+            
         }
     }
 
@@ -157,20 +167,44 @@ class Chunk {
             vertices.push(vertex[1] + y);
             vertices.push(vertex[2] + z);
         }
-    
+
+        
         // Add indices for the two triangles that make up the face
         indices.push(startIndex + 2, startIndex + 1, startIndex + 3);
         indices.push(startIndex + 3, startIndex + 2, startIndex);
+        
     }
 
-    public render(gl: WebGLRenderingContext): void {
+    public render(gl: WebGLRenderingContext, viewMatrix: glMatrix.mat4, projectionMatrix: glMatrix.mat4): void {
         if (!this.vertexBuffer) return;
+        const s = GlobalWebGLItems.Shader2;
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        
+        // Set up the model matrix for this chunk
+        const modelMatrix = glMatrix.mat4.create(); // Implement this method to return a model matrix
 
-        gl.bindBuffer(gl.ARRAY_BUFFER,this.vertexBuffer);
+        // Calculate MVP matrix
+        const mvpMatrix = this.calculateMVP(modelMatrix, viewMatrix, projectionMatrix);
+
+        // Pass MVP matrix to shader (assuming you have a shader program setup)
+        s?.setUniformMatrix4fv("u_MVP", mvpMatrix);
+
+        gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount);
         
-        gl.drawArrays(gl.TRIANGLES ,0,this.vertexCount);
-        
-        gl.bindBuffer(gl.ARRAY_BUFFER,null); // Unbind buffer after rendering
+        gl.bindBuffer(gl.ARRAY_BUFFER, null); // Unbind buffer after rendering
+    }
+
+    private calculateMVP(modelMatrix: glMatrix.mat4, viewMatrix: glMatrix.mat4, projectionMatrix: glMatrix.mat4): glMatrix.mat4 {
+        const mvpMatrix = glMatrix.mat4.create(); // Assuming you're using gl-matrix or similar library
+    
+        // First multiply projection and view matrices
+        const viewProjectionMatrix = glMatrix.mat4.create();
+        glMatrix.mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
+    
+        // Then multiply with model matrix
+        glMatrix.mat4.multiply(mvpMatrix, viewProjectionMatrix, modelMatrix);
+    
+        return mvpMatrix;
     }
 
     public update(dt: number): void {
@@ -178,4 +212,4 @@ class Chunk {
     }
 }
 
-export { Chunk };
+export { Chunk, Block, BlockType };
