@@ -33,49 +33,47 @@ class GlobalWebGLItems{
 
     public static GL : WebGLRenderingContext;
 
-    public static GrassShader : Shader | undefined;
-    public static Shader2 : Shader | undefined;
+    
+    public static Shader2 : Shader | null;
+
+    public static GrassBlock = {
+        shader : null as Shader | null,
+        vertexPosBuffer : null as WebGLBuffer | null,
+        vertexColBuffer : null as WebGLBuffer | null,
+    }
 }
 
 function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
 
-    GlobalWebGLItems.GrassShader = GrassShaderInstance(gl);
+    GlobalWebGLItems.GrassBlock.shader = GrassShaderInstance(gl);
     function GrassShaderInstance  (gl : WebGLRenderingContext)  {
         const grassShader : Shader = new Shader(gl, Materials.Unlit.vertexShader, Materials.Unlit.fragmentShader);
-        if(!grassShader){console.error("Failed to create grass shader in the start function of the renderer...");return;}
+        if(grassShader == null){console.error("Failed to create grass shader in the start function of the renderer...");return null;}
         grassShader.use();
-
+        const grassRef = GlobalWebGLItems.GrassBlock
+    
         //Position Buffer
-        const vertexPosBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
+        grassRef.vertexPosBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, grassRef.vertexPosBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, Cube3D.vertexPosData, gl.STATIC_DRAW);
-
-        // Set up position attribute pointers for the mesh
-        //const positionAttributeLocation = grassShader.getAttribLocation("a_position");
         grassShader.enableAttrib("a_position");
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
+        gl.bindBuffer(gl.ARRAY_BUFFER, grassRef.vertexPosBuffer);
         grassShader.setAttribPointer("a_position", 3, gl.FLOAT, false, 0, 0);
-
-
-
+    
         //Color Buffer
-        const vertexColBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);
+        grassRef.vertexColBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, grassRef.vertexColBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, Cube3D.uvPosData, gl.STATIC_DRAW);
-
-        // Set up color attribute pointers for the mesh
         grassShader.enableAttrib("a_color");
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);    //I missed this and it gave me some big issues! Buffers must be binded before setting up the vertex attributes.
+        gl.bindBuffer(gl.ARRAY_BUFFER, grassRef.vertexColBuffer);    //I missed this and it gave me some big issues! Buffers must be binded before setting up the vertex attributes.
         grassShader.setAttribPointer("a_color", 4, gl.FLOAT, false, 0, 0);
         return grassShader;
     }
-
     
-
     GlobalWebGLItems.Shader2 = Shader2Instance(gl);
     function Shader2Instance  (gl : WebGLRenderingContext)  {
         const shader : Shader = new Shader(gl, Materials.TestShader.vertexShader, Materials.TestShader.fragmentShader);
-        if(!shader){console.error("Failed to create shader2 in the start function of the renderer...");return;}
+        if(!shader){console.error("Failed to create shader2 in the start function of the renderer...");return null;}
         shader.use();
 
         //Position Buffer
@@ -145,7 +143,7 @@ function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgr
 }
 
 function TextureLoader(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
-    GlobalWebGLItems.GrassShader?.use();
+    GlobalWebGLItems.GrassBlock.shader?.use();
 
     //Create Texture Loader
     const grassTexture = gl.createTexture();
@@ -177,24 +175,24 @@ function TextureLoader(gl : WebGLRenderingContext){//, shaderProgram : WebGLProg
     // Get the location of the sampler uniform in the fragment shader
     const isUsingTextureUniforms = false
     if(isUsingTextureUniforms){
-        const samplerUniformLocation = GlobalWebGLItems.GrassShader?.getUniformLocation("u_texture");
+        const samplerUniformLocation = GlobalWebGLItems.GrassBlock.shader?.getUniformLocation("u_texture");
         if(samplerUniformLocation == undefined){console.error("Failed to get the sampler uniform location in the start function of the renderer...");return;}
         GlobalWebGLItems.samplerUniformLocation = samplerUniformLocation;
         // Set the texture unit (0 in this case)
-        GlobalWebGLItems.GrassShader?.setUniform1i("u_texture",0);
+        GlobalWebGLItems.GrassBlock.shader?.setUniform1i("u_texture",0);
     }
 
 }
 
 function ShaderUniforms(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
-    //GlobalWebGLItems.GrassShader?.use();
+    //GlobalWebGLItems.GrassBlock.shader?.use();
     //Create Model Matrix
     let modelMatrix = glMatrix.mat4.create();
-    const getModelUniform = GlobalWebGLItems.GrassShader?.getUniformLocation("u_modelMatrix")
+    const getModelUniform = GlobalWebGLItems.GrassBlock.shader?.getUniformLocation("u_modelMatrix")
     if (getModelUniform !== undefined) {
         GlobalWebGLItems.modelMatrixUniformLocation = getModelUniform;
     }
-    GlobalWebGLItems.GrassShader?.setUniformMatrix4fv("u_modelMatrix", modelMatrix);
+    GlobalWebGLItems.GrassBlock.shader?.setUniformMatrix4fv("u_modelMatrix", modelMatrix);
 
     //Create View Matrix
     let viewMatrix = glMatrix.mat4.create();
@@ -228,32 +226,10 @@ function Update(gl: WebGLRenderingContext,)
 
 
     CameraManager();
-    {
-        GlobalWebGLItems.GrassShader?.use();
-        
-        //Position Buffer
-        const vertexPosBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, Cube3D.vertexPosData, gl.STATIC_DRAW);
-        GlobalWebGLItems.GrassShader?.enableAttrib("a_position");
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
-        GlobalWebGLItems.GrassShader?.setAttribPointer("a_position", 3, gl.FLOAT, false, 0, 0);
-    
-        //Color Buffer
-        const vertexColBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, Cube3D.uvPosData, gl.STATIC_DRAW);
-        GlobalWebGLItems.GrassShader?.enableAttrib("a_color");
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);
-        GlobalWebGLItems.GrassShader?.setAttribPointer("a_color", 4, gl.FLOAT, false, 0, 0);
 
-        Draw.DrawRotatingGrassBlock(gl, GlobalWebGLItems.Camera.projectionMatrix, glMatrix.vec3.fromValues(0, 0, 0));
-        Draw.Draw4x4GrassBlocks(gl, GlobalWebGLItems.Camera.projectionMatrix);
-    }
-
+    GrassRenderingManager(gl);
     
     {
-        
         GlobalWebGLItems.Shader2?.use();
 
         //Position Buffer
@@ -295,6 +271,9 @@ function Update(gl: WebGLRenderingContext,)
 
 
         gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+        GlobalWebGLItems.Shader2?.disableAttrib("a_position");
+        GlobalWebGLItems.Shader2?.disableAttrib("a_color");
     }
     
 
@@ -303,9 +282,29 @@ function Update(gl: WebGLRenderingContext,)
 }
 
 
+const GrassRenderingManager = (gl : WebGLRenderingContext) : void => {
+    const grassRef = GlobalWebGLItems.GrassBlock;
+    grassRef.shader?.use();
+    
+    //Position Buffer
+    gl.bindBuffer(gl.ARRAY_BUFFER, grassRef.vertexPosBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, Cube3D.vertexPosData, gl.STATIC_DRAW);
+    grassRef.shader?.enableAttrib("a_position");
+    grassRef.shader?.setAttribPointer("a_position", 3, gl.FLOAT, false, 0, 0);
 
+    //Color Buffer
+    gl.bindBuffer(gl.ARRAY_BUFFER, grassRef.vertexColBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, Cube3D.uvPosData, gl.STATIC_DRAW);
+    grassRef.shader?.enableAttrib("a_color");
+    grassRef.shader?.setAttribPointer("a_color", 4, gl.FLOAT, false, 0, 0);
 
+    Draw.DrawRotatingGrassBlock(gl, GlobalWebGLItems.Camera.projectionMatrix, glMatrix.vec3.fromValues(0, 0, 0));
+    Draw.Draw4x4GrassBlocks(gl, GlobalWebGLItems.Camera.projectionMatrix);
 
+    //I hope this is correct, the logic is after i finishing drawing I disable the attribs to set new ones in the new coming shader
+    grassRef.shader?.disableAttrib("a_position");
+    grassRef.shader?.disableAttrib("a_color");
+}
 
 
 
