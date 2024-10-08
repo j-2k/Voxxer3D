@@ -43,7 +43,7 @@ class GlobalWebGLItems{
         vertexColBuffer : null as WebGLBuffer | null,
     }
 
-    public static chunkTest = new Chunk();
+    //public static chunkTest = new Chunk();
 }
 
 function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
@@ -78,6 +78,14 @@ function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgr
         const shader : Shader = new Shader(gl, Materials.TestShader.vertexShader, Materials.TestShader.fragmentShader);
         if(!shader){console.error("Failed to create shader2 in the start function of the renderer...");return null;}
         shader.use();
+        
+        
+        /*//MVP
+        let modelMatrix = glMatrix.mat4.create();
+        //glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(0.0, 0.0, -.1));
+        //glMatrix.mat4.scale(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(0.2, 0.2, 0.2));
+        GlobalWebGLItems.Shader2?.setUniformMatrix4fv("u_MVP", modelMatrix);
+        //*/
 
         //Position Buffer
         const vertexPosBuffer = gl.createBuffer();
@@ -275,6 +283,26 @@ function Update(gl: WebGLRenderingContext,)
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);
         GlobalWebGLItems.Shader2?.setAttribPointer("a_color", 4, gl.FLOAT, false, 0, 0);
 
+        //MVP Matrix
+        let modelMatrix = glMatrix.mat4.create();
+
+        //Model Space TRS to world space
+        const s = Math.abs(Math.sin(Time.time*2)*.5 + 1.0);
+        glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(.5, .5, 0.0)); //final pos
+        glMatrix.mat4.scale(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(s,s,s));
+        glMatrix.mat4.rotateY(modelMatrix, modelMatrix, Math.sin(Time.time*4)*(3.14*0.25));
+        glMatrix.mat4.translate(modelMatrix,modelMatrix, glMatrix.vec3.fromValues(-0.4-0.25,-0.9+ 0.275, 0.0)); // offset
+        //You can try putting model matrix in the uniform itself to see it move in clipspace
+
+        //Final MVP Matrix
+        let mvpMatrix = glMatrix.mat4.create();
+        glMatrix.mat4.multiply(mvpMatrix, GlobalWebGLItems.Camera.projectionMatrix, GlobalWebGLItems.Camera.viewMatrix);
+        glMatrix.mat4.multiply(mvpMatrix, mvpMatrix, modelMatrix);
+
+        GlobalWebGLItems.Shader2?.setUniformMatrix4fv("u_MVP", mvpMatrix);
+
+
+        
 
 
         gl.drawArrays(gl.TRIANGLES, 0, 6);
