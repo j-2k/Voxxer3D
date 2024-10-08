@@ -117,25 +117,6 @@ function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgr
         shader.setAttribPointer("a_color", 4, gl.FLOAT, false, 0, 0);
         return shader;
     }
-
-    {
-        //ChunkShader
-        // Optionally, modify some blocks in the chunk
-        const chunk = GlobalWebGLItems.chunkTest;
-        for (let x = 0; x < Chunk.CHUNK_SIZE; x++) {
-            for (let y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                for (let z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                    if (y === 0) { // Set the bottom layer to dirt for example
-                        chunk.m_pBlocks[x][y][z] = new Block(BlockType.Dirt);
-                    } else if (y === 1) { // Set the second layer to grass
-                        chunk.m_pBlocks[x][y][z] = new Block(BlockType.Grass);
-                    } else {
-                        chunk.m_pBlocks[x][y][z] = new Block(BlockType.Air); // Fill with air by default
-                    }
-                }
-            }
-        }
-    }
         
     /*
     //Create Position Buffer
@@ -301,13 +282,6 @@ function Update(gl: WebGLRenderingContext,)
         //this isnt actually needed because the same exact attributes are being used in the grass shader, but i will keep it here for reference
         GlobalWebGLItems.Shader2?.disableAttrib("a_position");
         GlobalWebGLItems.Shader2?.disableAttrib("a_color");
-    }
-    
-    {
-        GlobalWebGLItems.Shader2?.use();
-        //Chunk
-        const chunk = GlobalWebGLItems.chunkTest;
-        chunk.render(gl, GlobalWebGLItems.Camera.viewMatrix, GlobalWebGLItems.Camera.projectionMatrix);
     }
 
     DebugMode();

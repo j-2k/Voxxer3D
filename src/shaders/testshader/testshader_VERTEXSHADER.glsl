@@ -1,10 +1,12 @@
 attribute vec3 a_position;
-attribute vec3 a_color;
-varying vec3 v_color;
+attribute vec4 a_color;
+varying vec4 v_color;
 
 uniform mat4 u_MVP;
 void main() {
     v_color = a_color;
-    
-    gl_Position = u_MVP * vec4(a_position, 1.0);
+    vec3 vertex_positions = a_position;
+    mat4 MVP = mat4(1);
+
+    gl_Position = MVP * vec4(vertex_positions, 1.0);
 }
