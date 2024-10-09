@@ -66,21 +66,27 @@ class Chunk {
         shader.setUniform1f("u_time", Time.time);
 
         //Position Buffer
-        const vertexPosBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-            0.4, 0.9, 0.0,  // Top vertex
-            0.4, 0.4, 0.0,  // Bottom-left vertex
-            0.9, 0.4, 0.0,   // Bottom-right vertex
+        const vertexBufferPos = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferPos);
+        const vertexBufferData = new Float32Array([
+            0.5, 1.0, 0.0,  // Top vertex
+            0.5, 0.5, 0.0,  // Bottom-left vertex
+            1.0, 0.5, 0.0,   // Bottom-right vertex
             
-            0.4, 0.9, 0.0,  // Top vertex
-            0.9, 0.4, 0.0,   // Bottom-right vertex
-            0.9, 0.9, 0.0,  // Top-right vertex
+            0.5, 1.0, 0.0,  // Top vertex
+            1.0, 0.5, 0.0,   // Bottom-right vertex
+            1.0, 1.0, 0.0,  // Top-right vertex
 
-            1.4, 1.9, 0.0,  // Top vertex
-            1.9, 1.4, 0.0,   // Bottom-right vertex
-            1.9, 1.9, 0.0,  // Top-right vertex
-        ]), gl.STATIC_DRAW);
+            0.5, 2.0, 0.0,  // Top vertex
+            0.5, 1.5, 0.0,  // Bottom-left vertex
+            1.0, 1.5, 0.0,   // Bottom-right vertex
+
+            0.5, 2.0, 0.0,  // Top vertex
+            1.0, 1.5, 0.0,   // Bottom-right vertex
+            1.0, 2.0, 0.0,  // Top-right vertex
+        ])
+        console.log(vertexBufferData.length/9);
+        gl.bufferData(gl.ARRAY_BUFFER, vertexBufferData, gl.STATIC_DRAW);
 
         // Flatten the vertex data (positions and normals) into a Float32Array
         //const flattenedVertices = flattenVertices(verticiesBuffer);
@@ -96,20 +102,28 @@ class Chunk {
         //Color Buffer
         const vertexColBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-            0.0, 1.0, 0.0, 1.0,  // Top vertex
-            0.0, 0.0, 0.0, 1.0, // Bottom-left vertex
-            1.0, 0.0, 0.0, 1.0, // Bottom-right vertex
 
-            0.0, 1.0, 0.0, 1.0,  // Top-Left vertex
-            1.0, 0.0, 0.0, 1.0, // Bottom-right vertex
-            1.0, 1.0, 0.0, 1.0, // Top-right vertex
+        const finalArray = [];
+        //For every 9 verts put a new array of vert UVs
+        for (let i = 0; i < vertexBufferData.length; i += 18) {
+            // Here you can process the chunk and generate 12 elements (whatever logic you need)
+            // For example, if you want to push 12 elements, we can just simulate that
+            const UV_QUAD = [
+                0.0, 1.0, 0.0, 1.0,  // Top vertex
+                0.0, 0.0, 0.0, 1.0, // Bottom-left vertex
+                1.0, 0.0, 0.0, 1.0, // Bottom-right vertex
 
-            0.0, 1.0, 0.0, 1.0,  // Top-Left vertex
-            1.0, 0.0, 0.0, 1.0, // Bottom-right vertex
-            1.0, 1.0, 0.0, 1.0, // Top-right vertex
-        ]), gl.STATIC_DRAW);
+                0.0, 1.0, 0.0, 1.0,  // Top-Left vertex
+                1.0, 0.0, 0.0, 1.0, // Bottom-right vertex
+                1.0, 1.0, 0.0, 1.0, // Top-right vertex
+            ]
+        
+            // Push the new 12 elements into the target array
+            finalArray.push(...UV_QUAD);
+        }
 
+        const vertexColBufferData = new Float32Array(finalArray)
+        gl.bufferData(gl.ARRAY_BUFFER, vertexColBufferData, gl.STATIC_DRAW);
         // Set up color attribute pointers for the mesh
         shader.enableAttrib("a_color");
         //gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);    //I missed this and it gave me some big issues! Buffers must be binded before setting up the vertex attributes.
@@ -133,7 +147,8 @@ class Chunk {
 
         shader.setUniformMatrix4fv("u_MVP", mvpMatrix);
 
-        gl.drawArrays(gl.TRIANGLES, 0, 3*3);
+        const triangleCounts = vertexBufferData.length/9;
+        gl.drawArrays(gl.TRIANGLES, 0, 3*triangleCounts);
 
         shader.disableAttrib("a_position");
         shader.disableAttrib("a_color");
@@ -196,12 +211,16 @@ function buildChunkMesh(chunk: Chunk): Vertex[] {
 
 // Helper function to create a face's vertices
 function createFace(x: number, y: number, z: number, normal: [number, number, number]): Vertex[] {
-    // Placeholder example: Create 4 vertices for a quad face (as two triangles)
     return [
-        { position: [x, y, z], normal },  // First triangle vertex
+        // First triangle (positions form one triangle)
+        { position: [x, y, z], normal },
         { position: [x + 1, y, z], normal },
         { position: [x, y + 1, z], normal },
-        { position: [x + 1, y + 1, z], normal },  // Second triangle vertex
+
+        // Second triangle (positions form second triangle)
+        { position: [x + 1, y, z], normal },
+        { position: [x + 1, y + 1, z], normal },
+        { position: [x, y + 1, z], normal }
     ];
 }
 
@@ -215,4 +234,4 @@ function flattenVertices(vertices: Vertex[]): Float32Array {
     return new Float32Array(flatArray);
 }
 
-export { Chunk, Block, BlockType };
+export { Chunk, Block, BlockType, buildChunkMesh };

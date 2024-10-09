@@ -5,7 +5,7 @@ import { Cube3D } from './shapes-data';
 import { CameraManager } from './camera';
 import { Shader } from './shader-master';
 import Draw from './shapes-draw';
-import { Chunk, Block, BlockType } from './voxel-engine/chunk-system';
+import { Chunk, Block, BlockType, buildChunkMesh } from './voxel-engine/chunk-system';
 
 
 function EngineRenderer(gl : WebGLRenderingContext)
@@ -315,7 +315,9 @@ function Update(gl: WebGLRenderingContext,)
         GlobalWebGLItems.Shader2?.disableAttrib("a_color");
     }
     
-    GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.Shader2);
+    const chunkDebug = GlobalWebGLItems.debugChunk;
+    const chunkMesh = buildChunkMesh(chunkDebug);
+    GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.Shader2, chunkMesh);
 
     DebugMode();
 }
