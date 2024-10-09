@@ -43,7 +43,7 @@ class GlobalWebGLItems{
         vertexColBuffer : null as WebGLBuffer | null,
     }
 
-    //public static chunkTest = new Chunk();
+    public static debugChunk = new Chunk();
 }
 
 function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
@@ -123,8 +123,15 @@ function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgr
         shader.enableAttrib("a_color");
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);    //I missed this and it gave me some big issues! Buffers must be binded before setting up the vertex attributes.
         shader.setAttribPointer("a_color", 4, gl.FLOAT, false, 0, 0);
+
+        GlobalWebGLItems.Shader2?.disableAttrib("a_position");
+        GlobalWebGLItems.Shader2?.disableAttrib("a_color");
         return shader;
     }
+
+    //const chunk = new Chunk();
+    //chunk.Render(gl, GlobalWebGLItems.Shader2);
+
         
     /*
     //Create Position Buffer
@@ -288,7 +295,7 @@ function Update(gl: WebGLRenderingContext,)
 
         //Model Space TRS to world space
         const s = Math.abs(Math.sin(Time.time*2)*.5 + 1.0);
-        glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(.5, .5, 0.0)); //final pos
+        glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(2.5, .5, 0.0)); //final pos
         glMatrix.mat4.scale(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(s,s,s));
         glMatrix.mat4.rotateY(modelMatrix, modelMatrix, Math.sin(Time.time*4)*(3.14*0.25));
         glMatrix.mat4.translate(modelMatrix,modelMatrix, glMatrix.vec3.fromValues(-0.4-0.25,-0.9+ 0.275, 0.0)); // offset
@@ -301,16 +308,14 @@ function Update(gl: WebGLRenderingContext,)
 
         GlobalWebGLItems.Shader2?.setUniformMatrix4fv("u_MVP", mvpMatrix);
 
-
-        
-
-
         gl.drawArrays(gl.TRIANGLES, 0, 6);
 
         //this isnt actually needed because the same exact attributes are being used in the grass shader, but i will keep it here for reference
         GlobalWebGLItems.Shader2?.disableAttrib("a_position");
         GlobalWebGLItems.Shader2?.disableAttrib("a_color");
     }
+    
+    GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.Shader2);
 
     DebugMode();
 }
