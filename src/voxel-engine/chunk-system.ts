@@ -85,7 +85,6 @@ class Chunk {
             1.0, 1.5, 0.0,   // Bottom-right vertex
             1.0, 2.0, 0.0,  // Top-right vertex
         ])
-        console.log(vertexBufferData.length/9);
         gl.bufferData(gl.ARRAY_BUFFER, vertexBufferData, gl.STATIC_DRAW);
 
         // Flatten the vertex data (positions and normals) into a Float32Array
@@ -104,10 +103,10 @@ class Chunk {
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);
 
         const finalArray = [];
-        //For every 9 verts put a new array of vert UVs
+        //For every 9 verts put a new array of vert UVs (now doubled)
         for (let i = 0; i < vertexBufferData.length; i += 18) {
-            // Here you can process the chunk and generate 12 elements (whatever logic you need)
-            // For example, if you want to push 12 elements, we can just simulate that
+            // Here you can process the chunk and generate 12 elements (whatever logic you need) (now doubled)
+            // For example, if you want to push 12 elements, we can just simulate that (now doubled)
             const UV_QUAD = [
                 0.0, 1.0, 0.0, 1.0,  // Top vertex
                 0.0, 0.0, 0.0, 1.0, // Bottom-left vertex
@@ -118,7 +117,7 @@ class Chunk {
                 1.0, 1.0, 0.0, 1.0, // Top-right vertex
             ]
         
-            // Push the new 12 elements into the target array
+            // Push the new 12 elements into the target array (now doubled)
             finalArray.push(...UV_QUAD);
         }
 
