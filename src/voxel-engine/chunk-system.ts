@@ -15,17 +15,17 @@ interface Vertex {
 }
 
 // List of possible face directions
-const FaceDirections = {
+const FaceDirections: { [key: string]: [number, number, number] } = {
     front: [0, 0, -1],
     back: [0, 0, 1],
     left: [-1, 0, 0],
     right: [1, 0, 0],
     top: [0, 1, 0],
     bottom: [0, -1, 0]
-}
+};
 
 class Chunk {
-    private chunkBlocks: Block[][][];
+    chunkBlocks: Block[][][];
 
     constructor() {
         // Create the blocks
@@ -57,7 +57,7 @@ class Chunk {
         // Update logic for the chunk, potentially involving block updates (isDirtyBoolean)
     }
 
-    public Render(gl: WebGLRenderingContext, shader: Shader | null): void {
+    public Render(gl: WebGLRenderingContext, shader: Shader | null, verticiesBuffer : Vertex[]): void {
         if(shader == null) {console.error("Hey monkey, the shader is null in the chunk.render function"); return;}
         shader.use();
 
@@ -76,12 +76,21 @@ class Chunk {
             0.4, 0.9, 0.0,  // Top vertex
             0.9, 0.4, 0.0,   // Bottom-right vertex
             0.9, 0.9, 0.0,  // Top-right vertex
+
+            1.4, 1.9, 0.0,  // Top vertex
+            1.9, 1.4, 0.0,   // Bottom-right vertex
+            1.9, 1.9, 0.0,  // Top-right vertex
         ]), gl.STATIC_DRAW);
 
-        // Set up position attribute pointers for the mesh
+        // Flatten the vertex data (positions and normals) into a Float32Array
+        //const flattenedVertices = flattenVertices(verticiesBuffer);
+        //gl.bufferData(gl.ARRAY_BUFFER, flattenedVertices, gl.STATIC_DRAW);
+
+        //Set up position attribute pointers for the mesh
         //const positionAttributeLocation = grassShader.getAttribLocation("a_position");
         shader.enableAttrib("a_position");
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
+        //gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
+        //const stride = 6 * Float32Array.BYTES_PER_ELEMENT; // 3 position + 3 normal
         shader.setAttribPointer("a_position", 3, gl.FLOAT, false, 0, 0);
 
         //Color Buffer
@@ -95,11 +104,15 @@ class Chunk {
             0.0, 1.0, 0.0, 1.0,  // Top-Left vertex
             1.0, 0.0, 0.0, 1.0, // Bottom-right vertex
             1.0, 1.0, 0.0, 1.0, // Top-right vertex
+
+            0.0, 1.0, 0.0, 1.0,  // Top-Left vertex
+            1.0, 0.0, 0.0, 1.0, // Bottom-right vertex
+            1.0, 1.0, 0.0, 1.0, // Top-right vertex
         ]), gl.STATIC_DRAW);
 
         // Set up color attribute pointers for the mesh
         shader.enableAttrib("a_color");
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);    //I missed this and it gave me some big issues! Buffers must be binded before setting up the vertex attributes.
+        //gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);    //I missed this and it gave me some big issues! Buffers must be binded before setting up the vertex attributes.
         shader.setAttribPointer("a_color", 4, gl.FLOAT, false, 0, 0);
 
         //MVP Matrix
@@ -120,7 +133,7 @@ class Chunk {
 
         shader.setUniformMatrix4fv("u_MVP", mvpMatrix);
 
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        gl.drawArrays(gl.TRIANGLES, 0, 3*3);
 
         shader.disableAttrib("a_position");
         shader.disableAttrib("a_color");
@@ -130,6 +143,76 @@ class Chunk {
 // Function to check if a face should be generated
 function shouldGenerateFace(blockType: BlockType, neighborType: BlockType): boolean {
     return blockType !== BlockType.Air && neighborType === BlockType.Air;
+}
+
+// Chunk Mesh Builder (Avoiding Inside Faces)
+function buildChunkMesh(chunk: Chunk): Vertex[] {
+    let vertices: Vertex[] = [];
+
+    for (let x = 0; x < CHUNK_WIDTH; x++) {
+        for (let y = 0; y < CHUNK_HEIGHT; y++) {
+            for (let z = 0; z < CHUNK_DEPTH; z++) {
+                const currentBlock = chunk.chunkBlocks[x][y][z];
+
+                // Skip air blocks or empty spaces
+                if (currentBlock.getBlockType() === BlockType.Air) {
+                    continue;
+                }
+
+                // Front face (-Z)
+                if (z === 0 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x][y][z - 1].getBlockType())) {
+                    vertices.push(...createFace(x, y, z, FaceDirections.front));
+                }
+
+                // Back face (+Z)
+                if (z === CHUNK_DEPTH - 1 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x][y][z + 1].getBlockType())) {
+                    vertices.push(...createFace(x, y, z, FaceDirections.back));
+                }
+
+                // Left face (-X)
+                if (x === 0 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x - 1][y][z].getBlockType())) {
+                    vertices.push(...createFace(x, y, z, FaceDirections.left));
+                }
+
+                // Right face (+X)
+                if (x === CHUNK_WIDTH - 1 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x + 1][y][z].getBlockType())) {
+                    vertices.push(...createFace(x, y, z, FaceDirections.right));
+                }
+
+                // Top face (+Y)
+                if (y === CHUNK_HEIGHT - 1 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x][y + 1][z].getBlockType())) {
+                    vertices.push(...createFace(x, y, z, FaceDirections.top));
+                }
+
+                // Bottom face (-Y)
+                if (y === 0 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x][y - 1][z].getBlockType())) {
+                    vertices.push(...createFace(x, y, z, FaceDirections.bottom));
+                }
+            }
+        }
+    }
+    return vertices;
+}
+
+// Helper function to create a face's vertices
+function createFace(x: number, y: number, z: number, normal: [number, number, number]): Vertex[] {
+    // Placeholder example: Create 4 vertices for a quad face (as two triangles)
+    return [
+        { position: [x, y, z], normal },  // First triangle vertex
+        { position: [x + 1, y, z], normal },
+        { position: [x, y + 1, z], normal },
+        { position: [x + 1, y + 1, z], normal },  // Second triangle vertex
+    ];
+}
+
+// Helper function to flatten vertex data into a Float32Array
+function flattenVertices(vertices: Vertex[]): Float32Array {
+    const flatArray: number[] = [];
+    for (const vertex of vertices) {
+        flatArray.push(...vertex.position);
+        flatArray.push(...vertex.normal);
+    }
+    return new Float32Array(flatArray);
 }
 
 export { Chunk, Block, BlockType };
