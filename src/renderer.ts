@@ -236,7 +236,14 @@ function Start(gl : WebGLRenderingContext)
 
     //Create Uniforms
     ShaderUniforms(gl);
+}
 
+function LoadDebugChunk(gl : WebGLRenderingContext)
+{
+    GlobalWebGLItems.ShaderChunk?.use();
+    const chunkDebug = GlobalWebGLItems.debugChunk;
+    const chunkMesh = buildChunkMesh(chunkDebug);
+    GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.ShaderChunk, chunkMesh);
 }
 
 function Update(gl: WebGLRenderingContext,)
@@ -318,10 +325,8 @@ function Update(gl: WebGLRenderingContext,)
         GlobalWebGLItems.Shader2?.disableAttrib("a_color");
     }
 
-    GlobalWebGLItems.ShaderChunk?.use();
-    const chunkDebug = GlobalWebGLItems.debugChunk;
-    const chunkMesh = buildChunkMesh(chunkDebug);
-    GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.ShaderChunk, chunkMesh);
+
+    LoadDebugChunk(gl);
 
     DebugMode();
 }

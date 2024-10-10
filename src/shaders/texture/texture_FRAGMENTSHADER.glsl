@@ -1,10 +1,14 @@
 precision mediump float;
 
-varying vec4 v_color;
+//varying vec4 v_color;
 varying vec3 v_normal;
+
+varying vec2 v_uv; // Receive UVs
 
 uniform vec2 u_resolution;
 uniform float u_time;
+
+
 
 //for some reason if you set uniforms and you dont use them in the shader
 //it will not compile, im guessing because of compiler optimization???? wtf no way that is happening here...
@@ -24,8 +28,9 @@ void main() {
 
     /* if the verts need to be placed better just used canvas coords or do aspect ratio calc in the vert shader.
     float aspectRatio = res.x / res.y;    */
-
-    vec2 uv = v_color.xy;
+    gl_FragColor = vec4(vec2(v_uv),0.,1.0);
+    /*
+    vec2 uv = v_uv.xy;
     vec2 cuv = uv;
     uv.x *= u_resolution.x/u_resolution.y;
     float t = u_time * 0.05;
@@ -65,10 +70,8 @@ void main() {
 
     bl = (1.0 - bl) * (0.5 + hash12(floor(cuv * 10.0)));
     vec3 sidecols = vec3(0.5, 0.7, 0.95) * bl;
-
-    // Apply the mask to snow
     snow *= maskCopy;
-
-    // Set the output color
-    gl_FragColor = vec4(snow + sidecols,1.0);
+    
+    
+    //gl_FragColor = vec4(snow+sidecols,1.0);*/
 }
