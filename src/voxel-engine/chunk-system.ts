@@ -119,13 +119,15 @@ class Chunk {
             // Here you can process the chunk and generate 12 elements (whatever logic you need) (now doubled)
             // For example, if you want to push 12 elements, we can just simulate that (now doubled)
             const UV_QUAD = [
-                0.0, 1.0, 0.0, 1.0,  // Top vertex
-                0.0, 0.0, 0.0, 1.0, // Bottom-left vertex
-                1.0, 0.0, 0.0, 1.0, // Bottom-right vertex
+                0.0, 0.0, 0.0, 1.0, // Top-right vertex
+                1.0, 0.0, 0.0, 1.0,  // Top-Left vertex
+                0.0, 1.0, 0.0, 1.0, // Bottom-right vertex
 
-                0.0, 1.0, 0.0, 1.0,  // Top-Left vertex
-                1.0, 0.0, 0.0, 1.0, // Bottom-right vertex
-                1.0, 1.0, 0.0, 1.0, // Top-right vertex
+
+
+                1.0, 0.0, 0.0, 1.0,  // Top vertex
+                1.0, 1.0, 0.0, 1.0, // Bottom-left vertex
+                0.0, 1.0, 0.0, 1.0, // Bottom-right vertex
             ]
         
             // Push the new 12 elements into the target array (now doubled)
