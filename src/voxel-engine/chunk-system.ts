@@ -4,9 +4,9 @@ import Time from '../time-manager';
 import { Block, BlockType } from './block';
 import * as glMatrix from 'gl-matrix'
 
-const CHUNK_WIDTH: number = 16;
-const CHUNK_HEIGHT: number = 16;
-const CHUNK_DEPTH: number = 16;
+const CHUNK_WIDTH: number = 8;
+const CHUNK_HEIGHT: number = 8;
+const CHUNK_DEPTH: number = 8;
 
 // Vertex data structure for the mesh
 interface Vertex {
@@ -101,13 +101,7 @@ class Chunk {
         shader.setAttribPointer("a_position", 3, gl.FLOAT, false, stride, 0);
 
         shader.enableAttrib("a_normal");
-        shader.setAttribPointer("a_normal",             
-            3,
-            gl.FLOAT,                 // Data type of each component
-            false,                    // Don't normalize
-            6 * Float32Array.BYTES_PER_ELEMENT, // Stride (3 for position + 3 for normal)
-            3 * Float32Array.BYTES_PER_ELEMENT  // Offset to the normal data
-        );
+        shader.setAttribPointer("a_normal", 3, gl.FLOAT, false, stride, 3 * Float32Array.BYTES_PER_ELEMENT);
 
         //Color Buffer
         const vertexColBuffer = gl.createBuffer();
@@ -123,8 +117,6 @@ class Chunk {
                 1.0, 0.0, 0.0, 1.0,  // Top-Left vertex
                 0.0, 1.0, 0.0, 1.0, // Bottom-right vertex
 
-
-
                 1.0, 0.0, 0.0, 1.0,  // Top vertex
                 1.0, 1.0, 0.0, 1.0, // Bottom-left vertex
                 0.0, 1.0, 0.0, 1.0, // Bottom-right vertex
@@ -139,16 +131,17 @@ class Chunk {
         // Set up color attribute pointers for the mesh
         shader.enableAttrib("a_color");
         //gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);    //I missed this and it gave me some big issues! Buffers must be binded before setting up the vertex attributes.
-        shader.setAttribPointer("a_color", 4, gl.FLOAT, false, 0, 0);
+        shader.setAttribPointer("a_color", 4, gl.FLOAT, false,0,0);// 10 * Float32Array.BYTES_PER_ELEMENT, 6 * Float32Array.BYTES_PER_ELEMENT);
 
         //MVP Matrix
         let modelMatrix = glMatrix.mat4.create();
 
         //Model Space TRS to world space
         //const s = Math.abs(Math.sin(Time.time*2)*.01 + 1.0);
-        glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(.5, .5, -20)); //final pos
+        glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(-1.5, -1.5, -6)); //final pos
         //glMatrix.mat4.scale(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(s,s,s));
         //glMatrix.mat4.rotateY(modelMatrix, modelMatrix, Math.sin(Time.time*4)*(3.14*0.001));
+        glMatrix.mat4.rotateY(modelMatrix, modelMatrix, Math.PI*0.1);
         glMatrix.mat4.translate(modelMatrix,modelMatrix, glMatrix.vec3.fromValues(-0.4-0.25,-0.9+ 0.275, 0.0)); // offset
         //You can try putting model matrix in the uniform itself to see it move in clipspace
 
@@ -159,11 +152,12 @@ class Chunk {
 
         shader.setUniformMatrix4fv("u_MVP", mvpMatrix);
 
-        const triangleCounts = verticiesBuffer.length/9;
-        gl.drawArrays(gl.TRIANGLES, 0, triangleCounts* 3);
+        const triangleCounts = verticiesBuffer.length / (6 * 3); // Assuming 6 values per vertex (position + normal)
+        gl.drawArrays(gl.TRIANGLES, 0, 3*verticiesBuffer.length/9); // Draw the triangles
 
         shader.disableAttrib("a_position");
         shader.disableAttrib("a_color");
+        shader.disableAttrib("a_normal");
     }
 }
 

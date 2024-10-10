@@ -322,9 +322,6 @@ function Update(gl: WebGLRenderingContext,)
     const chunkDebug = GlobalWebGLItems.debugChunk;
     const chunkMesh = buildChunkMesh(chunkDebug);
     GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.ShaderChunk, chunkMesh);
-    GlobalWebGLItems.ShaderChunk?.disableAttrib("a_position");
-    GlobalWebGLItems.ShaderChunk?.disableAttrib("a_color");
-    GlobalWebGLItems.ShaderChunk?.disableAttrib("a_normal");
 
     DebugMode();
 }

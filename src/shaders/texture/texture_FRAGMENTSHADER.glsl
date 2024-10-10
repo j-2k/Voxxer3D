@@ -26,6 +26,7 @@ void main() {
     float aspectRatio = res.x / res.y;    */
 
     vec2 uv = v_color.xy;
+    vec2 cuv = uv;
     uv.x *= u_resolution.x/u_resolution.y;
     float t = u_time * 0.05;
 
@@ -48,14 +49,26 @@ void main() {
     
     s += 0.3;
     
-    float topmask = smoothstep(0.2, 0., uv.y);
-    s -= topmask / 5.;
+    //float topmask = smoothstep(0.2, 0., uv.y);
+    //s -= topmask / 5.;
     
-    float botsnow = smoothstep(0.2, 0., uv.y);
-    s += botsnow;
+    //float botsnow = smoothstep(0.2, 0., uv.y);
+    //s += botsnow;
     
     vec3 snow = vec3(s,s,1);
-    
+
+    vec2 scaledUV = cuv * 1.1; //2.1 for icey windows!
+    vec2 fractUV = fract(scaledUV);
+
+    float bl = step(0.1, fractUV.x) * step(0.1, fractUV.y);
+    float maskCopy = bl;  // Rename to better reflect the purpose
+
+    bl = (1.0 - bl) * (0.5 + hash12(floor(cuv * 10.0)));
+    vec3 sidecols = vec3(0.5, 0.7, 0.95) * bl;
+
+    // Apply the mask to snow
+    snow *= maskCopy;
+
     // Set the output color
-    gl_FragColor = vec4(snow,1.0);
+    gl_FragColor = vec4(snow + sidecols,1.0);
 }
