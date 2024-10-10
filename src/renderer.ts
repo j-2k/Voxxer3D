@@ -36,6 +36,7 @@ class GlobalWebGLItems{
 
     
     public static Shader2 : Shader | null;
+    public static ShaderChunk : Shader | null;
 
     public static GrassBlock = {
         shader : null as Shader | null,
@@ -128,6 +129,8 @@ function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgr
         GlobalWebGLItems.Shader2?.disableAttrib("a_color");
         return shader;
     }
+
+    GlobalWebGLItems.ShaderChunk = new Shader(gl, Materials.Texture.vertexShader, Materials.Texture.fragmentShader);
 
     //const chunk = new Chunk();
     //chunk.Render(gl, GlobalWebGLItems.Shader2);
@@ -314,10 +317,14 @@ function Update(gl: WebGLRenderingContext,)
         GlobalWebGLItems.Shader2?.disableAttrib("a_position");
         GlobalWebGLItems.Shader2?.disableAttrib("a_color");
     }
-    
+
+    GlobalWebGLItems.ShaderChunk?.use();
     const chunkDebug = GlobalWebGLItems.debugChunk;
     const chunkMesh = buildChunkMesh(chunkDebug);
-    GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.Shader2, chunkMesh);
+    GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.ShaderChunk, chunkMesh);
+    GlobalWebGLItems.ShaderChunk?.disableAttrib("a_position");
+    GlobalWebGLItems.ShaderChunk?.disableAttrib("a_color");
+    GlobalWebGLItems.ShaderChunk?.disableAttrib("a_normal");
 
     DebugMode();
 }

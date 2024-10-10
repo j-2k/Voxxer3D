@@ -5,7 +5,7 @@ import { Block, BlockType } from './block';
 import * as glMatrix from 'gl-matrix'
 
 const CHUNK_WIDTH: number = 16;
-const CHUNK_HEIGHT: number = 64;
+const CHUNK_HEIGHT: number = 16;
 const CHUNK_DEPTH: number = 16;
 
 // Vertex data structure for the mesh
@@ -68,6 +68,7 @@ class Chunk {
         //Position Buffer
         const vertexBufferPos = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferPos);
+        /*
         const vertexBufferData = new Float32Array([
             0.5, 1.0, 0.0,  // Top vertex
             0.5, 0.5, 0.0,  // Bottom-left vertex
@@ -77,26 +78,36 @@ class Chunk {
             1.0, 0.5, 0.0,   // Bottom-right vertex
             1.0, 1.0, 0.0,  // Top-right vertex
 
-            0.5, 2.0, 0.0,  // Top vertex
-            0.5, 1.5, 0.0,  // Bottom-left vertex
-            1.0, 1.5, 0.0,   // Bottom-right vertex
+            0.5, 1.5, 0.0,  // Top vertex
+            0.5, 1., 0.0,  // Bottom-left vertex
+            1.0, 1., 0.0,   // Bottom-right vertex
 
-            0.5, 2.0, 0.0,  // Top vertex
-            1.0, 1.5, 0.0,   // Bottom-right vertex
-            1.0, 2.0, 0.0,  // Top-right vertex
+            0.5, 1.5, 0.0,  // Top vertex
+            1.0, 1., 0.0,   // Bottom-right vertex
+            1.0, 1.5, 0.0,  // Top-right vertex
         ])
         gl.bufferData(gl.ARRAY_BUFFER, vertexBufferData, gl.STATIC_DRAW);
+        */
 
         // Flatten the vertex data (positions and normals) into a Float32Array
-        //const flattenedVertices = flattenVertices(verticiesBuffer);
-        //gl.bufferData(gl.ARRAY_BUFFER, flattenedVertices, gl.STATIC_DRAW);
+        const flattenedVertices = flattenVertices(verticiesBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, flattenedVertices, gl.STATIC_DRAW);
 
         //Set up position attribute pointers for the mesh
         //const positionAttributeLocation = grassShader.getAttribLocation("a_position");
         shader.enableAttrib("a_position");
         //gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
-        //const stride = 6 * Float32Array.BYTES_PER_ELEMENT; // 3 position + 3 normal
-        shader.setAttribPointer("a_position", 3, gl.FLOAT, false, 0, 0);
+        const stride = 6 * Float32Array.BYTES_PER_ELEMENT; // Stride (3 for position + 3 for normal)
+        shader.setAttribPointer("a_position", 3, gl.FLOAT, false, stride, 0);
+
+        shader.enableAttrib("a_normal");
+        shader.setAttribPointer("a_normal",             
+            3,
+            gl.FLOAT,                 // Data type of each component
+            false,                    // Don't normalize
+            6 * Float32Array.BYTES_PER_ELEMENT, // Stride (3 for position + 3 for normal)
+            3 * Float32Array.BYTES_PER_ELEMENT  // Offset to the normal data
+        );
 
         //Color Buffer
         const vertexColBuffer = gl.createBuffer();
@@ -104,7 +115,7 @@ class Chunk {
 
         const finalArray = [];
         //For every 9 verts put a new array of vert UVs (now doubled)
-        for (let i = 0; i < vertexBufferData.length; i += 18) {
+        for (let i = 0; i < verticiesBuffer.length; i += 18) {
             // Here you can process the chunk and generate 12 elements (whatever logic you need) (now doubled)
             // For example, if you want to push 12 elements, we can just simulate that (now doubled)
             const UV_QUAD = [
@@ -132,10 +143,10 @@ class Chunk {
         let modelMatrix = glMatrix.mat4.create();
 
         //Model Space TRS to world space
-        const s = Math.abs(Math.sin(Time.time*2)*.1 + 1.0);
-        //glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(.5, .5, .5)); //final pos
-        glMatrix.mat4.scale(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(s,s,s));
-        glMatrix.mat4.rotateY(modelMatrix, modelMatrix, Math.sin(Time.time*4)*(3.14*0.1));
+        //const s = Math.abs(Math.sin(Time.time*2)*.01 + 1.0);
+        glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(.5, .5, -20)); //final pos
+        //glMatrix.mat4.scale(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(s,s,s));
+        //glMatrix.mat4.rotateY(modelMatrix, modelMatrix, Math.sin(Time.time*4)*(3.14*0.001));
         glMatrix.mat4.translate(modelMatrix,modelMatrix, glMatrix.vec3.fromValues(-0.4-0.25,-0.9+ 0.275, 0.0)); // offset
         //You can try putting model matrix in the uniform itself to see it move in clipspace
 
@@ -146,8 +157,8 @@ class Chunk {
 
         shader.setUniformMatrix4fv("u_MVP", mvpMatrix);
 
-        const triangleCounts = vertexBufferData.length/9;
-        gl.drawArrays(gl.TRIANGLES, 0, 3*triangleCounts);
+        const triangleCounts = verticiesBuffer.length/9;
+        gl.drawArrays(gl.TRIANGLES, 0, triangleCounts* 3);
 
         shader.disableAttrib("a_position");
         shader.disableAttrib("a_color");
