@@ -242,8 +242,8 @@ function LoadDebugChunk(gl : WebGLRenderingContext)
 {
     GlobalWebGLItems.ShaderChunk?.use();
     const chunkDebug = GlobalWebGLItems.debugChunk;
-    const chunkMesh = buildChunkMesh(chunkDebug);
-    GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.ShaderChunk, chunkMesh);
+    //const chunkMesh = buildChunkMesh(chunkDebug);
+    GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.ShaderChunk, null);
 }
 
 function Update(gl: WebGLRenderingContext,)

@@ -63,7 +63,7 @@ class Chunk {
         // Update logic for the chunk, potentially involving block updates (isDirtyBoolean)
     }
 
-    public Render(gl: WebGLRenderingContext, shader: Shader | null, verticiesBuffer : Vertex[]): void {
+    public Render(gl: WebGLRenderingContext, shader: Shader | null, verticiesBuffer : Vertex[] | null = null): void {
         if(shader == null) {console.error("Hey monkey, the shader is null in the chunk.render function"); return;}
         shader.use();
 
@@ -74,7 +74,17 @@ class Chunk {
         //Position Buffer
         const vertexBufferPos = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferPos);
-        /*
+        const normal = [...FaceDirections["front"]] as [number, number, number]; // Convert to mutable tuple
+        const x=0, y=0 , z=0;
+        const fvData : Vertex[] = [
+            { position: [x, y, z], normal, uv: [0, 0] },           // Bottom-left
+            { position: [x + 1, y, z], normal, uv: [1, 0] },       // Bottom-right
+            { position: [x, y + 20, z], normal, uv: [0, 1] },       // Top-left
+
+            //{ position: [x + 1, y, z], normal, uv: [1, 0] },       // Bottom-right
+            //{ position: [x + 1, y + 1, z], normal, uv: [1, 1] },   // Top-right
+            //{ position: [x, y + 1, z], normal, uv: [0, 1] },       // Top-left
+        ]; 
         const vertexBufferData = new Float32Array([
             0.5, 1.0, 0.0,  // Top vertex
             0.5, 0.5, 0.0,  // Bottom-left vertex
@@ -92,18 +102,19 @@ class Chunk {
             1.0, 1., 0.0,   // Bottom-right vertex
             1.0, 1.5, 0.0,  // Top-right vertex
         ])
-        gl.bufferData(gl.ARRAY_BUFFER, vertexBufferData, gl.STATIC_DRAW);
-        */
+        const allVertBufferData = flattenVertices(fvData)
+        gl.bufferData(gl.ARRAY_BUFFER, allVertBufferData, gl.STATIC_DRAW);
+        
 
         // Flatten the vertex data (positions and normals) into a Float32Array
-        const flattenedVertices = flattenVertices(verticiesBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, flattenedVertices, gl.STATIC_DRAW);
+        //const flattenedVertices = flattenVertices(verticiesBuffer);
+        //gl.bufferData(gl.ARRAY_BUFFER, flattenedVertices, gl.STATIC_DRAW);
 
         //Set up position attribute pointers for the mesh
         //const positionAttributeLocation = grassShader.getAttribLocation("a_position");
         shader.enableAttrib("a_position");
         //gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
-        const stride = 6 * Float32Array.BYTES_PER_ELEMENT; // Stride (3 for position + 3 for normal)
+        const stride = 8 * Float32Array.BYTES_PER_ELEMENT; // Stride (3 for position + 3 for normal)
         shader.setAttribPointer("a_position", 3, gl.FLOAT, false, stride, 0);
 
         shader.enableAttrib("a_normal");
@@ -145,19 +156,18 @@ class Chunk {
 
 
         //UV Buffer
-        const vertexUVBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexUVBuffer);
-        
+  
         const uvData = [];
-        for (const vertex of verticiesBuffer) {
+        for (const vertex of fvData) {
             uvData.push(...vertex.uv); // Push UVs from the vertex buffer
         }
         const vertexUvBufferData = new Float32Array(uvData);
-        gl.bufferData(gl.ARRAY_BUFFER, vertexUvBufferData, gl.STATIC_DRAW);
+        
+        gl.bufferData(gl.ARRAY_BUFFER, allVertBufferData, gl.STATIC_DRAW);
 
         // Set up UV attribute pointers for the mesh
         shader.enableAttrib("a_uv"); // Ensure this is defined in your shader
-        shader.setAttribPointer("a_uv", 2, gl.FLOAT, false, 0, 0); // 2 components for UVs
+        shader.setAttribPointer("a_uv", 2, gl.FLOAT, false, stride, 6 * Float32Array.BYTES_PER_ELEMENT); // 2 components for UVs
 
         //MVP Matrix
         let modelMatrix = glMatrix.mat4.create();
@@ -179,8 +189,8 @@ class Chunk {
 
         shader.setUniformMatrix4fv("u_MVP", mvpMatrix);
 
-        const triangleCounts = verticiesBuffer.length / (6 * 3); // Assuming 6 values per vertex (position + normal)
-        gl.drawArrays(gl.TRIANGLES, 0, 6*1); // Draw the triangles
+        //const triangleCounts = verticiesBuffer.length / (6 * 3); // Assuming 6 values per vertex (position + normal)
+        gl.drawArrays(gl.TRIANGLES, 0, 3*1); // Draw the triangles
 
         shader.disableAttrib("a_position");
         shader.disableAttrib("a_uv");
