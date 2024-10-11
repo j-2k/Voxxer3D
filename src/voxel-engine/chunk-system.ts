@@ -76,16 +76,21 @@ class Chunk {
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferPos);
         const normal = [...FaceDirections["front"]] as [number, number, number]; // Convert to mutable tuple
         const x=0, y=0 , z=0;
-        const fvData : Vertex[] = [
+        const vertBufferDataRaw : Vertex[] = [
             { position: [x, y, z], normal, uv: [0, 0] },           // Bottom-left
             { position: [x + 1, y, z], normal, uv: [1, 0] },       // Bottom-right
-            { position: [x, y + 20, z], normal, uv: [0, 1] },       // Top-left
+            { position: [x, y + 1, z], normal, uv: [0, 1] },       // Top-left
 
+            { position: [x + 1, y + 1, z], normal, uv: [1, 1] },       // Top-right
+            
             //{ position: [x + 1, y, z], normal, uv: [1, 0] },       // Bottom-right
             //{ position: [x + 1, y + 1, z], normal, uv: [1, 1] },   // Top-right
             //{ position: [x, y + 1, z], normal, uv: [0, 1] },       // Top-left
         ]; 
-        const vertexBufferData = new Float32Array([
+        const vertBufferDataFlat = flattenVertices(vertBufferDataRaw)
+        gl.bufferData(gl.ARRAY_BUFFER, vertBufferDataFlat, gl.STATIC_DRAW);
+        
+        /*const vertexBufferData = new Float32Array([
             0.5, 1.0, 0.0,  // Top vertex
             0.5, 0.5, 0.0,  // Bottom-left vertex
             1.0, 0.5, 0.0,   // Bottom-right vertex
@@ -102,10 +107,8 @@ class Chunk {
             1.0, 1., 0.0,   // Bottom-right vertex
             1.0, 1.5, 0.0,  // Top-right vertex
         ])
-        const allVertBufferData = flattenVertices(fvData)
-        gl.bufferData(gl.ARRAY_BUFFER, allVertBufferData, gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, vertexBufferData, gl.STATIC_DRAW);*/
         
-
         // Flatten the vertex data (positions and normals) into a Float32Array
         //const flattenedVertices = flattenVertices(verticiesBuffer);
         //gl.bufferData(gl.ARRAY_BUFFER, flattenedVertices, gl.STATIC_DRAW);
@@ -117,55 +120,11 @@ class Chunk {
         const stride = 8 * Float32Array.BYTES_PER_ELEMENT; // Stride (3 for position + 3 for normal)
         shader.setAttribPointer("a_position", 3, gl.FLOAT, false, stride, 0);
 
+        // Normal attribute pointers setup
         shader.enableAttrib("a_normal");
         shader.setAttribPointer("a_normal", 3, gl.FLOAT, false, stride, 3 * Float32Array.BYTES_PER_ELEMENT);
 
-        /*
-        //Color Buffer
-        const vertexColBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);
-
-        const finalArray = [];
-        //For every 9 verts put a new array of vert UVs (now doubled)
-        for (let i = 0; i < verticiesBuffer.length; i += 18) {
-            // Here you can process the chunk and generate 12 elements (whatever logic you need) (now doubled)
-            // For example, if you want to push 12 elements, we can just simulate that (now doubled)
-            const UV_QUAD = [
-                // First triangle (bottom-left, top-left, bottom-right)
-                0.0, 0.0, 0.0, 1.0,   // Bottom-left vertex (u, v, 0.0, 1.0)
-                0.0, 1.0, 0.0, 1.0,   // Top-left vertex (u, v, 0.0, 1.0)
-                1.0, 0.0, 0.0, 1.0,   // Bottom-right vertex (u, v, 0.0, 1.0)
-            
-                // Second triangle (bottom-right, top-left, top-right)
-                1.0, 0.0, 0.0, 1.0,   // Bottom-right vertex (u, v, 0.0, 1.0)
-                0.0, 1.0, 0.0, 1.0,   // Top-left vertex (u, v, 0.0, 1.0)
-                1.0, 1.0, 0.0, 1.0    // Top-right vertex (u, v, 0.0, 1.0)
-            ];            
-        
-            // Push the new 12 elements into the target array (now doubled)
-            finalArray.push(...UV_QUAD);
-        }
-
-        const vertexColBufferData = new Float32Array(finalArray)
-        gl.bufferData(gl.ARRAY_BUFFER, vertexColBufferData, gl.STATIC_DRAW);
-        // Set up color attribute pointers for the mesh
-        shader.enableAttrib("a_color");
-        //gl.bindBuffer(gl.ARRAY_BUFFER, vertexColBuffer);    //I missed this and it gave me some big issues! Buffers must be binded before setting up the vertex attributes.
-        shader.setAttribPointer("a_color", 4, gl.FLOAT, false,0,0);// 10 * Float32Array.BYTES_PER_ELEMENT, 6 * Float32Array.BYTES_PER_ELEMENT);
-        */
-
-
-        //UV Buffer
-  
-        const uvData = [];
-        for (const vertex of fvData) {
-            uvData.push(...vertex.uv); // Push UVs from the vertex buffer
-        }
-        const vertexUvBufferData = new Float32Array(uvData);
-        
-        gl.bufferData(gl.ARRAY_BUFFER, allVertBufferData, gl.STATIC_DRAW);
-
-        // Set up UV attribute pointers for the mesh
+        // SUV attribute pointers setup
         shader.enableAttrib("a_uv"); // Ensure this is defined in your shader
         shader.setAttribPointer("a_uv", 2, gl.FLOAT, false, stride, 6 * Float32Array.BYTES_PER_ELEMENT); // 2 components for UVs
 
@@ -189,8 +148,19 @@ class Chunk {
 
         shader.setUniformMatrix4fv("u_MVP", mvpMatrix);
 
+        const triIndexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, triIndexBuffer);
+        const triIndices = new Uint16Array([0, 1, 2, 1, 3, 2]);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, triIndices, gl.STATIC_DRAW);
+
+        
+        gl.drawElements(gl.TRIANGLES ,triIndices.length, gl.UNSIGNED_SHORT, 0);
+        
+        //Wireframe rendering
+        //gl.drawElements(gl.LINE_LOOP, triIndices.length, gl.UNSIGNED_SHORT, 0);
+
         //const triangleCounts = verticiesBuffer.length / (6 * 3); // Assuming 6 values per vertex (position + normal)
-        gl.drawArrays(gl.TRIANGLES, 0, 3*1); // Draw the triangles
+        //gl.drawArrays(gl.TRIANGLES, 0, 3*2); // Draw the triangles
 
         shader.disableAttrib("a_position");
         shader.disableAttrib("a_uv");
@@ -207,7 +177,6 @@ function shouldGenerateFace(blockType: BlockType, neighborType: BlockType): bool
 // Chunk Mesh Builder (Avoiding Inside Faces)
 function buildChunkMesh(chunk: Chunk): Vertex[] {
     let vertices: Vertex[] = [];
-
     for (let x = 0; x < CHUNK_WIDTH; x++) {
         for (let y = 0; y < CHUNK_HEIGHT; y++) {
             for (let z = 0; z < CHUNK_DEPTH; z++) {
