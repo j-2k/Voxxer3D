@@ -74,21 +74,61 @@ class Chunk {
         //Position Buffer
         const vertexBufferPos = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferPos);
-        const normal = [...FaceDirections["front"]] as [number, number, number]; // Convert to mutable tuple
+        /*const normal = [...FaceDirections["front"]] as [number, number, number]; // Convert to mutable tuple
         const x=0, y=0 , z=0;
         const vertBufferDataRaw : Vertex[] = [
             { position: [x, y, z], normal, uv: [0, 0] },           // Bottom-left
             { position: [x + 1, y, z], normal, uv: [1, 0] },       // Bottom-right
             { position: [x, y + 1, z], normal, uv: [0, 1] },       // Top-left
-
             { position: [x + 1, y + 1, z], normal, uv: [1, 1] },       // Top-right
+
+            { position: [x, y + 1, z], normal, uv: [0, 0] },
+            { position: [x, y + 1, z + 1], normal, uv: [0, 1] },
+            { position: [x + 1, y + 1, z], normal, uv: [1, 0] },
+            { position: [x + 1, y + 1, z + 1], normal, uv: [1, 1] }
             
             //{ position: [x + 1, y, z], normal, uv: [1, 0] },       // Bottom-right
             //{ position: [x + 1, y + 1, z], normal, uv: [1, 1] },   // Top-right
             //{ position: [x, y + 1, z], normal, uv: [0, 1] },       // Top-left
-        ]; 
-        const vertBufferDataFlat = flattenVertices(vertBufferDataRaw)
-        gl.bufferData(gl.ARRAY_BUFFER, vertBufferDataFlat, gl.STATIC_DRAW);
+        ];*/ 
+        const indVerts = new Float32Array([
+            // Positions         // Normals          // UVs
+            -1.0, -1.0, -1.0,    0.0,  0.0, -1.0,    0.0, 0.0,  // 0: Bottom-left-back
+             1.0, -1.0, -1.0,    0.0,  0.0, -1.0,    1.0, 0.0,  // 1: Bottom-right-back
+             1.0,  1.0, -1.0,    0.0,  0.0, -1.0,    1.0, 1.0,  // 2: Top-right-back
+            -1.0,  1.0, -1.0,    0.0,  0.0, -1.0,    0.0, 1.0,  // 3: Top-left-back
+        
+            -1.0, -1.0,  1.0,    0.0,  0.0,  1.0,    0.0, 0.0,  // 4: Bottom-left-front
+             1.0, -1.0,  1.0,    0.0,  0.0,  1.0,    1.0, 0.0,  // 5: Bottom-right-front
+             1.0,  1.0,  1.0,    0.0,  0.0,  1.0,    1.0, 1.0,  // 6: Top-right-front
+            -1.0,  1.0,  1.0,    0.0,  0.0,  1.0,    0.0, 1.0,  // 7: Top-left-front
+        
+            // Left face
+            -1.0, -1.0,  1.0,   -1.0,  0.0,  0.0,    1.0, 0.0,  // 8: Bottom-left-front
+            -1.0, -1.0, -1.0,   -1.0,  0.0,  0.0,    0.0, 0.0,  // 9: Bottom-left-back
+            -1.0,  1.0, -1.0,   -1.0,  0.0,  0.0,    0.0, 1.0,  // 10: Top-left-back
+            -1.0,  1.0,  1.0,   -1.0,  0.0,  0.0,    1.0, 1.0,  // 11: Top-left-front
+        
+            // Right face
+             1.0, -1.0, -1.0,    1.0,  0.0,  0.0,    0.0, 0.0,  // 12: Bottom-right-back
+             1.0, -1.0,  1.0,    1.0,  0.0,  0.0,    1.0, 0.0,  // 13: Bottom-right-front
+             1.0,  1.0,  1.0,    1.0,  0.0,  0.0,    1.0, 1.0,  // 14: Top-right-front
+             1.0,  1.0, -1.0,    1.0,  0.0,  0.0,    0.0, 1.0,  // 15: Top-right-back
+        
+            // Top face
+            -1.0,  1.0, -1.0,    0.0,  1.0,  0.0,    0.0, 0.0,  // 16: Top-left-back
+             1.0,  1.0, -1.0,    0.0,  1.0,  0.0,    1.0, 0.0,  // 17: Top-right-back
+             1.0,  1.0,  1.0,    0.0,  1.0,  0.0,    1.0, 1.0,  // 18: Top-right-front
+            -1.0,  1.0,  1.0,    0.0,  1.0,  0.0,    0.0, 1.0,  // 19: Top-left-front
+        
+            // Bottom face
+            -1.0, -1.0, -1.0,    0.0, -1.0,  0.0,    0.0, 0.0,  // 20: Bottom-left-back
+             1.0, -1.0, -1.0,    0.0, -1.0,  0.0,    1.0, 0.0,  // 21: Bottom-right-back
+             1.0, -1.0,  1.0,    0.0, -1.0,  0.0,    1.0, 1.0,  // 22: Bottom-right-front
+            -1.0, -1.0,  1.0,    0.0, -1.0,  0.0,    0.0, 1.0   // 23: Bottom-left-front
+        ]);
+        //const vertBufferDataFlat = flattenVertices(vertBufferDataRaw)
+        gl.bufferData(gl.ARRAY_BUFFER, indVerts, gl.STATIC_DRAW);
         
         /*const vertexBufferData = new Float32Array([
             0.5, 1.0, 0.0,  // Top vertex
@@ -131,34 +171,42 @@ class Chunk {
         //MVP Matrix
         let modelMatrix = glMatrix.mat4.create();
 
-        //Model Space TRS to world space
-        //const s = Math.abs(Math.sin(Time.time*2)*.01 + 1.0);
+        //Model Space TRS to World space (Do All transformations under here before the Final MVP Matrix Stage!)
         glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(0,0,0)); //final pos
-        //glMatrix.mat4.scale(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(s,s,s));
-        //glMatrix.mat4.rotateY(modelMatrix, modelMatrix, Math.sin(Time.time*4)*(3.14*0.001));
-        //glMatrix.mat4.rotateX(modelMatrix, modelMatrix, Math.PI*-0.2);
-        //glMatrix.mat4.rotateY(modelMatrix, modelMatrix, Math.PI*0.1);
-        //glMatrix.mat4.translate(modelMatrix,modelMatrix, glMatrix.vec3.fromValues(-0.4-0.25,-0.9+ 0.275, 0.0)); // offset
-        //You can try putting model matrix in the uniform itself to see it move in clipspace
 
         //Final MVP Matrix
         let mvpMatrix = glMatrix.mat4.create();
         glMatrix.mat4.multiply(mvpMatrix, GlobalWebGLItems.Camera.projectionMatrix, GlobalWebGLItems.Camera.viewMatrix);
         glMatrix.mat4.multiply(mvpMatrix, mvpMatrix, modelMatrix);
-
+        
+        //You can try putting model matrix in the uniform itself to see it move in clipspace
         shader.setUniformMatrix4fv("u_MVP", mvpMatrix);
 
+        //Index Buffer
         const triIndexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, triIndexBuffer);
-        const triIndices = new Uint16Array([0, 1, 2, 1, 3, 2]);
+        const triIndices = new Uint16Array([
+            // Back face
+            0, 1, 2,  2, 3, 0,  // 0-1-2, 2-3-0
+            // Front face
+            4, 5, 6,  6, 7, 4,  // 4-5-6, 6-7-4
+            // Left face
+            4, 0, 3,  3, 7, 4,  // 4-0-3, 3-7-4
+            // Right face
+            1, 5, 6,  6, 2, 1,  // 1-5-6, 6-2-1
+            // Top face
+            3, 2, 6,  6, 7, 3,  // 3-2-6, 6-7-3
+            // Bottom face
+            4, 5, 1,  1, 0, 4   // 4-5-1, 1-0-4
+        ]);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, triIndices, gl.STATIC_DRAW);
 
-        
+        //Drawing mesh via indicies (Optimized for large meshes + no duplicated verticies)
         gl.drawElements(gl.TRIANGLES ,triIndices.length, gl.UNSIGNED_SHORT, 0);
-        
         //Wireframe rendering
         //gl.drawElements(gl.LINE_LOOP, triIndices.length, gl.UNSIGNED_SHORT, 0);
 
+        //Old draw triangles method without indicies (bad for performance on large meshes, chunks would be fine but I want to learn indicies)
         //const triangleCounts = verticiesBuffer.length / (6 * 3); // Assuming 6 values per vertex (position + normal)
         //gl.drawArrays(gl.TRIANGLES, 0, 3*2); // Draw the triangles
 
@@ -224,6 +272,83 @@ function buildChunkMesh(chunk: Chunk): Vertex[] {
 
 let i = 0;
 let onerun = true;
+
+function createFaceIndicies(x: number, y: number, z: number, direction: FaceDirectionKey): Vertex[] {
+    
+    if(onerun)  {
+        console.log("CreateFace: " + direction + "Face: " + i);
+        i++;
+        if(i > 5) onerun = false;
+    }
+    
+    const normal = [...FaceDirections[direction]] as [number, number, number]; // Convert to mutable tuple
+    switch (direction) {
+        case "front":
+            return [
+                { position: [x, y, z], normal, uv: [0, 0] },           // Bottom-left
+                { position: [x + 1, y, z], normal, uv: [1, 0] },       // Bottom-right
+                { position: [x, y + 1, z], normal, uv: [0, 1] },       // Top-left
+
+                { position: [x + 1, y, z], normal, uv: [1, 0] },       // Bottom-right
+                { position: [x + 1, y + 1, z], normal, uv: [1, 1] },   // Top-right
+                { position: [x, y + 1, z], normal, uv: [0, 1] },       // Top-left
+            ];
+        case "back":
+            return [
+                { position: [x, y, z + 1], normal, uv: [0, 0] },
+                { position: [x + 1, y, z + 1], normal, uv: [1, 0] },
+                { position: [x, y + 1, z + 1], normal, uv: [0, 1] },
+
+                { position: [x + 1, y + 1, z + 1], normal, uv: [1, 1] },
+                { position: [x + 1, y, z + 1], normal, uv: [1, 0] },
+                { position: [x, y + 1, z + 1], normal, uv: [0, 1] },
+
+            ];
+        case "left":
+            return [
+                { position: [x, y, z], normal, uv: [0, 0] },
+                { position: [x, y, z + 1], normal, uv: [0, 1] },
+                { position: [x, y + 1, z], normal, uv: [1, 0] },
+
+                { position: [x, y, z + 1], normal, uv: [0, 1] },
+                { position: [x, y + 1, z + 1], normal, uv: [1, 1] },
+                { position: [x, y + 1, z], normal, uv: [1, 0] },
+            ];
+        case "right":
+            return [
+                { position: [x + 1, y, z], normal, uv: [0, 0] },
+                { position: [x + 1, y, z + 1], normal, uv: [0, 1] },
+                { position: [x + 1, y + 1, z], normal, uv: [1, 0] },
+
+                { position: [x + 1, y + 1, z], normal, uv: [1, 0] },
+                { position: [x + 1, y, z + 1], normal, uv: [0, 1] },
+                { position: [x + 1, y + 1, z + 1], normal, uv: [1, 1] },
+            ];
+        case "top":
+            return [
+                { position: [x, y + 1, z], normal, uv: [0, 0] },
+                { position: [x, y + 1, z + 1], normal, uv: [0, 1] },
+                { position: [x + 1, y + 1, z], normal, uv: [1, 0] },
+
+                { position: [x + 1, y + 1, z], normal, uv: [1, 0] },
+                { position: [x, y + 1, z + 1], normal, uv: [0, 1] },
+                { position: [x + 1, y + 1, z + 1], normal, uv: [1, 1] },
+            ];
+        case "bottom":
+            return [
+                { position: [x, y, z], normal, uv: [0, 0] },
+                { position: [x + 1, y, z], normal, uv: [1, 0] },
+                { position: [x, y, z + 1], normal, uv: [0, 1] },
+
+                { position: [x + 1, y, z], normal, uv: [1, 0] },
+                { position: [x + 1, y, z + 1], normal, uv: [1, 1] },
+                { position: [x, y, z + 1], normal, uv: [0, 1] },
+            ];
+        default:
+            return [];
+    }
+}
+
 function createFace(x: number, y: number, z: number, direction: FaceDirectionKey): Vertex[] {
     
     if(onerun)  {
