@@ -93,21 +93,23 @@ class Chunk {
         ];*/ 
         const indVerts = new Float32Array([
             // Positions         // Normals          // UVs
-            -1.0, -1.0, -1.0,    0.0,  0.0, -1.0,    0.0, 0.0,  // 0: Bottom-left-back
-             1.0, -1.0, -1.0,    0.0,  0.0, -1.0,    1.0, 0.0,  // 1: Bottom-right-back
-             1.0,  1.0, -1.0,    0.0,  0.0, -1.0,    1.0, 1.0,  // 2: Top-right-back
-            -1.0,  1.0, -1.0,    0.0,  0.0, -1.0,    0.0, 1.0,  // 3: Top-left-back
-        
+            // Back Face
+            -1.0, -1.0, -1.0,    0.0,  0.0, -1.0,    1.0, 0.0,  // 0: Bottom-left-back
+             1.0, -1.0, -1.0,    0.0,  0.0, -1.0,    0.0, 0.0,  // 1: Bottom-right-back
+             1.0,  1.0, -1.0,    0.0,  0.0, -1.0,    0.0, 1.0,  // 2: Top-right-back
+            -1.0,  1.0, -1.0,    0.0,  0.0, -1.0,    1.0, 1.0,  // 3: Top-left-back
+            
+            // Front Face
             -1.0, -1.0,  1.0,    0.0,  0.0,  1.0,    0.0, 0.0,  // 4: Bottom-left-front
              1.0, -1.0,  1.0,    0.0,  0.0,  1.0,    1.0, 0.0,  // 5: Bottom-right-front
              1.0,  1.0,  1.0,    0.0,  0.0,  1.0,    1.0, 1.0,  // 6: Top-right-front
             -1.0,  1.0,  1.0,    0.0,  0.0,  1.0,    0.0, 1.0,  // 7: Top-left-front
         
             // Left face
-            -1.0, -1.0,  1.0,   -1.0,  0.0,  0.0,    1.0, 0.0,  // 8: Bottom-left-front
+            -1.0, -1.0,  1.0,   -1.0,  0.0,  0.0,    0.0, 0.0,  // 8: Bottom-left-front
             -1.0, -1.0, -1.0,   -1.0,  0.0,  0.0,    0.0, 0.0,  // 9: Bottom-left-back
-            -1.0,  1.0, -1.0,   -1.0,  0.0,  0.0,    0.0, 1.0,  // 10: Top-left-back
-            -1.0,  1.0,  1.0,   -1.0,  0.0,  0.0,    1.0, 1.0,  // 11: Top-left-front
+            -1.0,  1.0, -1.0,   -1.0,  0.0,  0.0,    0.0, 0.0,  // 10: Top-left-back
+            -1.0,  1.0,  1.0,   -1.0,  0.0,  0.0,    0.0, 0.0,  // 11: Top-left-front
         
             // Right face
              1.0, -1.0, -1.0,    1.0,  0.0,  0.0,    0.0, 0.0,  // 12: Bottom-right-back
@@ -186,19 +188,20 @@ class Chunk {
         const triIndexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, triIndexBuffer);
         const triIndices = new Uint16Array([
-            // Back face
-            0, 1, 2,  2, 3, 0,  // 0-1-2, 2-3-0
-            // Front face
+            // Back face (remains unchanged)
+            0, 2, 1,  2, 0, 3,  // 0-1-2, 2-3-0
+            // Front face (remains unchanged)
             4, 5, 6,  6, 7, 4,  // 4-5-6, 6-7-4
-            // Left face
-            4, 0, 3,  3, 7, 4,  // 4-0-3, 3-7-4
-            // Right face
-            1, 5, 6,  6, 2, 1,  // 1-5-6, 6-2-1
-            // Top face
-            3, 2, 6,  6, 7, 3,  // 3-2-6, 6-7-3
-            // Bottom face
-            4, 5, 1,  1, 0, 4   // 4-5-1, 1-0-4
+            // Left face (flipped)
+            4, 3, 0,  3, 4, 7,  // 4-3-0, 3-4-7 (flipped from 4-0-3, 3-7-4)
+            // Right face (flipped)
+            1, 6, 5,  6, 1, 2,  // 1-6-5, 6-1-2 (flipped from 1-5-6, 6-2-1)
+            // Top face (flipped)
+            3, 6, 2,  6, 3, 7,  // 3-6-2, 6-3-7 (flipped from 3-2-6, 6-7-3)
+            // Bottom face (flipped)
+            4, 1, 5,  1, 4, 0   // 4-1-5, 1-4-0 (flipped from 4-5-1, 1-0-4)
         ]);
+        
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, triIndices, gl.STATIC_DRAW);
 
         //Drawing mesh via indicies (Optimized for large meshes + no duplicated verticies)
