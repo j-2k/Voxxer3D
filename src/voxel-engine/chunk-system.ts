@@ -91,46 +91,61 @@ class Chunk {
             //{ position: [x + 1, y + 1, z], normal, uv: [1, 1] },   // Top-right
             //{ position: [x, y + 1, z], normal, uv: [0, 1] },       // Top-left
         ];*/ 
-        const indVerts = new Float32Array([
+        const cubeVerts = new Float32Array([
             // Positions         // Normals          // UVs
             // Back Face
-            -1.0, -1.0, -1.0,    0.0,  0.0, -1.0,    1.0, 0.0,  // 0: Bottom-left-back
-             1.0, -1.0, -1.0,    0.0,  0.0, -1.0,    0.0, 0.0,  // 1: Bottom-right-back
-             1.0,  1.0, -1.0,    0.0,  0.0, -1.0,    0.0, 1.0,  // 2: Top-right-back
-            -1.0,  1.0, -1.0,    0.0,  0.0, -1.0,    1.0, 1.0,  // 3: Top-left-back
+            0.0, 0.0, 0.0,    0.0,  0.0, -1.0,    0.0, 0.0,  // Bottom-left-back
+            1.0, 0.0, 0.0,    0.0,  0.0, -1.0,    1.0, 0.0,  // Bottom-right-back
+            1.0, 1.0, 0.0,    0.0,  0.0, -1.0,    1.0, 1.0,  // Top-right-back
+            0.0, 1.0, 0.0,    0.0,  0.0, -1.0,    0.0, 1.0,  // Top-left-back
+        
+            // Front Face
+            0.0, 0.0,  1.0,    0.0,  0.0,  1.0,    0.0, 0.0,  // Bottom-left-front
+            1.0, 0.0,  1.0,    0.0,  0.0,  1.0,    1.0, 0.0,  // Bottom-right-front
+            1.0,  1.0,  1.0,    0.0,  0.0,  1.0,    1.0, 1.0,  // Top-right-front
+            0.0,  1.0,  1.0,    0.0,  0.0,  1.0,    0.0, 1.0,  // Top-left-front
+        
+            // Left Face
+            0.0, 0.0, 0.0,   -1.0,  0.0,  0.0,    0.0, 0.0,  // Bottom-left-back
+            0.0, 0.0, 1.0,   -1.0,  0.0,  0.0,    1.0, 0.0,  // Bottom-left-front
+            0.0, 1.0, 1.0,   -1.0,  0.0,  0.0,    1.0, 1.0,  // Top-left-front
+            0.0, 1.0, 0.0,   -1.0,  0.0,  0.0,    0.0, 1.0,  // Top-left-back
+        
+            // Right Face
+            1.0, 0.0, 0.0,    1.0,  0.0,  0.0,    0.0, 0.0,  // Bottom-right-back
+            1.0, 0.0, 1.0,    1.0,  0.0,  0.0,    1.0, 0.0,  // Bottom-right-front
+            1.0, 1.0, 1.0,    1.0,  0.0,  0.0,    1.0, 1.0,  // Top-right-front
+            1.0, 1.0, 0.0,    1.0,  0.0,  0.0,    0.0, 1.0,  // Top-right-back
+        
+            // Top Face
+            0.0, 1.0, 0.0,    0.0,  1.0,  0.0,    0.0, 0.0,  // Top-left-back
+            1.0, 1.0, 0.0,    0.0,  1.0,  0.0,    1.0, 0.0,  // Top-right-back
+            1.0, 1.0, 1.0,    0.0,  1.0,  0.0,    1.0, 1.0,  // Top-right-front
+            0.0, 1.0, 1.0,    0.0,  1.0,  0.0,    0.0, 1.0,  // Top-left-front
+        
+            // Bottom Face
+            0.0, 0.0, 0.0,    0.0, -1.0,  0.0,    0.0, 0.0,  // Bottom-left-back
+            1.0, 0.0, 0.0,    0.0, -1.0,  0.0,    1.0, 0.0,  // Bottom-right-back
+            1.0, 0.0, 1.0,    0.0, -1.0,  0.0,    1.0, 1.0,  // Bottom-right-front
+            0.0, 0.0, 1.0,    0.0, -1.0,  0.0,    0.0, 1.0   // Bottom-left-front
+        ]);
+        
+        const cubeVerts2 = new Float32Array([
+            // Positions         // Normals          // UVs
+            // Back Face
+            0.0, 0.0, 0.0,    0.0,  0.0, -1.0,    1.0, 0.0,  // 0: Bottom-left-back
+            1.0, 0.0, 0.0,    0.0,  0.0, -1.0,    0.0, 0.0,  // 1: Bottom-right-back
+            1.0, 1.0, 0.0,    0.0,  0.0, -1.0,    0.0, 1.0,  // 2: Top-right-back
+            0.0, 1.0, 0.0,    0.0,  0.0, -1.0,    .0, .0,  // 3: Top-left-back
             
             // Front Face
-            -1.0, -1.0,  1.0,    0.0,  0.0,  1.0,    0.0, 0.0,  // 4: Bottom-left-front
-             1.0, -1.0,  1.0,    0.0,  0.0,  1.0,    1.0, 0.0,  // 5: Bottom-right-front
-             1.0,  1.0,  1.0,    0.0,  0.0,  1.0,    1.0, 1.0,  // 6: Top-right-front
-            -1.0,  1.0,  1.0,    0.0,  0.0,  1.0,    0.0, 1.0,  // 7: Top-left-front
-        
-            // Left face
-            -1.0, -1.0,  1.0,   -1.0,  0.0,  0.0,    0.0, 0.0,  // 8: Bottom-left-front
-            -1.0, -1.0, -1.0,   -1.0,  0.0,  0.0,    0.0, 0.0,  // 9: Bottom-left-back
-            -1.0,  1.0, -1.0,   -1.0,  0.0,  0.0,    0.0, 0.0,  // 10: Top-left-back
-            -1.0,  1.0,  1.0,   -1.0,  0.0,  0.0,    0.0, 0.0,  // 11: Top-left-front
-        
-            // Right face
-             1.0, -1.0, -1.0,    1.0,  0.0,  0.0,    0.0, 0.0,  // 12: Bottom-right-back
-             1.0, -1.0,  1.0,    1.0,  0.0,  0.0,    1.0, 0.0,  // 13: Bottom-right-front
-             1.0,  1.0,  1.0,    1.0,  0.0,  0.0,    1.0, 1.0,  // 14: Top-right-front
-             1.0,  1.0, -1.0,    1.0,  0.0,  0.0,    0.0, 1.0,  // 15: Top-right-back
-        
-            // Top face
-            -1.0,  1.0, -1.0,    0.0,  1.0,  0.0,    0.0, 0.0,  // 16: Top-left-back
-             1.0,  1.0, -1.0,    0.0,  1.0,  0.0,    1.0, 0.0,  // 17: Top-right-back
-             1.0,  1.0,  1.0,    0.0,  1.0,  0.0,    1.0, 1.0,  // 18: Top-right-front
-            -1.0,  1.0,  1.0,    0.0,  1.0,  0.0,    0.0, 1.0,  // 19: Top-left-front
-        
-            // Bottom face
-            -1.0, -1.0, -1.0,    0.0, -1.0,  0.0,    0.0, 0.0,  // 20: Bottom-left-back
-             1.0, -1.0, -1.0,    0.0, -1.0,  0.0,    1.0, 0.0,  // 21: Bottom-right-back
-             1.0, -1.0,  1.0,    0.0, -1.0,  0.0,    1.0, 1.0,  // 22: Bottom-right-front
-            -1.0, -1.0,  1.0,    0.0, -1.0,  0.0,    0.0, 1.0   // 23: Bottom-left-front
+            0.0, 0.0,  1.0,    0.0,  0.0,  1.0,    0.0, 0.0,  // 4: Bottom-left-front
+            1.0, 0.0,  1.0,    0.0,  0.0,  1.0,    1.0, 0.0,  // 5: Bottom-right-front
+            1.0,  1.0,  1.0,    0.0,  0.0,  1.0,    1.0, 1.0,  // 6: Top-right-front
+            0.0,  1.0,  1.0,    0.0,  0.0,  1.0,    0.0, 1.0,  // 7: Top-left-front
         ]);
         //const vertBufferDataFlat = flattenVertices(vertBufferDataRaw)
-        gl.bufferData(gl.ARRAY_BUFFER, indVerts, gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, cubeVerts, gl.STATIC_DRAW);
         
         /*const vertexBufferData = new Float32Array([
             0.5, 1.0, 0.0,  // Top vertex
@@ -175,7 +190,7 @@ class Chunk {
 
         //Model Space TRS to World space (Do All transformations under here before the Final MVP Matrix Stage!)
         glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(0,0,0)); //final pos
-
+        glMatrix.mat4.rotateY(modelMatrix, modelMatrix, Math.PI*-0.3);
         //Final MVP Matrix
         let mvpMatrix = glMatrix.mat4.create();
         glMatrix.mat4.multiply(mvpMatrix, GlobalWebGLItems.Camera.projectionMatrix, GlobalWebGLItems.Camera.viewMatrix);
@@ -184,6 +199,7 @@ class Chunk {
         //You can try putting model matrix in the uniform itself to see it move in clipspace
         shader.setUniformMatrix4fv("u_MVP", mvpMatrix);
 
+        /*
         //Index Buffer
         const triIndexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, triIndexBuffer);
@@ -201,17 +217,19 @@ class Chunk {
             // Bottom face (flipped)
             4, 1, 5,  1, 4, 0   // 4-1-5, 1-4-0 (flipped from 4-5-1, 1-0-4)
         ]);
-        
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, triIndices, gl.STATIC_DRAW);
+        */
+        //gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, triIndices, gl.STATIC_DRAW);
 
         //Drawing mesh via indicies (Optimized for large meshes + no duplicated verticies)
-        gl.drawElements(gl.TRIANGLES ,triIndices.length, gl.UNSIGNED_SHORT, 0);
+        //gl.drawElements(gl.TRIANGLES ,triIndices.length, gl.UNSIGNED_SHORT, 0);
         //Wireframe rendering
         //gl.drawElements(gl.LINE_LOOP, triIndices.length, gl.UNSIGNED_SHORT, 0);
 
         //Old draw triangles method without indicies (bad for performance on large meshes, chunks would be fine but I want to learn indicies)
         //const triangleCounts = verticiesBuffer.length / (6 * 3); // Assuming 6 values per vertex (position + normal)
-        //gl.drawArrays(gl.TRIANGLES, 0, 3*2); // Draw the triangles
+        //gl.drawArrays(gl.TRIANGLES, 0, 3*8); // Draw the triangles
+
+        gl.drawArrays(gl.TRIANGLES, 0, 6*4);
 
         shader.disableAttrib("a_position");
         shader.disableAttrib("a_uv");
