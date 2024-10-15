@@ -1,5 +1,5 @@
 attribute vec3 a_position;
-attribute vec4 a_color;
+//attribute vec4 a_color;
 attribute vec3 a_normal;
 attribute vec2 a_uv;
 
