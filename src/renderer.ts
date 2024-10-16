@@ -318,13 +318,12 @@ function Update(gl: WebGLRenderingContext,)
 
         GlobalWebGLItems.Shader2?.setUniformMatrix4fv("u_MVP", mvpMatrix);
 
-        gl.drawArrays(gl.TRIANGLES, 0, 6*2);
+        gl.drawArrays(gl.TRIANGLES, 0, 6*1);
 
         //this isnt actually needed because the same exact attributes are being used in the grass shader, but i will keep it here for reference
         GlobalWebGLItems.Shader2?.disableAttrib("a_position");
         GlobalWebGLItems.Shader2?.disableAttrib("a_color");
     }
-
 
     LoadDebugChunk(gl);
 

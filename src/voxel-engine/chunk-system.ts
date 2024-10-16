@@ -214,7 +214,7 @@ class Chunk {
         //const triangleCounts = verticiesBuffer.length / (6 * 3); // Assuming 6 values per vertex (position + normal)
         //gl.drawArrays(gl.TRIANGLES, 0, 3*8); // Draw the triangles
 
-        gl.drawArrays(gl.TRIANGLES, 0, 36);
+        gl.drawArrays(gl.TRIANGLES, 0, 6*6);
 
         shader.disableAttrib("a_position");
         shader.disableAttrib("a_uv");
