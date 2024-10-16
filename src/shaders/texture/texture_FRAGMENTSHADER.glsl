@@ -2,7 +2,6 @@ precision mediump float;
 
 //varying vec4 v_color;
 varying vec3 v_normal;
-
 varying vec2 v_uv; // Receive UVs
 
 uniform vec2 u_resolution;
@@ -28,7 +27,8 @@ void main() {
 
     /* if the verts need to be placed better just used canvas coords or do aspect ratio calc in the vert shader.
     float aspectRatio = res.x / res.y;    */
-    gl_FragColor = vec4(vec2(v_uv),0.,1.0);
+    gl_FragColor = vec4(vec3(v_normal),1.0);
+    //gl_FragColor = vec4(vec2(v_uv),0.,1.0);
     /*
     vec2 uv = v_uv.xy;
     vec2 cuv = uv;

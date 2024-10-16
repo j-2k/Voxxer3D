@@ -131,7 +131,7 @@ class Chunk {
             1.0, 0.0, 1.0,    0.0, -1.0,  0.0,    1.0, 1.0,  // Bottom-right-front
             0.0, 0.0, 0.0,    0.0, -1.0,  0.0,    0.0, 0.0,  // Bottom-left-back
             1.0, 0.0, 1.0,    0.0, -1.0,  0.0,    1.0, 1.0,  // Bottom-right-front
-            0.0, 0.0, 1.0,    0.0, -1.0,  0.0,    0.0, 1.0   // Bottom-left-front
+            0.0, 0.0, 1.0,    0.0, -1.0,  0.0,    0.0, 1.0   // Bottom-left-front*/
         ]);
         
         gl.bufferData(gl.ARRAY_BUFFER, cubeTrianglesWithNormalsAndUVs, gl.STATIC_DRAW);
