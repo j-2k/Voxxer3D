@@ -5,7 +5,7 @@ import { InputManager } from "./input-manager";
 
 // Variables to hold mouse movement data
 let mouseSensitivity = 30; // Adjust this for sensitivity
-let yaw = -90; // Rotation around the Y-axis based on the X-axis of the mouse
+let yaw = 90;//-90; // Rotation around the Y-axis based on the X-axis of the mouse
 let pitch = 0; // Rotation around the X-axis based on the Y-axis of the mouse
 
 

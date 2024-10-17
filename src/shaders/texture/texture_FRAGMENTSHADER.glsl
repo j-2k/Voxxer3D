@@ -27,9 +27,13 @@ void main() {
 
     /* if the verts need to be placed better just used canvas coords or do aspect ratio calc in the vert shader.
     float aspectRatio = res.x / res.y;    */
+    //Debug Normals & UVs!
     //gl_FragColor = vec4(abs(v_normal),1.0);
-    gl_FragColor = vec4(vec2(step(1.,v_uv*2.)),0.,1.0);
-    /*
+    //gl_FragColor = vec4(vec2(step(1.,v_uv*2.)),0.,1.0);
+
+
+
+    
     vec2 uv = v_uv.xy;
     vec2 cuv = uv;
     uv.x *= u_resolution.x/u_resolution.y;
@@ -73,5 +77,6 @@ void main() {
     snow *= maskCopy;
     
     
-    //gl_FragColor = vec4(snow+sidecols,1.0);*/
+    gl_FragColor = vec4(snow+sidecols,1.0);
+    
 }

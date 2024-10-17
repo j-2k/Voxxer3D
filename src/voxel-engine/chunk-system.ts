@@ -83,7 +83,6 @@ class Chunk {
         shader.enableAttrib("a_position");
         shader.enableAttrib("a_uv"); // Ensure this is defined in your shader
         shader.enableAttrib("a_normal");
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferPos);
         const stride = 8 * Float32Array.BYTES_PER_ELEMENT; // Stride (3 for position + 3 for normal)
         shader.setAttribPointer("a_position", 3, gl.FLOAT, false, stride, 0);
         shader.setAttribPointer("a_normal", 3, gl.FLOAT, false, stride, 3 * Float32Array.BYTES_PER_ELEMENT);
@@ -94,7 +93,7 @@ class Chunk {
 
         //Model Space TRS to World space (Do All transformations under here before the Final MVP Matrix Stage!)
         glMatrix.mat4.scale(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(1,1,1));
-        glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(0,0,-4)); //final pos
+        glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(0,0,0)); //final pos
         glMatrix.mat4.rotateY(modelMatrix, modelMatrix, 0);//Math.PI*-0.1);
 
         //Final MVP Matrix
@@ -108,8 +107,9 @@ class Chunk {
 
         //Draw call
         //Mesh
-        const triCount = vertBufferDataFlat.length;
-        gl.drawArrays(gl.TRIANGLES, 0, 6*96);
+        //Going into every single array & counting in the vert buffer would prob be a bad idea, so instead i came up with this,
+        //const vb = 6 * (vertBufferDataFlat.length/8) / 6); //vb is to be put in the draw call but i noticed its just len/8
+        gl.drawArrays(gl.TRIANGLES, 0, vertBufferDataFlat.length / 8);
         //Wireframe
         //gl.drawArrays(gl.LINES, 0, 6*96);
 
@@ -254,8 +254,6 @@ function createFace(x: number, y: number, z: number, direction: FaceDirectionKey
             return [];
     }
 }
-
-
 
 // Helper function to flatten vertex data into a Float32Array (by flatten we mean put all the data side by side in a long line!)
 function flattenVertices(vertices: Vertex[]): Float32Array {

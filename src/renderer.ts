@@ -25,7 +25,7 @@ class GlobalWebGLItems{
     public static modelMatrixUniformLocation : WebGLUniformLocation | null = null;
 
     public static Camera = {
-        cameraPosition: new Float32Array([0, 0, 3]),  // Initial camera position
+        cameraPosition: new Float32Array([0, 0, -3]),  // Initial camera position
         cameraTarget: new Float32Array([0, 0, 0]),    // Camera target //CHECK THE CAMERA SCRIPT, THE YAW IS STARTING ON -90 DEGREES TO POINT IN THE -Z DIRECTION
         upDirection: new Float32Array([0, 1, 0]),      // Up direction
         viewMatrix : glMatrix.mat4.create(),
@@ -305,9 +305,9 @@ function Update(gl: WebGLRenderingContext,)
 
         //Model Space TRS to world space
         const s = Math.abs(Math.sin(Time.time*2)*.5 + 1.0);
-        glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(2.5, .5, 0.0)); //final pos
+        glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(2.5, .5, -1.0)); //final pos
         glMatrix.mat4.scale(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(s,s,s));
-        glMatrix.mat4.rotateY(modelMatrix, modelMatrix, Math.sin(Time.time*4)*(3.14*0.25));
+        glMatrix.mat4.rotateY(modelMatrix, modelMatrix, Math.sin(Time.time*4)*(3.14*0.25)+Math.PI);
         glMatrix.mat4.translate(modelMatrix,modelMatrix, glMatrix.vec3.fromValues(-0.4-0.25,-0.9+ 0.275, 0.0)); // offset
         //You can try putting model matrix in the uniform itself to see it move in clipspace
 
