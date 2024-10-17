@@ -108,6 +108,7 @@ class Chunk {
 
         //Draw call
         //Mesh
+        const triCount = vertBufferDataFlat.length;
         gl.drawArrays(gl.TRIANGLES, 0, 6*96);
         //Wireframe
         //gl.drawArrays(gl.LINES, 0, 6*96);
@@ -185,14 +186,14 @@ function createFace(x: number, y: number, z: number, direction: FaceDirectionKey
     switch (direction) {
         case "front":
             return [
-                { position: [x, y, z], normal, uv: [0, 0] },           // Bottom-left
-                { position: [x, y + size, z], normal, uv: [0, 1] },       // Top-left
+                { position: [x, y, z], normal, uv: [1, 0] },           // Bottom-left
+                { position: [x, y + size, z], normal, uv: [1, 1] },       // Top-left
                 { position: [x + size, y, z], normal, uv: [0, 0] },       // Bottom-right
                 
 
                 { position: [x + size, y, z], normal, uv: [0, 0] },       // Bottom-right
-                { position: [x, y + size, z], normal, uv: [0, 1] },       // Top-left
-                { position: [x + size, y + size, z], normal, uv: [1, 1] },   // Top-right
+                { position: [x, y + size, z], normal, uv: [1, 1] },       // Top-left
+                { position: [x + size, y + size, z], normal, uv: [0, 1] },   // Top-right
                 
             ];
         case "back":
@@ -210,44 +211,44 @@ function createFace(x: number, y: number, z: number, direction: FaceDirectionKey
         case "left":
             return [
                 { position: [x, y, z], normal, uv: [0, 0] },
-                { position: [x, y, z + size], normal, uv: [0, 1] },
-                { position: [x, y + size, z], normal, uv: [1, 0] },
+                { position: [x, y, z + size], normal, uv: [1, 0] },
+                { position: [x, y + size, z], normal, uv: [0, 1] },
 
-                { position: [x, y, z + size], normal, uv: [0, 1] },
+                { position: [x, y, z + size], normal, uv: [1, 0] },
                 { position: [x, y + size, z + size], normal, uv: [1, 1] },
-                { position: [x, y + size, z], normal, uv: [1, 0] },
+                { position: [x, y + size, z], normal, uv: [0, 1] },
             ];
         case "right":
             return [
-                { position: [x + size+1, y, z], normal, uv: [1, 0] },
-                { position: [x + size+1, y + size, z], normal, uv: [1, 1] },
-                { position: [x + size+1, y, z + size], normal, uv: [0, 0] },
+                { position: [x + size, y, z], normal, uv: [1, 0] },
+                { position: [x + size, y + size, z], normal, uv: [1, 1] },
+                { position: [x + size, y, z + size], normal, uv: [0, 0] },
                 
 
-                { position: [x + size, y + size, z], normal, uv: [0, 1] },
-                { position: [x + size, y + size, z + size], normal, uv: [1, 1] },
+                { position: [x + size, y + size, z], normal, uv: [1, 1] },
+                { position: [x + size, y + size, z + size], normal, uv: [0, 1] },
                 { position: [x + size, y, z + size], normal, uv: [0, 0] },
                 
             ];
         case "top":
             return [
-                { position: [x, y + size, z], normal, uv: [0, 0] },
-                { position: [x, y + size, z + size], normal, uv: [0, 1] },
-                { position: [x + size, y + size, z], normal, uv: [1, 0] },
+                { position: [x, y + size, z], normal, uv: [1, 0] },
+                { position: [x, y + size, z + size], normal, uv: [1, 1] },
+                { position: [x + size, y + size, z], normal, uv: [0, 0] },
 
-                { position: [x + size, y + size, z], normal, uv: [1, 0] },
-                { position: [x, y + size, z + size], normal, uv: [0, 1] },
-                { position: [x + size, y + size, z + size], normal, uv: [1, 1] },
+                { position: [x + size, y + size, z], normal, uv: [0, 0] },
+                { position: [x, y + size, z + size], normal, uv: [1, 1] },
+                { position: [x + size, y + size, z + size], normal, uv: [0, 1] },
             ];
         case "bottom":
             return [
-                { position: [x, y, z], normal, uv: [0, 0] },
-                { position: [x + size, y, z], normal, uv: [1, 0] },
-                { position: [x, y, z + size], normal, uv: [0, 1] },
+                { position: [x, y, z], normal, uv: [1, 1] },
+                { position: [x + size, y, z], normal, uv: [0, 1] },
+                { position: [x, y, z + size], normal, uv: [1, 0] },
 
-                { position: [x + size, y, z], normal, uv: [1, 0] },
-                { position: [x + size, y, z + size], normal, uv: [1, 1] },
-                { position: [x, y, z + size], normal, uv: [0, 1] },
+                { position: [x + size, y, z], normal, uv: [0, 1] },
+                { position: [x + size, y, z + size], normal, uv: [0, 0] },
+                { position: [x, y, z + size], normal, uv: [1, 0] },
             ];
         default:
             return [];

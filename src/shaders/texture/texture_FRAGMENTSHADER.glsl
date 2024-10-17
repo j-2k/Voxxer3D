@@ -28,7 +28,7 @@ void main() {
     /* if the verts need to be placed better just used canvas coords or do aspect ratio calc in the vert shader.
     float aspectRatio = res.x / res.y;    */
     //gl_FragColor = vec4(abs(v_normal),1.0);
-    gl_FragColor = vec4(vec2(v_uv),0.,1.0);
+    gl_FragColor = vec4(vec2(step(1.,v_uv*2.)),0.,1.0);
     /*
     vec2 uv = v_uv.xy;
     vec2 cuv = uv;
