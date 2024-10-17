@@ -4,9 +4,9 @@ import Time from '../time-manager';
 import { Block, BlockType } from './block';
 import * as glMatrix from 'gl-matrix'
 
-const CHUNK_WIDTH: number = 1;
-const CHUNK_HEIGHT: number = 1;
-const CHUNK_DEPTH: number = 1;
+const CHUNK_WIDTH: number = 4;
+const CHUNK_HEIGHT: number = 4;
+const CHUNK_DEPTH: number = 4;
 
 // Vertex data structure for the mesh
 interface Vertex {
@@ -75,92 +75,11 @@ class Chunk {
         const vertexBufferPos = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferPos);
 
-        //if(verticiesBuffer == null) {return;}
-        //const vertBufferDataFlat = flattenVertices(verticiesBuffer);
-        const cubeTrianglesWithNormalsAndUVs = new Float32Array([
-            // Back Face (2 triangles)
-            // Positions         // Normals          // UVs
-            0.0, 0.0, 0.0,    0.0,  0.0, -1.0,    1.0, 0.0,  // Bottom-left-back
-            1.0, 1.0, 0.0,    0.0,  0.0, -1.0,    0.0, 1.0,  // Top-right-back
-            1.0, 0.0, 0.0,    0.0,  0.0, -1.0,    0.0, 0.0,  // Bottom-right-back
-
-            0.0, 0.0, 0.0,    0.0,  0.0, -1.0,    1.0, 0.0,  // Bottom-left-back
-            0.0, 1.0, 0.0,    0.0,  0.0, -1.0,    1.0, 1.0,  // Top-left-back
-            1.0, 1.0, 0.0,    0.0,  0.0, -1.0,    0.0, 1.0,  // Top-right-back
-
-        
-            // Front Face (2 triangles)
-            0.0, 0.0,  1.0,    0.0,  0.0,  1.0,    0.0, 0.0,  // Bottom-left-front
-            1.0, 0.0,  1.0,    0.0,  0.0,  1.0,    1.0, 0.0,  // Bottom-right-front
-            1.0, 1.0,  1.0,    0.0,  0.0,  1.0,    1.0, 1.0,  // Top-right-front
-            0.0, 0.0,  1.0,    0.0,  0.0,  1.0,    0.0, 0.0,  // Bottom-left-front
-            1.0, 1.0,  1.0,    0.0,  0.0,  1.0,    1.0, 1.0,  // Top-right-front
-            0.0, 1.0,  1.0,    0.0,  0.0,  1.0,    0.0, 1.0,  // Top-left-front
-        
-            // Left Face (2 triangles)
-            0.0, 0.0, 0.0,   -1.0,  0.0,  0.0,    0.0, 0.0,  // Bottom-left-back
-            0.0, 0.0, 1.0,   -1.0,  0.0,  0.0,    1.0, 0.0,  // Bottom-left-front
-            0.0, 1.0, 1.0,   -1.0,  0.0,  0.0,    1.0, 1.0,  // Top-left-front
-            0.0, 0.0, 0.0,   -1.0,  0.0,  0.0,    0.0, 0.0,  // Bottom-left-back
-            0.0, 1.0, 1.0,   -1.0,  0.0,  0.0,    1.0, 1.0,  // Top-left-front
-            0.0, 1.0, 0.0,   -1.0,  0.0,  0.0,    0.0, 1.0,  // Top-left-back
-        
-            // Right Face (2 triangles)
-            1.0, 0.0, 0.0,    1.0,  0.0,  0.0,    1.0, 0.0,  // Bottom-right-back
-            1.0, 1.0, 1.0,    1.0,  0.0,  0.0,    0.0, 1.0,  // Top-right-front
-            1.0, 0.0, 1.0,    1.0,  0.0,  0.0,    0.0, 0.0,  // Bottom-right-front
-
-            1.0, 0.0, 0.0,    1.0,  0.0,  0.0,    1.0, 0.0,  // Bottom-right-back
-            1.0, 1.0, 0.0,    1.0,  0.0,  0.0,    1.0, 1.0,  // Top-right-back
-            1.0, 1.0, 1.0,    1.0,  0.0,  0.0,    0.0, 1.0,  // Top-right-front
-
-        
-            // Top Face (2 triangles)
-            0.0, 1.0, 0.0,    0.0,  1.0,  0.0,    0.0, 0.0,  // Top-left-back
-            1.0, 1.0, 1.0,    0.0,  1.0,  0.0,    1.0, 1.0,  // Top-right-front
-            1.0, 1.0, 0.0,    0.0,  1.0,  0.0,    1.0, 0.0,  // Top-right-back
-
-            0.0, 1.0, 0.0,    0.0,  1.0,  0.0,    0.0, 0.0,  // Top-left-back
-            0.0, 1.0, 1.0,    0.0,  1.0,  0.0,    0.0, 1.0,  // Top-left-front
-            1.0, 1.0, 1.0,    0.0,  1.0,  0.0,    1.0, 1.0,  // Top-right-front
-
-        
-            // Bottom Face (2 triangles)
-            0.0, 0.0, 0.0,    0.0, -1.0,  0.0,    0.0, 0.0,  // Bottom-left-back
-            1.0, 0.0, 0.0,    0.0, -1.0,  0.0,    1.0, 0.0,  // Bottom-right-back
-            1.0, 0.0, 1.0,    0.0, -1.0,  0.0,    1.0, 1.0,  // Bottom-right-front
-            0.0, 0.0, 0.0,    0.0, -1.0,  0.0,    0.0, 0.0,  // Bottom-left-back
-            1.0, 0.0, 1.0,    0.0, -1.0,  0.0,    1.0, 1.0,  // Bottom-right-front
-            0.0, 0.0, 1.0,    0.0, -1.0,  0.0,    0.0, 1.0   // Bottom-left-front*/
-        ]);
-        
-        gl.bufferData(gl.ARRAY_BUFFER, cubeTrianglesWithNormalsAndUVs, gl.STATIC_DRAW);
-        //console.log(cubeTrianglesWithNormalsAndUVs.length);
-        /*const vertexBufferData = new Float32Array([
-            0.5, 1.0, 0.0,  // Top vertex
-            0.5, 0.5, 0.0,  // Bottom-left vertex
-            1.0, 0.5, 0.0,   // Bottom-right vertex
-            
-            0.5, 1.0, 0.0,  // Top vertex
-            1.0, 0.5, 0.0,   // Bottom-right vertex
-            1.0, 1.0, 0.0,  // Top-right vertex
-
-            0.5, 1.5, 0.0,  // Top vertex
-            0.5, 1., 0.0,  // Bottom-left vertex
-            1.0, 1., 0.0,   // Bottom-right vertex
-
-            0.5, 1.5, 0.0,  // Top vertex
-            1.0, 1., 0.0,   // Bottom-right vertex
-            1.0, 1.5, 0.0,  // Top-right vertex
-        ])
-        gl.bufferData(gl.ARRAY_BUFFER, vertexBufferData, gl.STATIC_DRAW);*/
-        
-        // Flatten the vertex data (positions and normals) into a Float32Array
-        //const flattenedVertices = flattenVertices(verticiesBuffer);
-        //gl.bufferData(gl.ARRAY_BUFFER, flattenedVertices, gl.STATIC_DRAW);
+        if(verticiesBuffer == null) {return;}
+        const vertBufferDataFlat = flattenVertices(verticiesBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, vertBufferDataFlat, gl.STATIC_DRAW);
 
         //Set up position attribute pointers for the mesh
-        //const positionAttributeLocation = grassShader.getAttribLocation("a_position");
         shader.enableAttrib("a_position");
         shader.enableAttrib("a_uv"); // Ensure this is defined in your shader
         shader.enableAttrib("a_normal");
@@ -174,8 +93,10 @@ class Chunk {
         let modelMatrix = glMatrix.mat4.create();
 
         //Model Space TRS to World space (Do All transformations under here before the Final MVP Matrix Stage!)
-        glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(0,0,0)); //final pos
-        glMatrix.mat4.rotateY(modelMatrix, modelMatrix, Math.PI*-0.1);
+        glMatrix.mat4.scale(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(1,1,1));
+        glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(0,0,-4)); //final pos
+        glMatrix.mat4.rotateY(modelMatrix, modelMatrix, 0);//Math.PI*-0.1);
+
         //Final MVP Matrix
         let mvpMatrix = glMatrix.mat4.create();
         glMatrix.mat4.multiply(mvpMatrix, GlobalWebGLItems.Camera.projectionMatrix, GlobalWebGLItems.Camera.viewMatrix);
@@ -184,37 +105,12 @@ class Chunk {
         //You can try putting model matrix in the uniform itself to see it move in clipspace
         shader.setUniformMatrix4fv("u_MVP", mvpMatrix);
 
-        /*
-        //Index Buffer
-        const triIndexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, triIndexBuffer);
-        const triIndices = new Uint16Array([
-            // Back face (remains unchanged)
-            0, 2, 1,  2, 0, 3,  // 0-1-2, 2-3-0
-            // Front face (remains unchanged)
-            4, 5, 6,  6, 7, 4,  // 4-5-6, 6-7-4
-            // Left face (flipped)
-            4, 3, 0,  3, 4, 7,  // 4-3-0, 3-4-7 (flipped from 4-0-3, 3-7-4)
-            // Right face (flipped)
-            1, 6, 5,  6, 1, 2,  // 1-6-5, 6-1-2 (flipped from 1-5-6, 6-2-1)
-            // Top face (flipped)
-            3, 6, 2,  6, 3, 7,  // 3-6-2, 6-3-7 (flipped from 3-2-6, 6-7-3)
-            // Bottom face (flipped)
-            4, 1, 5,  1, 4, 0   // 4-1-5, 1-4-0 (flipped from 4-5-1, 1-0-4)
-        ]);
-        */
-        //gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, triIndices, gl.STATIC_DRAW);
 
-        //Drawing mesh via indicies (Optimized for large meshes + no duplicated verticies)
-        //gl.drawElements(gl.TRIANGLES ,triIndices.length, gl.UNSIGNED_SHORT, 0);
-        //Wireframe rendering
-        //gl.drawElements(gl.LINE_LOOP, triIndices.length, gl.UNSIGNED_SHORT, 0);
-
-        //Old draw triangles method without indicies (bad for performance on large meshes, chunks would be fine but I want to learn indicies)
-        //const triangleCounts = verticiesBuffer.length / (6 * 3); // Assuming 6 values per vertex (position + normal)
-        //gl.drawArrays(gl.TRIANGLES, 0, 3*8); // Draw the triangles
-
-        gl.drawArrays(gl.TRIANGLES, 0, 6*6);
+        //Draw call
+        //Mesh
+        gl.drawArrays(gl.TRIANGLES, 0, 6*96);
+        //Wireframe
+        //gl.drawArrays(gl.LINES, 0, 6*96);
 
         shader.disableAttrib("a_position");
         shader.disableAttrib("a_uv");
@@ -224,8 +120,8 @@ class Chunk {
 
 // Function to check if a face should be generated
 function shouldGenerateFace(blockType: BlockType, neighborType: BlockType): boolean {
-    return true;
-    //return blockType !== BlockType.Air && neighborType === BlockType.Air;
+    //return true;
+    return blockType !== BlockType.Air && neighborType === BlockType.Air;
 }
 
 // Chunk Mesh Builder (Avoiding Inside Faces)
@@ -276,10 +172,8 @@ function buildChunkMesh(chunk: Chunk): Vertex[] {
     return vertices;
 }
 
-let i = 0;
-let onerun = true;
-
-function createFaceVerts(x: number, y: number, z: number, direction: FaceDirectionKey): Vertex[] {
+let i = 0, onerun = true;
+function createFace(x: number, y: number, z: number, direction: FaceDirectionKey, size: number = 1): Vertex[] {
     
     if(onerun)  {
         console.log("CreateFace: " + direction + "Face: " + i);
@@ -292,139 +186,68 @@ function createFaceVerts(x: number, y: number, z: number, direction: FaceDirecti
         case "front":
             return [
                 { position: [x, y, z], normal, uv: [0, 0] },           // Bottom-left
-                { position: [x + 1, y, z], normal, uv: [1, 0] },       // Bottom-right
-                { position: [x, y + 1, z], normal, uv: [0, 1] },       // Top-left
+                { position: [x, y + size, z], normal, uv: [0, 1] },       // Top-left
+                { position: [x + size, y, z], normal, uv: [0, 0] },       // Bottom-right
+                
 
-                { position: [x + 1, y, z], normal, uv: [1, 0] },       // Bottom-right
-                { position: [x + 1, y + 1, z], normal, uv: [1, 1] },   // Top-right
-                { position: [x, y + 1, z], normal, uv: [0, 1] },       // Top-left
+                { position: [x + size, y, z], normal, uv: [0, 0] },       // Bottom-right
+                { position: [x, y + size, z], normal, uv: [0, 1] },       // Top-left
+                { position: [x + size, y + size, z], normal, uv: [1, 1] },   // Top-right
+                
             ];
         case "back":
             return [
-                { position: [x, y, z + 1], normal, uv: [0, 0] },
-                { position: [x + 1, y, z + 1], normal, uv: [1, 0] },
-                { position: [x, y + 1, z + 1], normal, uv: [0, 1] },
+                { position: [x, y, z + size], normal, uv: [0, 0] },
+                { position: [x + size, y, z + size], normal, uv: [1, 0] },
+                { position: [x, y + size, z + size], normal, uv: [0, 1] },
 
-                { position: [x + 1, y + 1, z + 1], normal, uv: [1, 1] },
-                { position: [x + 1, y, z + 1], normal, uv: [1, 0] },
-                { position: [x, y + 1, z + 1], normal, uv: [0, 1] },
+                { position: [x + size, y + size, z + size], normal, uv: [1, 1] },
+                { position: [x, y + size, z + size], normal, uv: [0, 1] },
+                { position: [x + size, y, z + size], normal, uv: [1, 0] },
+
 
             ];
         case "left":
             return [
                 { position: [x, y, z], normal, uv: [0, 0] },
-                { position: [x, y, z + 1], normal, uv: [0, 1] },
-                { position: [x, y + 1, z], normal, uv: [1, 0] },
+                { position: [x, y, z + size], normal, uv: [0, 1] },
+                { position: [x, y + size, z], normal, uv: [1, 0] },
 
-                { position: [x, y, z + 1], normal, uv: [0, 1] },
-                { position: [x, y + 1, z + 1], normal, uv: [1, 1] },
-                { position: [x, y + 1, z], normal, uv: [1, 0] },
+                { position: [x, y, z + size], normal, uv: [0, 1] },
+                { position: [x, y + size, z + size], normal, uv: [1, 1] },
+                { position: [x, y + size, z], normal, uv: [1, 0] },
             ];
         case "right":
             return [
-                { position: [x + 1, y, z], normal, uv: [0, 0] },
-                { position: [x + 1, y, z + 1], normal, uv: [0, 1] },
-                { position: [x + 1, y + 1, z], normal, uv: [1, 0] },
+                { position: [x + size+1, y, z], normal, uv: [1, 0] },
+                { position: [x + size+1, y + size, z], normal, uv: [1, 1] },
+                { position: [x + size+1, y, z + size], normal, uv: [0, 0] },
+                
 
-                { position: [x + 1, y + 1, z], normal, uv: [1, 0] },
-                { position: [x + 1, y, z + 1], normal, uv: [0, 1] },
-                { position: [x + 1, y + 1, z + 1], normal, uv: [1, 1] },
+                { position: [x + size, y + size, z], normal, uv: [0, 1] },
+                { position: [x + size, y + size, z + size], normal, uv: [1, 1] },
+                { position: [x + size, y, z + size], normal, uv: [0, 0] },
+                
             ];
         case "top":
             return [
-                { position: [x, y + 1, z], normal, uv: [0, 0] },
-                { position: [x, y + 1, z + 1], normal, uv: [0, 1] },
-                { position: [x + 1, y + 1, z], normal, uv: [1, 0] },
+                { position: [x, y + size, z], normal, uv: [0, 0] },
+                { position: [x, y + size, z + size], normal, uv: [0, 1] },
+                { position: [x + size, y + size, z], normal, uv: [1, 0] },
 
-                { position: [x + 1, y + 1, z], normal, uv: [1, 0] },
-                { position: [x, y + 1, z + 1], normal, uv: [0, 1] },
-                { position: [x + 1, y + 1, z + 1], normal, uv: [1, 1] },
+                { position: [x + size, y + size, z], normal, uv: [1, 0] },
+                { position: [x, y + size, z + size], normal, uv: [0, 1] },
+                { position: [x + size, y + size, z + size], normal, uv: [1, 1] },
             ];
         case "bottom":
             return [
                 { position: [x, y, z], normal, uv: [0, 0] },
-                { position: [x + 1, y, z], normal, uv: [1, 0] },
-                { position: [x, y, z + 1], normal, uv: [0, 1] },
+                { position: [x + size, y, z], normal, uv: [1, 0] },
+                { position: [x, y, z + size], normal, uv: [0, 1] },
 
-                { position: [x + 1, y, z], normal, uv: [1, 0] },
-                { position: [x + 1, y, z + 1], normal, uv: [1, 1] },
-                { position: [x, y, z + 1], normal, uv: [0, 1] },
-            ];
-        default:
-            return [];
-    }
-}
-
-function createFace(x: number, y: number, z: number, direction: FaceDirectionKey): Vertex[] {
-    
-    if(onerun)  {
-        console.log("CreateFace: " + direction + "Face: " + i);
-        i++;
-        if(i > 5) onerun = false;
-    }
-    
-    const normal = [...FaceDirections[direction]] as [number, number, number]; // Convert to mutable tuple
-    switch (direction) {
-        case "front":
-            return [
-                { position: [x, y, z], normal, uv: [0, 0] },           // Bottom-left
-                { position: [x + 1, y, z], normal, uv: [1, 0] },       // Bottom-right
-                { position: [x, y + 1, z], normal, uv: [0, 1] },       // Top-left
-
-                { position: [x + 1, y, z], normal, uv: [1, 0] },       // Bottom-right
-                { position: [x + 1, y + 1, z], normal, uv: [1, 1] },   // Top-right
-                { position: [x, y + 1, z], normal, uv: [0, 1] },       // Top-left
-            ];
-        case "back":
-            return [
-                { position: [x, y, z + 1], normal, uv: [0, 0] },
-                { position: [x + 1, y, z + 1], normal, uv: [1, 0] },
-                { position: [x, y + 1, z + 1], normal, uv: [0, 1] },
-
-                { position: [x + 1, y + 1, z + 1], normal, uv: [1, 1] },
-                { position: [x + 1, y, z + 1], normal, uv: [1, 0] },
-                { position: [x, y + 1, z + 1], normal, uv: [0, 1] },
-
-            ];
-        case "left":
-            return [
-                { position: [x, y, z], normal, uv: [0, 0] },
-                { position: [x, y, z + 1], normal, uv: [0, 1] },
-                { position: [x, y + 1, z], normal, uv: [1, 0] },
-
-                { position: [x, y, z + 1], normal, uv: [0, 1] },
-                { position: [x, y + 1, z + 1], normal, uv: [1, 1] },
-                { position: [x, y + 1, z], normal, uv: [1, 0] },
-            ];
-        case "right":
-            return [
-                { position: [x + 1, y, z], normal, uv: [0, 0] },
-                { position: [x + 1, y, z + 1], normal, uv: [0, 1] },
-                { position: [x + 1, y + 1, z], normal, uv: [1, 0] },
-
-                { position: [x + 1, y + 1, z], normal, uv: [1, 0] },
-                { position: [x + 1, y, z + 1], normal, uv: [0, 1] },
-                { position: [x + 1, y + 1, z + 1], normal, uv: [1, 1] },
-            ];
-        case "top":
-            return [
-                { position: [x, y + 1, z], normal, uv: [0, 0] },
-                { position: [x, y + 1, z + 1], normal, uv: [0, 1] },
-                { position: [x + 1, y + 1, z], normal, uv: [1, 0] },
-
-                { position: [x + 1, y + 1, z], normal, uv: [1, 0] },
-                { position: [x, y + 1, z + 1], normal, uv: [0, 1] },
-                { position: [x + 1, y + 1, z + 1], normal, uv: [1, 1] },
-            ];
-        case "bottom":
-            return [
-                { position: [x, y, z], normal, uv: [0, 0] },
-                { position: [x + 1, y, z], normal, uv: [1, 0] },
-                { position: [x, y, z + 1], normal, uv: [0, 1] },
-
-                { position: [x + 1, y, z], normal, uv: [1, 0] },
-                { position: [x + 1, y, z + 1], normal, uv: [1, 1] },
-                { position: [x, y, z + 1], normal, uv: [0, 1] },
+                { position: [x + size, y, z], normal, uv: [1, 0] },
+                { position: [x + size, y, z + size], normal, uv: [1, 1] },
+                { position: [x, y, z + size], normal, uv: [0, 1] },
             ];
         default:
             return [];
