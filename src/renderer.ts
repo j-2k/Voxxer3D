@@ -130,8 +130,6 @@ function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgr
         return shader;
     }
 
-    GlobalWebGLItems.ShaderChunk = new Shader(gl, Materials.Texture.vertexShader, Materials.Texture.fragmentShader);
-
     //const chunk = new Chunk();
     //chunk.Render(gl, GlobalWebGLItems.Shader2);
 
@@ -214,35 +212,32 @@ function ShaderUniforms(gl : WebGLRenderingContext){//, shaderProgram : WebGLPro
         GlobalWebGLItems.modelMatrixUniformLocation = getModelUniform;
     }
     GlobalWebGLItems.GrassBlock.shader?.setUniformMatrix4fv("u_modelMatrix", modelMatrix);
-
-    //Create View Matrix
-    let viewMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.lookAt(viewMatrix, GlobalWebGLItems.Camera.cameraPosition, GlobalWebGLItems.Camera.cameraTarget, GlobalWebGLItems.Camera.upDirection);
-    GlobalWebGLItems.Camera.viewMatrix = viewMatrix;
-
-    //Prespective Projection
-    const aspectRatio = gl.canvas.width / gl.canvas.height;
-    const fovRADIAN = 70 * Math.PI / 180;
-    glMatrix.mat4.perspective(GlobalWebGLItems.Camera.projectionMatrix, fovRADIAN, aspectRatio, 0.1, 100.0);
 }
 
 function Start(gl : WebGLRenderingContext)
 {
     //Bind Buffers
     StartBinders(gl);
+    GlobalWebGLItems.ShaderChunk = new Shader(gl, Materials.Texture.vertexShader, Materials.Texture.fragmentShader);
 
     //Load Textures
     TextureLoader(gl);
 
     //Create Uniforms
     ShaderUniforms(gl);
+
+    //Camera Uniforms
+    CameraUniforms(gl);
+    
+    LoadDebugChunk(gl);
 }
 
+let chunkMesh : any;
 function LoadDebugChunk(gl : WebGLRenderingContext)
 {
     GlobalWebGLItems.ShaderChunk?.use();
     const chunkDebug = GlobalWebGLItems.debugChunk;
-    const chunkMesh = buildChunkMesh(chunkDebug);
+    chunkMesh = buildChunkMesh(chunkDebug);
     GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.ShaderChunk, chunkMesh);
 }
 
@@ -250,11 +245,11 @@ function Update(gl: WebGLRenderingContext,)
 {
     console.log("Update Call...");
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.bindTexture(gl.TEXTURE_2D, GlobalWebGLItems.grassTexture);
+    //gl.bindTexture(gl.TEXTURE_2D, GlobalWebGLItems.grassTexture);
 
 
     CameraManager();
-
+    
     GrassRenderingManager(gl);
     
     {
@@ -325,7 +320,9 @@ function Update(gl: WebGLRenderingContext,)
         GlobalWebGLItems.Shader2?.disableAttrib("a_color");
     }
 
-    LoadDebugChunk(gl);
+    //RenderChunk
+    GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.ShaderChunk, chunkMesh);
+    //LoadDebugChunk(gl);
 
     DebugMode();
 }
@@ -405,4 +402,16 @@ const textOverlay3 = document.getElementById('textOverlay3') as HTMLElement;
 export {
     EngineRenderer,
     GlobalWebGLItems
+}
+
+function CameraUniforms(gl: WebGLRenderingContext) {
+        //Create View Matrix
+        let viewMatrix = glMatrix.mat4.create();
+        glMatrix.mat4.lookAt(viewMatrix, GlobalWebGLItems.Camera.cameraPosition, GlobalWebGLItems.Camera.cameraTarget, GlobalWebGLItems.Camera.upDirection);
+        GlobalWebGLItems.Camera.viewMatrix = viewMatrix;
+    
+        //Prespective Projection
+        const aspectRatio = gl.canvas.width / gl.canvas.height;
+        const fovRADIAN = 70 * Math.PI / 180;
+        glMatrix.mat4.perspective(GlobalWebGLItems.Camera.projectionMatrix, fovRADIAN, aspectRatio, 0.1, 100.0);
 }

@@ -2,11 +2,11 @@ import { GlobalWebGLItems } from '../renderer';
 import { Shader } from '../shader-master';
 import Time from '../time-manager';
 import { Block, BlockType } from './block';
-import * as glMatrix from 'gl-matrix'
+import * as glMatrix from 'gl-matrix';
 
-const CHUNK_WIDTH: number = 4;
-const CHUNK_HEIGHT: number = 4;
-const CHUNK_DEPTH: number = 4;
+const CHUNK_WIDTH: number = 8;
+const CHUNK_HEIGHT: number = 8;
+const CHUNK_DEPTH: number = 8;
 
 // Vertex data structure for the mesh
 interface Vertex {
@@ -44,7 +44,9 @@ class Chunk {
                 const column = [];
                 for (let z = 0; z < CHUNK_DEPTH; z++) {
                     //for now always make grass
-                    column.push(new Block(BlockType.Grass));
+                    //column.push(new Block(BlockType.Grass));
+                    Math.random() > (0.1 + (y*0.15)) ? column.push(new Block(BlockType.Air)) : column.push(new Block(BlockType.Grass));
+                    
                     /*if (y < 50) {
                         column.push(new Block(BlockType.Grass));  // Add solid block up to a certain height
                     } else {
@@ -92,7 +94,7 @@ class Chunk {
         let modelMatrix = glMatrix.mat4.create();
 
         //Model Space TRS to World space (Do All transformations under here before the Final MVP Matrix Stage!)
-        glMatrix.mat4.scale(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(1,1,1));
+        glMatrix.mat4.scale(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(0.5,0.5,0.5));
         glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(0,0,0)); //final pos
         glMatrix.mat4.rotateY(modelMatrix, modelMatrix, 0);//Math.PI*-0.1);
 
@@ -111,7 +113,7 @@ class Chunk {
         //const vb = 6 * (vertBufferDataFlat.length/8) / 6); //vb is to be put in the draw call but i noticed its just len/8
         gl.drawArrays(gl.TRIANGLES, 0, vertBufferDataFlat.length / 8);
         //Wireframe
-        //gl.drawArrays(gl.LINES, 0, 6*96);
+        //gl.drawArrays(gl.LINES, 0, vertBufferDataFlat.length / 8);
 
         shader.disableAttrib("a_position");
         shader.disableAttrib("a_uv");
