@@ -68,7 +68,7 @@ class Chunk {
         // Update logic for the chunk, potentially involving block updates (isDirtyBoolean)
     }
 
-    public Render(gl: WebGLRenderingContext, shader: Shader | null): void {
+    public Render(gl: WebGLRenderingContext, shader: Shader | null, translation :glMatrix.vec3): void {
         if(shader == null) {console.error("Hey monkey, the shader is null in the chunk.render function"); return;}
         shader.use();
 
@@ -92,14 +92,14 @@ class Chunk {
         shader.setAttribPointer("a_normal", 3, gl.FLOAT, false, stride, 3 * Float32Array.BYTES_PER_ELEMENT);
         shader.setAttribPointer("a_uv", 2, gl.FLOAT, false, stride, 6 * Float32Array.BYTES_PER_ELEMENT); // 2 components for UVs
 
-        /*
+        
 
         //MVP Matrix
         let modelMatrix = glMatrix.mat4.create();
 
         //Model Space TRS to World space (Do All transformations under here before the Final MVP Matrix Stage!)
-        glMatrix.mat4.scale(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(0.5,1,1));
-        //glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(0,0,0)); //final pos
+        glMatrix.mat4.scale(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(.5,.5,.5));
+        glMatrix.mat4.translate(modelMatrix, modelMatrix, translation); //final pos
         //glMatrix.mat4.rotateY(modelMatrix, modelMatrix, 0);//Math.PI*-0.1);
 
         //Final MVP Matrix
@@ -111,7 +111,7 @@ class Chunk {
         //You can try putting model matrix in the uniform itself to see it move in clipspace
         shader.setUniformMatrix4fv("u_MVP", mvpMatrix);
 
-        */
+        
 
 
         //Draw call
@@ -300,6 +300,8 @@ class WorldChunkManager {
             }
             this.chunks.push(chunkColumn);
         }
+
+        console.log("CHUNK LEN " + this.chunks.length + "| CHUNK LEN-0 " + this.chunks[0].length + "|");
     }
 
     // Render all chunks in the world
@@ -308,17 +310,9 @@ class WorldChunkManager {
             for (let z = 0; z < this.chunks[x].length; z++) {
                 const chunk = this.chunks[x][z];
                 
-                const chunkModelPosition = glMatrix.vec3.fromValues(x * CHUNK_WIDTH, 0, z * CHUNK_DEPTH);
-
-                // Apply chunk position before rendering each chunk
-                let mvpMatrix = glMatrix.mat4.create();
-                glMatrix.mat4.multiply(mvpMatrix, GlobalWebGLItems.Camera.projectionMatrix, GlobalWebGLItems.Camera.viewMatrix);
-                glMatrix.mat4.translate(mvpMatrix, mvpMatrix, chunkModelPosition);
-
-                // Set the MVP matrix in the shader for each chunk
-                shader.setUniformMatrix4fv("u_MVP", mvpMatrix);
+                const chunkModelTransform = glMatrix.vec3.fromValues(x * CHUNK_WIDTH, 0, z * CHUNK_DEPTH);
                 
-                chunk.Render(gl, shader);
+                chunk.Render(gl, shader, chunkModelTransform);
             }
         }
     }
