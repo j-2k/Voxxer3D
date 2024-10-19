@@ -288,9 +288,11 @@ export { Chunk, Block, BlockType, buildChunkMesh, WorldChunkManager };
 
 class WorldChunkManager {
     chunks: Chunk[][]; // 2D array for holding chunks
+    drawDistance: number; // How many chunks to render in each direction from the player
 
-    constructor(worldWidth: number, worldDepth: number) {
+    constructor(worldWidth: number, worldDepth: number, _drawDistance: number = 3) {
         this.chunks = [];
+        this.drawDistance = _drawDistance; // Default draw distance
 
         for (let x = 0; x < worldWidth; x++) {
             const chunkColumn = [];
@@ -315,5 +317,12 @@ class WorldChunkManager {
                 chunk.Render(gl, shader, chunkModelTransform);
             }
         }
+    }
+
+        // Function to get the chunk the player is currently in
+    getPlayerChunkCoords(playerPosition: glMatrix.vec3): [number, number] {
+        const chunkX = Math.floor(playerPosition[0] / CHUNK_WIDTH);
+        const chunkZ = Math.floor(playerPosition[2] / CHUNK_DEPTH);
+        return [chunkX, chunkZ];
     }
 }
