@@ -4,9 +4,9 @@ import Time from '../time-manager';
 import { Block, BlockType } from './block';
 import * as glMatrix from 'gl-matrix';
 
-const CHUNK_WIDTH: number = 8;
-const CHUNK_HEIGHT: number = 8;
-const CHUNK_DEPTH: number = 8;
+const CHUNK_WIDTH: number = 16;
+const CHUNK_HEIGHT: number = 50;
+const CHUNK_DEPTH: number = 16;
 
 // Vertex data structure for the mesh
 interface Vertex {
@@ -30,10 +30,12 @@ type FaceDirectionKey = keyof typeof FaceDirections;
 
 class Chunk {
     chunkBlocks: Block[][][];
+    flatMeshVerts: Float32Array;
 
     constructor() {
         // Create the blocks
         this.chunkBlocks = this.generateChunk();
+        this.flatMeshVerts = flattenVertices(buildChunkMesh(this));
     }
 
     generateChunk(): Block[][][] {
@@ -45,7 +47,7 @@ class Chunk {
                 for (let z = 0; z < CHUNK_DEPTH; z++) {
                     //for now always make grass
                     //column.push(new Block(BlockType.Grass));
-                    Math.random() > (0.1 + (y*0.15)) ? column.push(new Block(BlockType.Air)) : column.push(new Block(BlockType.Grass));
+                    Math.random() > 0.5/*(0.1 + (y*0.15))*/ ? column.push(new Block(BlockType.Air)) : column.push(new Block(BlockType.Grass));
                     
                     /*if (y < 50) {
                         column.push(new Block(BlockType.Grass));  // Add solid block up to a certain height
@@ -65,7 +67,7 @@ class Chunk {
         // Update logic for the chunk, potentially involving block updates (isDirtyBoolean)
     }
 
-    public Render(gl: WebGLRenderingContext, shader: Shader | null, verticiesBuffer : Vertex[] | null = null): void {
+    public Render(gl: WebGLRenderingContext, shader: Shader | null): void {
         if(shader == null) {console.error("Hey monkey, the shader is null in the chunk.render function"); return;}
         shader.use();
 
@@ -77,9 +79,8 @@ class Chunk {
         const vertexBufferPos = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferPos);
 
-        if(verticiesBuffer == null) {return;}
-        const vertBufferDataFlat = flattenVertices(verticiesBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, vertBufferDataFlat, gl.STATIC_DRAW);
+        //const vertBufferDataFlat = flattenVertices(this.meshVerts);
+        gl.bufferData(gl.ARRAY_BUFFER, this.flatMeshVerts, gl.STATIC_DRAW);
 
         //Set up position attribute pointers for the mesh
         shader.enableAttrib("a_position");
@@ -111,7 +112,7 @@ class Chunk {
         //Mesh
         //Going into every single array & counting in the vert buffer would prob be a bad idea, so instead i came up with this,
         //const vb = 6 * (vertBufferDataFlat.length/8) / 6); //vb is to be put in the draw call but i noticed its just len/8
-        gl.drawArrays(gl.TRIANGLES, 0, vertBufferDataFlat.length / 8);
+        gl.drawArrays(gl.TRIANGLES, 0, this.flatMeshVerts.length / 8);
         //Wireframe
         //gl.drawArrays(gl.LINES, 0, vertBufferDataFlat.length / 8);
 
