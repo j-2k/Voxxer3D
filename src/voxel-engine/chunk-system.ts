@@ -5,7 +5,7 @@ import { Block, BlockType } from './block';
 import * as glMatrix from 'gl-matrix';
 
 const CHUNK_WIDTH: number = 16;
-const CHUNK_HEIGHT: number = 50;
+const CHUNK_HEIGHT: number = 16;
 const CHUNK_DEPTH: number = 16;
 
 // Vertex data structure for the mesh
@@ -31,6 +31,7 @@ type FaceDirectionKey = keyof typeof FaceDirections;
 class Chunk {
     chunkBlocks: Block[][][];
     flatMeshVerts: Float32Array;
+    isDirty: boolean = false;
 
     constructor() {
         // Create the blocks
@@ -91,21 +92,26 @@ class Chunk {
         shader.setAttribPointer("a_normal", 3, gl.FLOAT, false, stride, 3 * Float32Array.BYTES_PER_ELEMENT);
         shader.setAttribPointer("a_uv", 2, gl.FLOAT, false, stride, 6 * Float32Array.BYTES_PER_ELEMENT); // 2 components for UVs
 
+        /*
+
         //MVP Matrix
         let modelMatrix = glMatrix.mat4.create();
 
         //Model Space TRS to World space (Do All transformations under here before the Final MVP Matrix Stage!)
-        glMatrix.mat4.scale(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(0.5,0.5,0.5));
-        glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(0,0,0)); //final pos
-        glMatrix.mat4.rotateY(modelMatrix, modelMatrix, 0);//Math.PI*-0.1);
+        glMatrix.mat4.scale(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(0.5,1,1));
+        //glMatrix.mat4.translate(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(0,0,0)); //final pos
+        //glMatrix.mat4.rotateY(modelMatrix, modelMatrix, 0);//Math.PI*-0.1);
 
         //Final MVP Matrix
         let mvpMatrix = glMatrix.mat4.create();
         glMatrix.mat4.multiply(mvpMatrix, GlobalWebGLItems.Camera.projectionMatrix, GlobalWebGLItems.Camera.viewMatrix);
-        glMatrix.mat4.multiply(mvpMatrix, mvpMatrix, modelMatrix);
-        
+        glMatrix.mat4.multiply(mvpMatrix, mvpMatrix, modelMatrix);    // MVPMATRIX * MODEL MATRIX - IS NEEDED IF YOU ARE DOING TRANSFORMATION, YOU CAN ACTUALLY JUST IGNORE THIS IF YOU DONT MOVE THE MODEL FROM ITS ORIGINAL VERT POS
+                                                                        //you can test this by using the scale above and commenting out the model matrix multiplication
+
         //You can try putting model matrix in the uniform itself to see it move in clipspace
         shader.setUniformMatrix4fv("u_MVP", mvpMatrix);
+
+        */
 
 
         //Draw call
@@ -119,6 +125,8 @@ class Chunk {
         shader.disableAttrib("a_position");
         shader.disableAttrib("a_uv");
         shader.disableAttrib("a_normal");
+        gl.deleteBuffer(vertexBufferPos);   //hmm... why does this work, when previosuly i had a worse implementation but I only added this since after doing
+        //an optimization I started losing the webgl rendering context... adding this some how fixed it. Weird I have to call this manually though.
     }
 }
 
@@ -131,10 +139,14 @@ function shouldGenerateFace(blockType: BlockType, neighborType: BlockType): bool
 // Chunk Mesh Builder (Avoiding Inside Faces)
 function buildChunkMesh(chunk: Chunk): Vertex[] {
     let vertices: Vertex[] = [];
+
     for (let x = 0; x < CHUNK_WIDTH; x++) {
         for (let y = 0; y < CHUNK_HEIGHT; y++) {
             for (let z = 0; z < CHUNK_DEPTH; z++) {
                 const currentBlock = chunk.chunkBlocks[x][y][z];
+
+                const size = 1;
+                const pX = x * size, pY = (y * size) - CHUNK_HEIGHT*size, pZ = z * size;
 
                 // Skip air blocks or empty spaces
                 if (currentBlock.getBlockType() === BlockType.Air) {
@@ -143,32 +155,32 @@ function buildChunkMesh(chunk: Chunk): Vertex[] {
 
                 // Front face (-Z)
                 if (z === 0 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x][y][z - 1].getBlockType())) {
-                    vertices.push(...createFace(x, y, z, "front"));
+                    vertices.push(...createFace(pX, pY, pZ, "front", size));
                 }
 
                 // Back face (+Z)
                 if (z === CHUNK_DEPTH - 1 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x][y][z + 1].getBlockType())) {
-                    vertices.push(...createFace(x, y, z, "back"));
+                    vertices.push(...createFace(pX, pY, pZ, "back", size));
                 }
 
                 // Left face (-X)
                 if (x === 0 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x - 1][y][z].getBlockType())) {
-                    vertices.push(...createFace(x, y, z, "left"));
+                    vertices.push(...createFace(pX, pY, pZ, "left", size));
                 }
 
                 // Right face (+X)
                 if (x === CHUNK_WIDTH - 1 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x + 1][y][z].getBlockType())) {
-                    vertices.push(...createFace(x, y, z, "right"));
+                    vertices.push(...createFace(pX, pY, pZ, "right", size));
                 }
 
                 // Top face (+Y)
                 if (y === CHUNK_HEIGHT - 1 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x][y + 1][z].getBlockType())) {
-                    vertices.push(...createFace(x, y, z, "top"));
+                    vertices.push(...createFace(pX, pY, pZ, "top", size));
                 }
 
                 // Bottom face (-Y)
                 if (y === 0 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x][y - 1][z].getBlockType())) {
-                    vertices.push(...createFace(x, y, z, "bottom"));
+                    vertices.push(...createFace(pX, pY, pZ, "bottom", size));
                 }
             }
         }
@@ -270,4 +282,44 @@ function flattenVertices(vertices: Vertex[]): Float32Array {
 }
 
 
-export { Chunk, Block, BlockType, buildChunkMesh };
+export { Chunk, Block, BlockType, buildChunkMesh, WorldChunkManager };
+
+
+
+class WorldChunkManager {
+    chunks: Chunk[][]; // 2D array for holding chunks
+
+    constructor(worldWidth: number, worldDepth: number) {
+        this.chunks = [];
+
+        for (let x = 0; x < worldWidth; x++) {
+            const chunkColumn = [];
+            for (let z = 0; z < worldDepth; z++) {
+                const chunk = new Chunk();
+                chunkColumn.push(chunk);
+            }
+            this.chunks.push(chunkColumn);
+        }
+    }
+
+    // Render all chunks in the world
+    public Render(gl: WebGLRenderingContext, shader: Shader): void {
+        for (let x = 0; x < this.chunks.length; x++) {
+            for (let z = 0; z < this.chunks[x].length; z++) {
+                const chunk = this.chunks[x][z];
+                
+                const chunkModelPosition = glMatrix.vec3.fromValues(x * CHUNK_WIDTH, 0, z * CHUNK_DEPTH);
+
+                // Apply chunk position before rendering each chunk
+                let mvpMatrix = glMatrix.mat4.create();
+                glMatrix.mat4.multiply(mvpMatrix, GlobalWebGLItems.Camera.projectionMatrix, GlobalWebGLItems.Camera.viewMatrix);
+                glMatrix.mat4.translate(mvpMatrix, mvpMatrix, chunkModelPosition);
+
+                // Set the MVP matrix in the shader for each chunk
+                shader.setUniformMatrix4fv("u_MVP", mvpMatrix);
+                
+                chunk.Render(gl, shader);
+            }
+        }
+    }
+}

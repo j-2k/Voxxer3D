@@ -5,7 +5,7 @@ import { Cube3D } from './shapes-data';
 import { CameraManager } from './camera';
 import { Shader } from './shader-master';
 import Draw from './shapes-draw';
-import { Chunk, Block, BlockType, buildChunkMesh } from './voxel-engine/chunk-system';
+import { Chunk, Block, BlockType, buildChunkMesh, WorldChunkManager } from './voxel-engine/chunk-system';
 
 
 function EngineRenderer(gl : WebGLRenderingContext)
@@ -36,7 +36,7 @@ class GlobalWebGLItems{
 
     
     public static Shader2 : Shader | null;
-    public static ShaderChunk : Shader | null;
+    public static ShaderChunk : Shader;
 
     public static GrassBlock = {
         shader : null as Shader | null,
@@ -45,6 +45,7 @@ class GlobalWebGLItems{
     }
 
     public static debugChunk = new Chunk();
+    public static chunkManager : WorldChunkManager;// = new WorldChunkManager(10, 10); 
 }
 
 function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
@@ -218,7 +219,6 @@ function Start(gl : WebGLRenderingContext)
 {
     //Bind Buffers
     StartBinders(gl);
-    GlobalWebGLItems.ShaderChunk = new Shader(gl, Materials.Texture.vertexShader, Materials.Texture.fragmentShader);
 
     //Load Textures
     TextureLoader(gl);
@@ -228,20 +228,19 @@ function Start(gl : WebGLRenderingContext)
 
     //Camera Uniforms
     CameraUniforms(gl);
-    
-    LoadDebugChunk(gl);
+
+    //Create Chunk Manager
+    ChunkSetup(gl);
 }
 
-let chunkMesh : any;
-function LoadDebugChunk(gl : WebGLRenderingContext)
-{
-    GlobalWebGLItems.ShaderChunk?.use();
-    const chunkDebug = GlobalWebGLItems.debugChunk;
-    chunkMesh = buildChunkMesh(chunkDebug);
-    GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.ShaderChunk, chunkMesh);
+function ChunkSetup(gl: WebGLRenderingContext){
+    GlobalWebGLItems.ShaderChunk = new Shader(gl, Materials.Texture.vertexShader, Materials.Texture.fragmentShader);
+    if(GlobalWebGLItems.ShaderChunk == null) {console.error("Failed to create chunk shader in the Chunk Setup function of the renderer...");return;}
+    GlobalWebGLItems.chunkManager = new WorldChunkManager(2,1);
 }
 
-function Update(gl: WebGLRenderingContext,)
+
+function Update(gl: WebGLRenderingContext)
 {
     console.log("Update Call...");
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -320,9 +319,10 @@ function Update(gl: WebGLRenderingContext,)
         GlobalWebGLItems.Shader2?.disableAttrib("a_color");
     }
 
-    //RenderChunk
-    GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.ShaderChunk, chunkMesh);
-    //LoadDebugChunk(gl);
+    //Debug Render Chunk
+    //GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.ShaderChunk);
+
+    GlobalWebGLItems.chunkManager.Render(gl, GlobalWebGLItems.ShaderChunk);
 
     DebugMode();
 }
@@ -415,3 +415,17 @@ function CameraUniforms(gl: WebGLRenderingContext) {
         const fovRADIAN = 70 * Math.PI / 180;
         glMatrix.mat4.perspective(GlobalWebGLItems.Camera.projectionMatrix, fovRADIAN, aspectRatio, 0.1, 100.0);
 }
+
+//old
+
+/*
+function LoadDebugChunk(gl : WebGLRenderingContext)
+{
+    GlobalWebGLItems.ShaderChunk?.use();
+    const chunkDebug = GlobalWebGLItems.debugChunk;
+    const chunkMesh = buildChunkMesh(chunkDebug);//CHUNK BUILDER IS NOW HAPPENING IN THE CHUNK INSTANCE ITSELF!
+    GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.ShaderChunk);
+}
+*/
+
+
