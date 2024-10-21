@@ -10,7 +10,7 @@ let pitch = 0; // Rotation around the X-axis based on the Y-axis of the mouse
 
 
 function CameraManager() {
-  const cameraSpeed = 5 * Time.deltaTime; // Define camera speed
+  const cameraSpeed = 15 * Time.deltaTime; // Define camera speed
 
   // Calculate z/front vector
   const front = glMatrix.vec3.create();

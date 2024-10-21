@@ -236,7 +236,7 @@ function Start(gl : WebGLRenderingContext)
 function ChunkSetup(gl: WebGLRenderingContext){
     GlobalWebGLItems.ShaderChunk = new Shader(gl, Materials.Texture.vertexShader, Materials.Texture.fragmentShader);
     if(GlobalWebGLItems.ShaderChunk == null) {console.error("Failed to create chunk shader in the Chunk Setup function of the renderer...");return;}
-    GlobalWebGLItems.chunkManager = new WorldChunkManager(8,8);
+    GlobalWebGLItems.chunkManager = new WorldChunkManager(4,4,4);
 }
 
 

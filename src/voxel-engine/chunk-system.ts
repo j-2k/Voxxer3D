@@ -8,7 +8,6 @@ const CHUNK_WIDTH: number = 16;
 const CHUNK_HEIGHT: number = 16;
 const CHUNK_DEPTH: number = 16;
 const CHUNK_SCALE: number = 0.5;
-let offsetY = 0;
 
 // Vertex data structure for the mesh
 interface Vertex {
@@ -62,7 +61,18 @@ class Chunk {
             }
             chunk.push(plane);
         }
-        offsetY++;
+
+            // Add a ring of air blocks around the top face of the chunk (y = CHUNK_HEIGHT - 1)
+    const topLayerY = CHUNK_HEIGHT - 1;
+    for (let x = 0; x < CHUNK_WIDTH; x++) {
+        for (let z = 0; z < CHUNK_DEPTH; z++) {
+            // Check if we are on the edge (forming a ring)
+            if (x == 0 || x == CHUNK_WIDTH - 1 || z == 0 || z == CHUNK_DEPTH - 1) {
+                chunk[x][topLayerY][z] = new Block(BlockType.Air);  // Replace with air
+            }
+        }
+    }
+        
         return chunk;
     }
 
@@ -149,7 +159,7 @@ function buildChunkMesh(chunk: Chunk): Vertex[] {
                 const currentBlock = chunk.chunkBlocks[x][y][z];
 
                 const size = 1;
-                const pX = x * size, pY = (y * size) - CHUNK_HEIGHT*size + offsetY, pZ = z * size;
+                const pX = x * size, pY = (y * size) - CHUNK_HEIGHT*size, pZ = z * size;
 
                 // Skip air blocks or empty spaces
                 if (currentBlock.getBlockType() === BlockType.Air) {
@@ -297,7 +307,7 @@ class WorldChunkManager {
     chunks: Chunk[][]; // 2D array for holding chunks
     drawDistance: number; // How many chunks to render in each direction from the player
 
-    constructor(worldWidth: number, worldDepth: number, _drawDistance: number = 4) {
+    constructor(worldWidth: number = 16, worldDepth: number = 16, _drawDistance: number = 4) {
         this.chunks = [];
         this.drawDistance = _drawDistance; // Default draw distance
 
@@ -316,6 +326,7 @@ class WorldChunkManager {
     // Render Chunk Handler
     public Render(gl: WebGLRenderingContext, shader: Shader): void {
         //Render all chunks
+        /*
         for (let x = 0; x < this.chunks.length; x++) {
             for (let z = 0; z < this.chunks[x].length; z++) {
                 const chunk = this.chunks[x][z];
@@ -324,12 +335,33 @@ class WorldChunkManager {
                 
                 chunk.Render(gl, shader, chunkModelTransform);
             }
+        }*/
+
+        const [playerChunkX, playerChunkZ] = this.getPlayerChunkCoords(GlobalWebGLItems.Camera.cameraPosition);
+        const halfDrawDistance = Math.floor(this.drawDistance /2);
+    
+        for (let x = playerChunkX - halfDrawDistance; x <= playerChunkX + halfDrawDistance; x++) {
+            for (let z = playerChunkZ - halfDrawDistance; z <= playerChunkZ + halfDrawDistance; z++) {
+                // Handle chunk lookups for negative coordinates - This wrap-around system is crazy
+                const worldX = ((x % this.chunks.length) + this.chunks.length) % this.chunks.length;
+                const worldZ = ((z % this.chunks[0].length) + this.chunks[0].length) % this.chunks[0].length;
+
+                if (worldX >= 0 && worldX < this.chunks.length && worldZ >= 0 && worldZ < this.chunks[0].length) {
+                    const chunk = this.chunks[worldX][worldZ];
+                    
+                    // Calculate the chunk model's transformation matrix
+                    const chunkModelTransform = glMatrix.vec3.fromValues(x * CHUNK_WIDTH, 0, z * CHUNK_DEPTH);
+
+                    // Render the chunk
+                    chunk.Render(gl, GlobalWebGLItems.ShaderChunk, chunkModelTransform);
+
+                    if (chunk.isDirty) {
+                        // Update the chunk if needed
+                        // chunk.Update(0);
+                    }
+                }
+            }
         }
-
-        //Update Player Position
-        //this.getPlayerChunkCoords(GlobalWebGLItems.Camera.cameraPosition);
-
-        this.updateChunks(GlobalWebGLItems.Camera.cameraPosition);
     }
 
         // Function to get the chunk the player is currently in
@@ -339,27 +371,6 @@ class WorldChunkManager {
 
         return [chunkX, chunkZ];
     }
-
-    updateChunks(playerPosition: glMatrix.vec3): void {
-        const [playerChunkX, playerChunkZ] = this.getPlayerChunkCoords(playerPosition);
-        const halfDrawDistance = Math.floor(this.drawDistance /2);
-
-        for (let x = playerChunkX - halfDrawDistance; x < playerChunkX + halfDrawDistance; x++) {
-            for (let z = playerChunkZ - halfDrawDistance; z < playerChunkZ + halfDrawDistance; z++) {
-                // Check if the chunk is within the world bounds
-                if (x >= 0 && x < this.chunks.length && z >= 0 && z < this.chunks[0].length) {
-                    const chunk = this.chunks[x][z];
-                    
-                    if (chunk.isDirty) {
-                        // Update the chunk
-                        //chunk.Update(0);
-                    }
-                }
-            }
-        }
-
-    }
-
 
 }
 
