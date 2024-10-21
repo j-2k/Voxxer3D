@@ -236,7 +236,7 @@ function Start(gl : WebGLRenderingContext)
 function ChunkSetup(gl: WebGLRenderingContext){
     GlobalWebGLItems.ShaderChunk = new Shader(gl, Materials.Texture.vertexShader, Materials.Texture.fragmentShader);
     if(GlobalWebGLItems.ShaderChunk == null) {console.error("Failed to create chunk shader in the Chunk Setup function of the renderer...");return;}
-    GlobalWebGLItems.chunkManager = new WorldChunkManager(2,2);
+    GlobalWebGLItems.chunkManager = new WorldChunkManager(8,8);
 }
 
 
@@ -384,7 +384,9 @@ function RenderingSettings(gl : WebGLRenderingContext)
 
 function DebugMode()
 {
-    textOverlay1.textContent = `Camera Position: ${GlobalWebGLItems.Camera.cameraPosition[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[2].toFixed(2)}`;  
+    const debugChunkCoords = GlobalWebGLItems.chunkManager.getPlayerChunkCoords(GlobalWebGLItems.Camera.cameraPosition);
+    textOverlay1.textContent = `Camera Position: ${GlobalWebGLItems.Camera.cameraPosition[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[2].toFixed(2)}`
+     + " | " + `Camera Chunk Position: ChunkX: ${debugChunkCoords[0]} | ChunkZ: ${debugChunkCoords[1]}`;  
     textOverlay2.textContent = `Camera Target From Position: ${GlobalWebGLItems.Camera.cameraTarget[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraTarget[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraTarget[2].toFixed(2)}`;
     if(timeFuture <= Time.time)
     {

@@ -7,6 +7,8 @@ import * as glMatrix from 'gl-matrix';
 const CHUNK_WIDTH: number = 16;
 const CHUNK_HEIGHT: number = 16;
 const CHUNK_DEPTH: number = 16;
+const CHUNK_SCALE: number = 0.5;
+let offsetY = 0;
 
 // Vertex data structure for the mesh
 interface Vertex {
@@ -60,6 +62,7 @@ class Chunk {
             }
             chunk.push(plane);
         }
+        offsetY++;
         return chunk;
     }
 
@@ -98,7 +101,7 @@ class Chunk {
         let modelMatrix = glMatrix.mat4.create();
 
         //Model Space TRS to World space (Do All transformations under here before the Final MVP Matrix Stage!)
-        glMatrix.mat4.scale(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(.5,.5,.5));
+        glMatrix.mat4.scale(modelMatrix, modelMatrix, glMatrix.vec3.fromValues(CHUNK_SCALE,CHUNK_SCALE,CHUNK_SCALE));
         glMatrix.mat4.translate(modelMatrix, modelMatrix, translation); //final pos
         //glMatrix.mat4.rotateY(modelMatrix, modelMatrix, 0);//Math.PI*-0.1);
 
@@ -146,7 +149,7 @@ function buildChunkMesh(chunk: Chunk): Vertex[] {
                 const currentBlock = chunk.chunkBlocks[x][y][z];
 
                 const size = 1;
-                const pX = x * size, pY = (y * size) - CHUNK_HEIGHT*size, pZ = z * size;
+                const pX = x * size, pY = (y * size) - CHUNK_HEIGHT*size + offsetY, pZ = z * size;
 
                 // Skip air blocks or empty spaces
                 if (currentBlock.getBlockType() === BlockType.Air) {
@@ -294,7 +297,7 @@ class WorldChunkManager {
     chunks: Chunk[][]; // 2D array for holding chunks
     drawDistance: number; // How many chunks to render in each direction from the player
 
-    constructor(worldWidth: number, worldDepth: number, _drawDistance: number = 3) {
+    constructor(worldWidth: number, worldDepth: number, _drawDistance: number = 4) {
         this.chunks = [];
         this.drawDistance = _drawDistance; // Default draw distance
 
@@ -310,8 +313,9 @@ class WorldChunkManager {
         console.log("CHUNK LEN " + this.chunks.length + "| CHUNK LEN-0 " + this.chunks[0].length + "|");
     }
 
-    // Render all chunks in the world
+    // Render Chunk Handler
     public Render(gl: WebGLRenderingContext, shader: Shader): void {
+        //Render all chunks
         for (let x = 0; x < this.chunks.length; x++) {
             for (let z = 0; z < this.chunks[x].length; z++) {
                 const chunk = this.chunks[x][z];
@@ -321,12 +325,43 @@ class WorldChunkManager {
                 chunk.Render(gl, shader, chunkModelTransform);
             }
         }
+
+        //Update Player Position
+        //this.getPlayerChunkCoords(GlobalWebGLItems.Camera.cameraPosition);
+
+        this.updateChunks(GlobalWebGLItems.Camera.cameraPosition);
     }
 
         // Function to get the chunk the player is currently in
     getPlayerChunkCoords(playerPosition: glMatrix.vec3): [number, number] {
-        const chunkX = Math.floor(playerPosition[0] / CHUNK_WIDTH);
-        const chunkZ = Math.floor(playerPosition[2] / CHUNK_DEPTH);
+        const chunkX = Math.floor(playerPosition[0] / (CHUNK_WIDTH*CHUNK_SCALE));
+        const chunkZ = Math.floor(playerPosition[2] / (CHUNK_DEPTH*CHUNK_SCALE));
+
         return [chunkX, chunkZ];
     }
+
+    updateChunks(playerPosition: glMatrix.vec3): void {
+        const [playerChunkX, playerChunkZ] = this.getPlayerChunkCoords(playerPosition);
+        const halfDrawDistance = Math.floor(this.drawDistance /2);
+
+        for (let x = playerChunkX - halfDrawDistance; x < playerChunkX + halfDrawDistance; x++) {
+            for (let z = playerChunkZ - halfDrawDistance; z < playerChunkZ + halfDrawDistance; z++) {
+                // Check if the chunk is within the world bounds
+                if (x >= 0 && x < this.chunks.length && z >= 0 && z < this.chunks[0].length) {
+                    const chunk = this.chunks[x][z];
+                    
+                    if (chunk.isDirty) {
+                        // Update the chunk
+                        //chunk.Update(0);
+                    }
+                }
+            }
+        }
+
+    }
+
+
 }
+
+//textOverlay6.textContent = "Camera in Chunk X: " + chunkX + " | Chunk Z: " + chunkZ;
+//const textOverlay6 = document.getElementById('textOverlay6') as HTMLElement;
