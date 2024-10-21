@@ -47,8 +47,8 @@ class Chunk {
                 const column = [];
                 for (let z = 0; z < CHUNK_DEPTH; z++) {
                     //for now always make grass
-                    //column.push(new Block(BlockType.Grass));
-                    Math.random() > 0.5/*(0.1 + (y*0.15))*/ ? column.push(new Block(BlockType.Air)) : column.push(new Block(BlockType.Grass));
+                    column.push(new Block(BlockType.Grass));
+                   // Math.random() > 0.5/*(0.1 + (y*0.15))*/ ? column.push(new Block(BlockType.Air)) : column.push(new Block(BlockType.Grass));
                     
                     /*if (y < 50) {
                         column.push(new Block(BlockType.Grass));  // Add solid block up to a certain height
