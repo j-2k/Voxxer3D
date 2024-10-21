@@ -155,12 +155,16 @@ function buildChunkMesh(chunk: Chunk): Vertex[] {
 
                 // Front face (-Z)
                 if (z === 0 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x][y][z - 1].getBlockType())) {
-                    vertices.push(...createFace(pX, pY, pZ, "front", size));
+                    if(z!==0){//testing inside chunk culling
+                        vertices.push(...createFace(pX, pY, pZ, "front", size));
+                    }
                 }
 
                 // Back face (+Z)
                 if (z === CHUNK_DEPTH - 1 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x][y][z + 1].getBlockType())) {
-                    vertices.push(...createFace(pX, pY, pZ, "back", size));
+                    if(z!==CHUNK_DEPTH - 1){//testing inside chunk culling
+                        vertices.push(...createFace(pX, pY, pZ, "back", size));
+                    }
                 }
 
                 // Left face (-X)
