@@ -33,11 +33,18 @@ class Chunk {
     chunkBlocks: Block[][][];
     flatMeshVerts: Float32Array;
     isDirty: boolean = false;
+    position: { x: number, z: number };
 
-    constructor() {
+    constructor(x: number, z: number) {
         // Create the blocks
+        this.position = { x, z };
         this.chunkBlocks = this.generateChunk();
-        this.flatMeshVerts = flattenVertices(buildChunkMesh(this));
+        this.flatMeshVerts = new Float32Array(0);
+    }
+
+    buildMesh(worldChunkManager: WorldChunkManager): void {
+        this.flatMeshVerts = flattenVertices(buildChunkMesh(this, worldChunkManager));
+        this.isDirty = false;
     }
 
     generateChunk(): Block[][][] {
@@ -49,7 +56,7 @@ class Chunk {
                 for (let z = 0; z < CHUNK_DEPTH; z++) {
                     //for now always make grass
                     column.push(new Block(BlockType.Grass));
-                   // Math.random() > 0.5/*(0.1 + (y*0.15))*/ ? column.push(new Block(BlockType.Air)) : column.push(new Block(BlockType.Grass));
+                    //Math.random() > 0.5/*(0.1 + (y*0.15))*/ ? column.push(new Block(BlockType.Air)) : column.push(new Block(BlockType.Grass));
                     
                     /*if (y < 50) {
                         column.push(new Block(BlockType.Grass));  // Add solid block up to a certain height
@@ -62,7 +69,7 @@ class Chunk {
             chunk.push(plane);
         }
 
-            // Add a ring of air blocks around the top face of the chunk (y = CHUNK_HEIGHT - 1)
+    // Add a ring of air blocks around the top face of the chunk (y = CHUNK_HEIGHT - 1)
     const topLayerY = CHUNK_HEIGHT - 1;
     for (let x = 0; x < CHUNK_WIDTH; x++) {
         for (let z = 0; z < CHUNK_DEPTH; z++) {
@@ -149,8 +156,8 @@ function shouldGenerateFace(blockType: BlockType, neighborType: BlockType): bool
     return blockType !== BlockType.Air && neighborType === BlockType.Air;
 }
 
-// Chunk Mesh Builder (Avoiding Inside Faces)
-function buildChunkMesh(chunk: Chunk): Vertex[] {
+// Updated buildChunkMesh function with between-chunk culling
+function buildChunkMesh(chunk: Chunk, worldManager: WorldChunkManager): Vertex[] {
     let vertices: Vertex[] = [];
 
     for (let x = 0; x < CHUNK_WIDTH; x++) {
@@ -161,44 +168,52 @@ function buildChunkMesh(chunk: Chunk): Vertex[] {
                 const size = 1;
                 const pX = x * size, pY = (y * size) - CHUNK_HEIGHT*size, pZ = z * size;
 
-                // Skip air blocks or empty spaces
                 if (currentBlock.getBlockType() === BlockType.Air) {
                     continue;
                 }
 
-                // Front face (-Z)
-                if (z === 0 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x][y][z - 1].getBlockType())) {
-                    if(z!==0){//testing inside chunk culling
-                        vertices.push(...createFace(pX, pY, pZ, "front", size));
+                // Check faces within the chunk
+                const checkNeighbor = (localX: number, localY: number, localZ: number, direction: FaceDirectionKey) => {
+                    let neighborBlock: Block | null = null;
+
+                    // If we're at a chunk boundary
+                    if (localX < 0 || localX >= CHUNK_WIDTH || 
+                        localZ < 0 || localZ >= CHUNK_DEPTH) {
+                        
+                        // Calculate neighboring chunk coordinates
+                        const neighborChunkX = chunk.position.x + Math.floor(localX / CHUNK_WIDTH);
+                        const neighborChunkZ = chunk.position.z + Math.floor(localZ / CHUNK_DEPTH);
+                        
+                        // Get the neighboring chunk
+                        const neighborChunk = worldManager.getChunkAt(neighborChunkX, neighborChunkZ);
+                        
+                        if (neighborChunk) {
+                            // Convert to local coordinates within the neighbor chunk
+                            const neighborLocalX = ((localX % CHUNK_WIDTH) + CHUNK_WIDTH) % CHUNK_WIDTH;
+                            const neighborLocalZ = ((localZ % CHUNK_DEPTH) + CHUNK_DEPTH) % CHUNK_DEPTH;
+                            
+                            neighborBlock = neighborChunk.chunkBlocks[neighborLocalX][localY][neighborLocalZ];
+                        }
+                    } else if (localY < 0 || localY >= CHUNK_HEIGHT) {
+                        // Don't render faces at vertical boundaries
+                        neighborBlock = new Block(BlockType.Solid);
+                    } else {
+                        // Get block within the current chunk
+                        neighborBlock = chunk.chunkBlocks[localX][localY][localZ];
                     }
-                }
 
-                // Back face (+Z)
-                if (z === CHUNK_DEPTH - 1 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x][y][z + 1].getBlockType())) {
-                    if(z!==CHUNK_DEPTH - 1){//testing inside chunk culling
-                        vertices.push(...createFace(pX, pY, pZ, "back", size));
+                    if (neighborBlock && shouldGenerateFace(currentBlock.getBlockType(), neighborBlock.getBlockType())) {
+                        vertices.push(...createFace(pX, pY, pZ, direction, size));
                     }
-                }
+                };
 
-                // Left face (-X)
-                if (x === 0 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x - 1][y][z].getBlockType())) {
-                    vertices.push(...createFace(pX, pY, pZ, "left", size));
-                }
-
-                // Right face (+X)
-                if (x === CHUNK_WIDTH - 1 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x + 1][y][z].getBlockType())) {
-                    vertices.push(...createFace(pX, pY, pZ, "right", size));
-                }
-
-                // Top face (+Y)
-                if (y === CHUNK_HEIGHT - 1 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x][y + 1][z].getBlockType())) {
-                    vertices.push(...createFace(pX, pY, pZ, "top", size));
-                }
-
-                // Bottom face (-Y)
-                if (y === 0 || shouldGenerateFace(currentBlock.getBlockType(), chunk.chunkBlocks[x][y - 1][z].getBlockType())) {
-                    vertices.push(...createFace(pX, pY, pZ, "bottom", size));
-                }
+                // Check all six faces with neighbor awareness
+                checkNeighbor(x, y, z - 1, "front");  // Front face (-Z)
+                checkNeighbor(x, y, z + 1, "back");   // Back face (+Z)
+                checkNeighbor(x - 1, y, z, "left");   // Left face (-X)
+                checkNeighbor(x + 1, y, z, "right");  // Right face (+X)
+                checkNeighbor(x, y + 1, z, "top");    // Top face (+Y)
+                checkNeighbor(x, y - 1, z, "bottom"); // Bottom face (-Y)
             }
         }
     }
@@ -314,13 +329,34 @@ class WorldChunkManager {
         for (let x = 0; x < worldWidth; x++) {
             const chunkColumn = [];
             for (let z = 0; z < worldDepth; z++) {
-                const chunk = new Chunk();
+                const chunk = new Chunk(x, z);
                 chunkColumn.push(chunk);
             }
             this.chunks.push(chunkColumn);
         }
 
+        this.rebuildAllChunks();
         console.log("CHUNK LEN " + this.chunks.length + "| CHUNK LEN-0 " + this.chunks[0].length + "|");
+    }
+
+    rebuildAllChunks(): void {
+        for (let x = 0; x < this.chunks.length; x++) {
+            for (let z = 0; z < this.chunks[x].length; z++) {
+                this.chunks[x][z].buildMesh(this);
+            }
+        }
+    }
+
+    getChunkAt(x: number, z: number): Chunk | null {
+        // Handle wrap-around for negative coordinates
+        const worldX = ((x % this.chunks.length) + this.chunks.length) % this.chunks.length;
+        const worldZ = ((z % this.chunks[0].length) + this.chunks[0].length) % this.chunks[0].length;
+
+        if (worldX >= 0 && worldX < this.chunks.length && 
+            worldZ >= 0 && worldZ < this.chunks[0].length) {
+            return this.chunks[worldX][worldZ];
+        }
+        return null;
     }
 
     // Render Chunk Handler
@@ -364,7 +400,7 @@ class WorldChunkManager {
         }
     }
 
-        // Function to get the chunk the player is currently in
+    // Function to get the chunk the player is currently in
     getPlayerChunkCoords(playerPosition: glMatrix.vec3): [number, number] {
         const chunkX = Math.floor(playerPosition[0] / (CHUNK_WIDTH*CHUNK_SCALE));
         const chunkZ = Math.floor(playerPosition[2] / (CHUNK_DEPTH*CHUNK_SCALE));
@@ -376,3 +412,4 @@ class WorldChunkManager {
 
 //textOverlay6.textContent = "Camera in Chunk X: " + chunkX + " | Chunk Z: " + chunkZ;
 //const textOverlay6 = document.getElementById('textOverlay6') as HTMLElement;
+
