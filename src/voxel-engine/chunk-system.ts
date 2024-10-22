@@ -54,8 +54,8 @@ class Chunk {
             for (let y = 0; y < CHUNK_HEIGHT; y++) {
                 const column = [];
                 for (let z = 0; z < CHUNK_DEPTH; z++) {
-                    //for now always make grass
-                    column.push(new Block(BlockType.Grass));
+                    //for now always make solid
+                    column.push(new Block(BlockType.Solid));
                     //Math.random() > 0.5/*(0.1 + (y*0.15))*/ ? column.push(new Block(BlockType.Air)) : column.push(new Block(BlockType.Grass));
                     
                     /*if (y < 50) {
@@ -314,7 +314,7 @@ function flattenVertices(vertices: Vertex[]): Float32Array {
 }
 
 
-export { Chunk, Block, BlockType, buildChunkMesh, WorldChunkManager };
+
 
 
 
@@ -389,7 +389,7 @@ class WorldChunkManager {
                     const chunkModelTransform = glMatrix.vec3.fromValues(x * CHUNK_WIDTH, 0, z * CHUNK_DEPTH);
 
                     // Render the chunk
-                    chunk.Render(gl, GlobalWebGLItems.ShaderChunk, chunkModelTransform);
+                    chunk.Render(gl, shader, chunkModelTransform);
 
                     if (chunk.isDirty) {
                         // Update the chunk if needed
@@ -413,3 +413,4 @@ class WorldChunkManager {
 //textOverlay6.textContent = "Camera in Chunk X: " + chunkX + " | Chunk Z: " + chunkZ;
 //const textOverlay6 = document.getElementById('textOverlay6') as HTMLElement;
 
+export { Chunk, Block, BlockType, buildChunkMesh, WorldChunkManager };

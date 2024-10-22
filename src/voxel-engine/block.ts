@@ -1,8 +1,6 @@
 enum BlockType {
     Air,
-    Grass,
-    Dirt,
-    // Add more block types as needed
+    Solid
 }
 
 class Block {

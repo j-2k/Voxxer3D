@@ -5,7 +5,7 @@ import { Cube3D } from './shapes-data';
 import { CameraManager } from './camera';
 import { Shader } from './shader-master';
 import Draw from './shapes-draw';
-import { Chunk, Block, BlockType, buildChunkMesh, WorldChunkManager } from './voxel-engine/chunk-system';
+import { WorldChunkManager } from './voxel-engine/chunk-system';
 
 
 function EngineRenderer(gl : WebGLRenderingContext)
@@ -44,7 +44,7 @@ class GlobalWebGLItems{
         vertexColBuffer : null as WebGLBuffer | null,
     }
 
-    public static debugChunk = new Chunk();
+    //public static debugChunk = new Chunk(0,0);
     public static chunkManager : WorldChunkManager;// = new WorldChunkManager(10, 10); 
 }
 
