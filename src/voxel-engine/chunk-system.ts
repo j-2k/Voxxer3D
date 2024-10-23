@@ -196,7 +196,7 @@ function buildChunkMesh(chunk: Chunk, worldManager: WorldChunkManager): Vertex[]
                         }
                     } else if (localY < 0 || localY >= CHUNK_HEIGHT) {
                         // Don't render faces at vertical boundaries
-                        neighborBlock = new Block(BlockType.Solid);
+                        neighborBlock = new Block(BlockType.Air);
                     } else {
                         // Get block within the current chunk
                         neighborBlock = chunk.chunkBlocks[localX][localY][localZ];
