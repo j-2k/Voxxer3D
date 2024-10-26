@@ -37,10 +37,10 @@ class Chunk {
     isDirty: boolean = false;
     position: { x: number, z: number };
 
-    constructor(x: number, z: number) {
+    constructor(x: number, z: number, seed: number) {
         // Create the blocks
         this.position = { x, z };
-        this.chunkBlocks = this.generateChunk();
+        this.chunkBlocks = this.generateChunk(seed);
         this.flatMeshVerts = new Float32Array(0);
     }
 
@@ -51,29 +51,33 @@ class Chunk {
 
     private static noise3D = createNoise3D();
 
-    generateChunk(): Block[][][] {
+    generateChunk(seed: number): Block[][][] {
         const chunk = [];
         for (let x = 0; x < CHUNK_WIDTH; x++) {
             const plane = [];
             for (let y = 0; y < CHUNK_HEIGHT; y++) {
                 const column = [];
                 for (let z = 0; z < CHUNK_DEPTH; z++) {
-                    //for now always make solid
-                    //column.push(new Block(BlockType.Solid));
-                    //Math.random() > 0.5/*(0.1 + (y*0.15))*/ ? column.push(new Block(BlockType.Air)) : column.push(new Block(BlockType.Grass));
+                    // Use the chunk position and seed for noise generation
+                    const worldX = x + this.position.x * CHUNK_WIDTH;
+                    const worldZ = z + this.position.z * CHUNK_DEPTH;
                     
-                    /*if (y < 50) {
-                        column.push(new Block(BlockType.Grass));  // Add solid block up to a certain height
-                    } else {
-                        column.push(new Block(BlockType.Air));    // Above that height, it's air
-                    }*/
-
+                    // Add seed to coordinates for different world generation
                     const noiseValue = Chunk.noise3D(
-                        (x + this.position.x * CHUNK_WIDTH) * 0.1,
+                        (worldX + seed) * 0.1,
                         y * 0.1,
-                        (z + this.position.z * CHUNK_DEPTH) * 0.1
+                        (worldZ + seed) * 0.1
                     );
-                    const blockType = noiseValue > 0 ? BlockType.Solid : BlockType.Air;
+
+                    // You can add multiple noise layers for more interesting terrain
+                    const mountainNoise = Chunk.noise3D(
+                        (worldX + seed) * 0.05,
+                        y * 0.05,
+                        (worldZ + seed) * 0.05
+                    );
+
+                    const combinedNoise = (noiseValue + mountainNoise * 0.5) / 1.5;
+                    const blockType = combinedNoise > 0 ? BlockType.Solid : BlockType.Air;
                     column.push(new Block(blockType));
                 }
                 plane.push(column);
@@ -81,6 +85,22 @@ class Chunk {
             chunk.push(plane);
         }
 
+
+
+        // Add your existing ring of air blocks logic here if needed
+        const topLayerY = CHUNK_HEIGHT - 1;
+        for (let x = 0; x < CHUNK_WIDTH; x++) {
+            for (let z = 0; z < CHUNK_DEPTH; z++) {
+                if (x == 0 || x == CHUNK_WIDTH - 1 || z == 0 || z == CHUNK_DEPTH - 1) {
+                    chunk[x][topLayerY][z] = new Block(BlockType.Air);
+                }
+            }
+        }
+        
+        return chunk;
+    }
+
+/*
     // Add a ring of air blocks around the top face of the chunk (y = CHUNK_HEIGHT - 1)
     const topLayerY = CHUNK_HEIGHT - 1;
     for (let x = 0; x < CHUNK_WIDTH; x++) {
@@ -93,7 +113,7 @@ class Chunk {
     }
         
         return chunk;
-    }
+    }*/
 
     // Update method with delta time (dt)
     public Update(dt: number): void {
@@ -184,48 +204,42 @@ function buildChunkMesh(chunk: Chunk, worldManager: WorldChunkManager): Vertex[]
                     continue;
                 }
 
-                // Check faces within the chunk
+                // Modified neighbor checking function
                 const checkNeighbor = (localX: number, localY: number, localZ: number, direction: FaceDirectionKey) => {
-                    let neighborBlock: Block | null = null;
-
-                    // If we're at a chunk boundary
+                    // Always generate faces at chunk boundaries
                     if (localX < 0 || localX >= CHUNK_WIDTH || 
-                        localZ < 0 || localZ >= CHUNK_DEPTH) {
-                        
-                        // Calculate neighboring chunk coordinates
-                        const neighborChunkX = chunk.position.x + Math.floor(localX / CHUNK_WIDTH);
-                        const neighborChunkZ = chunk.position.z + Math.floor(localZ / CHUNK_DEPTH);
-                        
-                        // Get the neighboring chunk
-                        const neighborChunk = worldManager.getChunkAt(neighborChunkX, neighborChunkZ);
-                        
-                        if (neighborChunk) {
-                            // Convert to local coordinates within the neighbor chunk
-                            const neighborLocalX = ((localX % CHUNK_WIDTH) + CHUNK_WIDTH) % CHUNK_WIDTH;
-                            const neighborLocalZ = ((localZ % CHUNK_DEPTH) + CHUNK_DEPTH) % CHUNK_DEPTH;
-                            
-                            neighborBlock = neighborChunk.chunkBlocks[neighborLocalX][localY][neighborLocalZ];
-                        }
-                    } else if (localY < 0 || localY >= CHUNK_HEIGHT) {
-                        // Don't render faces at vertical boundaries
-                        neighborBlock = new Block(BlockType.Air);
-                    } else {
-                        // Get block within the current chunk
-                        neighborBlock = chunk.chunkBlocks[localX][localY][localZ];
+                        localZ < 0 || localZ >= CHUNK_DEPTH || 
+                        localY < 0 || localY >= CHUNK_HEIGHT) {
+                        // Create face at boundary
+                        vertices.push(...createFace(pX, pY, pZ, direction, size));
+                        return;
                     }
 
-                    if (neighborBlock && shouldGenerateFace(currentBlock.getBlockType(), neighborBlock.getBlockType())) {
+                    // Check within current chunk only
+                    const neighborBlock = chunk.chunkBlocks[localX][localY][localZ];
+                    if (shouldGenerateFace(currentBlock.getBlockType(), neighborBlock.getBlockType())) {
                         vertices.push(...createFace(pX, pY, pZ, direction, size));
                     }
                 };
 
-                // Check all six faces with neighbor awareness
-                checkNeighbor(x, y, z - 1, "front");  // Front face (-Z)
-                checkNeighbor(x, y, z + 1, "back");   // Back face (+Z)
-                checkNeighbor(x - 1, y, z, "left");   // Left face (-X)
-                checkNeighbor(x + 1, y, z, "right");  // Right face (+X)
-                checkNeighbor(x, y + 1, z, "top");    // Top face (+Y)
-                checkNeighbor(x, y - 1, z, "bottom"); // Bottom face (-Y)
+                // Check all six faces
+                if (x === 0 || z === 0 || x === CHUNK_WIDTH - 1 || z === CHUNK_DEPTH - 1) {
+                    // At chunk boundaries, always check all faces
+                    checkNeighbor(x - 1, y, z, "left");
+                    checkNeighbor(x + 1, y, z, "right");
+                    checkNeighbor(x, y, z - 1, "front");
+                    checkNeighbor(x, y, z + 1, "back");
+                } else {
+                    // Inside chunk, only check immediate neighbors
+                    if (x > 0) checkNeighbor(x - 1, y, z, "left");
+                    if (x < CHUNK_WIDTH - 1) checkNeighbor(x + 1, y, z, "right");
+                    if (z > 0) checkNeighbor(x, y, z - 1, "front");
+                    if (z < CHUNK_DEPTH - 1) checkNeighbor(x, y, z + 1, "back");
+                }
+                
+                // Top and bottom faces are always checked
+                checkNeighbor(x, y + 1, z, "top");
+                checkNeighbor(x, y - 1, z, "bottom");
             }
         }
     }
@@ -326,14 +340,34 @@ function flattenVertices(vertices: Vertex[]): Float32Array {
 }
 
 
-
-
-
-
 class WorldChunkManager {
-    chunks: Chunk[][]; // 2D array for holding chunks
+    chunks: Map<string, Chunk>;
     drawDistance: number; // How many chunks to render in each direction from the player
+    seed: number; // Add seed for consistent noise generation
 
+    constructor(_drawDistance: number = 4) {
+        this.chunks = new Map();
+        this.drawDistance = _drawDistance;
+        this.seed = Math.random() * 10000; // Random seed for noise generation
+    }
+
+    // Generate a unique key for each chunk position
+    private getChunkKey(x: number, z: number): string {
+        return `${x},${z}`;
+    }
+
+    getChunkAt(x: number, z: number): Chunk | null {
+        const key = this.getChunkKey(x, z);
+        if (!this.chunks.has(key)) {
+            // Create new chunk if it doesn't exist
+            const chunk = new Chunk(x, z, this.seed);
+            this.chunks.set(key, chunk);
+            chunk.buildMesh(this);
+        }
+        return this.chunks.get(key) || null;
+    }
+
+    /*
     constructor(worldWidth: number = 16, worldDepth: number = 16, _drawDistance: number = 4) {
         this.chunks = [];
         this.drawDistance = _drawDistance; // Default draw distance
@@ -358,6 +392,7 @@ class WorldChunkManager {
             }
         }
     }
+    
 
     getChunkAt(x: number, z: number): Chunk | null {
         // Handle wrap-around for negative coordinates
@@ -369,7 +404,7 @@ class WorldChunkManager {
             return this.chunks[worldX][worldZ];
         }
         return null;
-    }
+    }*/
 
     // Render Chunk Handler
     public Render(gl: WebGLRenderingContext, shader: Shader): void {
@@ -387,26 +422,40 @@ class WorldChunkManager {
 
         const [playerChunkX, playerChunkZ] = this.getPlayerChunkCoords(GlobalWebGLItems.Camera.cameraPosition);
         const halfDrawDistance = Math.floor(this.drawDistance /2);
+
+        // Keep track of chunks that are currently visible
+        const visibleChunkKeys = new Set<string>();
     
+           // Render chunks within draw distance
         for (let x = playerChunkX - halfDrawDistance; x <= playerChunkX + halfDrawDistance; x++) {
             for (let z = playerChunkZ - halfDrawDistance; z <= playerChunkZ + halfDrawDistance; z++) {
-                // Handle chunk lookups for negative coordinates - This wrap-around system is crazy
-                const worldX = ((x % this.chunks.length) + this.chunks.length) % this.chunks.length;
-                const worldZ = ((z % this.chunks[0].length) + this.chunks[0].length) % this.chunks[0].length;
-
-                if (worldX >= 0 && worldX < this.chunks.length && worldZ >= 0 && worldZ < this.chunks[0].length) {
-                    const chunk = this.chunks[worldX][worldZ];
-                    
-                    // Calculate the chunk model's transformation matrix
-                    const chunkModelTransform = glMatrix.vec3.fromValues(x * CHUNK_WIDTH, 0, z * CHUNK_DEPTH);
-
-                    // Render the chunk
+                const key = this.getChunkKey(x, z);
+                visibleChunkKeys.add(key);
+                
+                const chunk = this.getChunkAt(x, z);
+                if (chunk) {
+                    const chunkModelTransform = glMatrix.vec3.fromValues(
+                        x * CHUNK_WIDTH, 
+                        0, 
+                        z * CHUNK_DEPTH
+                    );
                     chunk.Render(gl, shader, chunkModelTransform);
-
-                    if (chunk.isDirty) {
-                        // Update the chunk if needed
-                        // chunk.Update(0);
-                    }
+                }
+            }
+        }
+            
+        // Optional: Clean up chunks that are too far away
+        // This prevents memory usage from growing indefinitely
+        for (const [key, chunk] of this.chunks) {
+            if (!visibleChunkKeys.has(key)) {
+                // Only remove chunks that are significantly outside draw distance
+                const [x, z] = key.split(',').map(Number);
+                const distance = Math.max(
+                    Math.abs(x - playerChunkX),
+                    Math.abs(z - playerChunkZ)
+                );
+                if (distance > this.drawDistance * 2) {
+                    this.chunks.delete(key);
                 }
             }
         }
