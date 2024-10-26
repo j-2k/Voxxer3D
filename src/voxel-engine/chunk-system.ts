@@ -61,7 +61,7 @@ class Chunk {
                     // Use the chunk position and seed for noise generation
                     const worldX = x + this.position.x * CHUNK_WIDTH;
                     const worldZ = z + this.position.z * CHUNK_DEPTH;
-                    
+                    /*
                     // Add seed to coordinates for different world generation
                     const noiseValue = Chunk.noise3D(
                         (worldX + seed) * 0.1,
@@ -79,6 +79,8 @@ class Chunk {
                     const combinedNoise = (noiseValue + mountainNoise * 0.5) / 1.5;
                     const blockType = combinedNoise > 0 ? BlockType.Solid : BlockType.Air;
                     column.push(new Block(blockType));
+                    */
+                    column.push(new Block(BlockType.Solid));
                 }
                 plane.push(column);
             }
