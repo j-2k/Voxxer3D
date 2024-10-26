@@ -4,6 +4,8 @@ import Time from '../time-manager';
 import { Block, BlockType } from './block';
 import * as glMatrix from 'gl-matrix';
 
+import { createNoise3D } from 'simplex-noise';
+
 const CHUNK_WIDTH: number = 16;
 const CHUNK_HEIGHT: number = 16;
 const CHUNK_DEPTH: number = 16;
@@ -47,6 +49,8 @@ class Chunk {
         this.isDirty = false;
     }
 
+    private static noise3D = createNoise3D();
+
     generateChunk(): Block[][][] {
         const chunk = [];
         for (let x = 0; x < CHUNK_WIDTH; x++) {
@@ -55,7 +59,7 @@ class Chunk {
                 const column = [];
                 for (let z = 0; z < CHUNK_DEPTH; z++) {
                     //for now always make solid
-                    column.push(new Block(BlockType.Solid));
+                    //column.push(new Block(BlockType.Solid));
                     //Math.random() > 0.5/*(0.1 + (y*0.15))*/ ? column.push(new Block(BlockType.Air)) : column.push(new Block(BlockType.Grass));
                     
                     /*if (y < 50) {
@@ -63,6 +67,14 @@ class Chunk {
                     } else {
                         column.push(new Block(BlockType.Air));    // Above that height, it's air
                     }*/
+
+                    const noiseValue = Chunk.noise3D(
+                        (x + this.position.x * CHUNK_WIDTH) * 0.1,
+                        y * 0.1,
+                        (z + this.position.z * CHUNK_DEPTH) * 0.1
+                    );
+                    const blockType = noiseValue > 0 ? BlockType.Solid : BlockType.Air;
+                    column.push(new Block(blockType));
                 }
                 plane.push(column);
             }

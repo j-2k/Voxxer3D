@@ -29,7 +29,13 @@ void main() {
     float aspectRatio = res.x / res.y;    */
     //Debug Normals & UVs!
     //gl_FragColor = vec4(abs(v_normal),1.0);
-    gl_FragColor = vec4(vec2(step(1.,v_uv*2.)),0.,1.0);
+
+    vec2 scaledUV = v_uv.xy * 1.1; //2.1 for icey windows!
+    vec2 fractUV = fract(scaledUV);
+
+    float bl = step(0.1, fractUV.x) * step(0.1, fractUV.y);
+    gl_FragColor = vec4(vec3(bl),1.0);
+    //gl_FragColor = vec4(vec2(step(1.,v_uv * 2.)),0.,1.0);
 
 
 /*
