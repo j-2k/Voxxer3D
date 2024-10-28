@@ -58,37 +58,41 @@ class Chunk {
             for (let y = 0; y < CHUNK_HEIGHT; y++) {
                 const column = [];
                 for (let z = 0; z < CHUNK_DEPTH; z++) {
-                    // Use the chunk position and seed for noise generation
+                    // Get world coordinates
                     const worldX = x + this.position.x * CHUNK_WIDTH;
                     const worldZ = z + this.position.z * CHUNK_DEPTH;
                     
-                    // Add seed to coordinates for different world generation
-                    const noiseValue = WorldChunkManager.noise3D(
-                        (worldX + seed) * 0.1,
-                        y * 0.1,
-                        (worldZ + seed) * 0.1
+                    // Create base terrain height using larger scale noise
+                    const baseHeight = WorldChunkManager.noise3D(
+                        (worldX + seed) * 0.02, // Reduced frequency for smoother terrain
+                        0,                      // Keep y at 0 for 2D noise
+                        (worldZ + seed) * 0.02
                     );
-
-                    // You can add multiple noise layers for more interesting terrain
-                    const mountainNoise = WorldChunkManager.noise3D(
-                        (worldX + seed) * 0.05,
-                        y * 0.05,
-                        (worldZ + seed) * 0.05
-                    );
-
-                    const combinedNoise = (noiseValue + mountainNoise * 0.5) / 1.5;
-                    const blockType = combinedNoise > 0 ? BlockType.Solid : BlockType.Air;
-                    column.push(new Block(blockType));
                     
-                    //column.push(new Block(BlockType.Solid));
+                    // Add detail with another noise layer
+                    const detail = WorldChunkManager.noise3D(
+                        (worldX + seed) * 0.1,
+                        0,
+                        (worldZ + seed) * 0.1
+                    ) * 0.2; // Reduce detail intensity
+                    
+                    // Combine noise layers
+                    const combinedNoise = (baseHeight + detail);
+                    
+                    // Convert noise to height (scale up and shift to be mostly positive)
+                    const heightValue = (combinedNoise + 1) * 0.5 * CHUNK_HEIGHT;
+                    
+                    // Fill blocks based on height
+                    const blockType = y < heightValue ? BlockType.Dirt : BlockType.Air;
+                    column.push(new Block(blockType));
                 }
                 plane.push(column);
             }
             chunk.push(plane);
         }
-
-
-
+        
+        return chunk;
+    
         // Add your existing ring of air blocks logic here if needed
         const topLayerY = CHUNK_HEIGHT - 1;
         for (let x = 0; x < CHUNK_WIDTH; x++) {
@@ -101,21 +105,6 @@ class Chunk {
         
         return chunk;
     }
-
-/*
-    // Add a ring of air blocks around the top face of the chunk (y = CHUNK_HEIGHT - 1)
-    const topLayerY = CHUNK_HEIGHT - 1;
-    for (let x = 0; x < CHUNK_WIDTH; x++) {
-        for (let z = 0; z < CHUNK_DEPTH; z++) {
-            // Check if we are on the edge (forming a ring)
-            if (x == 0 || x == CHUNK_WIDTH - 1 || z == 0 || z == CHUNK_DEPTH - 1) {
-                chunk[x][topLayerY][z] = new Block(BlockType.Air);  // Replace with air
-            }
-        }
-    }
-        
-        return chunk;
-    }*/
 
     // Update method with delta time (dt)
     public Update(dt: number): void {
@@ -251,22 +240,22 @@ function buildChunkMesh(chunk: Chunk, worldManager: WorldChunkManager): Vertex[]
 
                 // Check faces
                 if (shouldGenerateFace(currentBlock.getBlockType(), getNeighborBlockType(x - 1, y, z))) {
-                    vertices.push(...createFace(pX, pY, pZ, "left", size));
+                    vertices.push(...createFace(pX, pY, pZ, "left", currentBlock, size));
                 }
                 if (shouldGenerateFace(currentBlock.getBlockType(), getNeighborBlockType(x + 1, y, z))) {
-                    vertices.push(...createFace(pX, pY, pZ, "right", size));
+                    vertices.push(...createFace(pX, pY, pZ, "right", currentBlock, size));
                 }
                 if (shouldGenerateFace(currentBlock.getBlockType(), getNeighborBlockType(x, y, z - 1))) {
-                    vertices.push(...createFace(pX, pY, pZ, "front", size));
+                    vertices.push(...createFace(pX, pY, pZ, "front", currentBlock, size));
                 }
                 if (shouldGenerateFace(currentBlock.getBlockType(), getNeighborBlockType(x, y, z + 1))) {
-                    vertices.push(...createFace(pX, pY, pZ, "back", size));
+                    vertices.push(...createFace(pX, pY, pZ, "back", currentBlock, size));
                 }
                 if (shouldGenerateFace(currentBlock.getBlockType(), getNeighborBlockType(x, y + 1, z))) {
-                    vertices.push(...createFace(pX, pY, pZ, "top", size));
+                    vertices.push(...createFace(pX, pY, pZ, "top", currentBlock, size));
                 }
                 if (shouldGenerateFace(currentBlock.getBlockType(), getNeighborBlockType(x, y - 1, z))) {
-                    vertices.push(...createFace(pX, pY, pZ, "bottom", size));
+                    vertices.push(...createFace(pX, pY, pZ, "bottom", currentBlock, size));
                 }
             }
         }
@@ -274,16 +263,10 @@ function buildChunkMesh(chunk: Chunk, worldManager: WorldChunkManager): Vertex[]
     return vertices;
 }
 
-let i = 0, onerun = true;
-function createFace(x: number, y: number, z: number, direction: FaceDirectionKey, size: number = 1): Vertex[] {
-    
-    if(onerun)  {
-        console.log("CreateFace: " + direction + "Face: " + i);
-        i++;
-        if(i > 5) onerun = false;
-    }
-    
-    const normal = [...FaceDirections[direction]] as [number, number, number]; // Convert to mutable tuple
+function createFace(x: number, y: number, z: number, direction: FaceDirectionKey, block: Block, size: number = 1): Vertex[] {
+    const normal = [...FaceDirections[direction]] as [number, number, number];
+    const [texU, texV] = block.getTextureCoords(direction);
+
     switch (direction) {
         case "front":
             return [
