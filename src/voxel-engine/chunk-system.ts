@@ -4,7 +4,8 @@ import Time from '../time-manager';
 import { Block, BlockType } from './block';
 import * as glMatrix from 'gl-matrix';
 
-import { createNoise3D } from 'simplex-noise';
+import { createNoise3D, NoiseFunction3D } from 'simplex-noise';
+import seedrandom from 'seedrandom';
 
 const CHUNK_WIDTH: number = 16;
 const CHUNK_HEIGHT: number = 16;
@@ -92,7 +93,7 @@ class Chunk {
         }
         
         return chunk;
-    
+        
         // Add your existing ring of air blocks logic here if needed
         const topLayerY = CHUNK_HEIGHT - 1;
         for (let x = 0; x < CHUNK_WIDTH; x++) {
@@ -355,12 +356,16 @@ class WorldChunkManager {
     chunks: Map<string, Chunk>;
     drawDistance: number;
     seed: number;
-    static noise3D = createNoise3D();
+    static noise3D : NoiseFunction3D;
 
-    constructor(_drawDistance: number = 4) {
+    constructor(_drawDistance: number = 4, inputSeed : number | string = Math.random() * 10000) {
         this.chunks = new Map();
         this.drawDistance = _drawDistance;
-        this.seed = Math.random() * 10000;
+
+        //hash the seed if its a string
+        this.seed = typeof inputSeed === 'string' ? this.hashStringToNumber(inputSeed) : inputSeed;
+        const rng = seedrandom(this.seed);
+        WorldChunkManager.noise3D = createNoise3D(rng);
     }
 
     private getChunkKey(x: number, z: number): string {
@@ -455,6 +460,19 @@ class WorldChunkManager {
         const chunkX = Math.floor(playerPosition[0] / (CHUNK_WIDTH * CHUNK_SCALE));
         const chunkZ = Math.floor(playerPosition[2] / (CHUNK_DEPTH * CHUNK_SCALE));
         return [chunkX, chunkZ];
+    }
+
+    // Method to hash a string into a number
+    private hashStringToNumber(input: string): number {
+        let hash = 0;
+        for (let i = 0; i < input.length; i++) {
+            const char = input.charCodeAt(i);
+
+            //I will try to explain this hash & wtf goin on
+            //
+            hash = (hash * 31 + char) & 0xffffffff; // Keep it in the 32-bit range
+        }
+        return Math.abs(hash); // Ensure the hash is positive
     }
 }
 
