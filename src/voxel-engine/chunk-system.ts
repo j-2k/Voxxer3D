@@ -94,7 +94,7 @@ class Chunk {
         
         return chunk;
         
-        // Add your existing ring of air blocks logic here if needed
+        // Not needed but was used to create ring air blocks around the chunk
         const topLayerY = CHUNK_HEIGHT - 1;
         for (let x = 0; x < CHUNK_WIDTH; x++) {
             for (let z = 0; z < CHUNK_DEPTH; z++) {
@@ -466,10 +466,13 @@ class WorldChunkManager {
     private hashStringToNumber(input: string): number {
         let hash = 0;
         for (let i = 0; i < input.length; i++) {
+            //https://en.wikipedia.org/wiki/List_of_Unicode_characters
+            //each character in the input string will be parsed to a number
+            //you can find the decimal value for each character in the link above!
             const char = input.charCodeAt(i);
 
             //I will try to explain this hash & wtf goin on
-            //
+            //Once the decimal value is retrieved it is added to the hash * by 31, 31 being a prime number
             hash = (hash * 31 + char) & 0xffffffff; // Keep it in the 32-bit range
         }
         return Math.abs(hash); // Ensure the hash is positive
