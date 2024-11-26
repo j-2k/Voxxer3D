@@ -85,12 +85,11 @@ class Chunk {
                     
                     let blockType: BlockType;
 
-                    if (y < CHUNK_HEIGHT / 2) {
-                        // Below half the height, everything is stone
+                    if (y === 0) {
                         blockType = BlockType.Stone;
                     } else {
                         // Above half, base it on height
-                        blockType = y < heightValue ? BlockType.Dirt : BlockType.Air;
+                        blockType = y < heightValue ? BlockType.Grass : BlockType.Air;
                     }
                     setBlockUniforms(blockType,GlobalWebGLItems.ShaderChunk);
                     column.push(new Block(blockType));
@@ -130,9 +129,9 @@ class Chunk {
 
         // Bind the atlas texture to texture unit 1
         //I dont know if this was the correct fix but this shit was fucked, seems it has to be a uid for every texture even if its a diff shader? ig?
-        //gl.activeTexture(gl.TEXTURE1);
-        //gl.bindTexture(gl.TEXTURE_2D, GlobalWebGLItems.atlasTextureToBind);
-        shader.setUniform1i("u_texture", 1); // Tell shader to use texture unit 1
+        gl.activeTexture(gl.TEXTURE2);
+        gl.bindTexture(gl.TEXTURE_2D, GlobalWebGLItems.atlasTextureToBind);
+        //shader.setUniform1i("u_texture", 2); // Tell shader to use texture unit 1
 
         //Position Buffer
         const vertexBufferPos = gl.createBuffer();

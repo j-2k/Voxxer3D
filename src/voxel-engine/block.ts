@@ -177,7 +177,7 @@ function setBlockUniforms(
     shader: Shader
 ): void {
     shader.use();
-    const texCoords = BLOCK_PROPERTIES[blockType].textureCoords.top; // Use the top face UV
+    const texCoords = BLOCK_PROPERTIES[blockType].textureCoords.top;
     const numColumns = 4; // Example: Texture atlas has 16x16 cells
     const numRows = 4;
 

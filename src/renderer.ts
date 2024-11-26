@@ -53,11 +53,11 @@ function AtlasTextureBinder(gl : WebGLRenderingContext){
     GlobalWebGLItems.ShaderChunk = new Shader(gl, Materials.Texture.vertexShader, Materials.Texture.fragmentShader);
     GlobalWebGLItems.ShaderChunk.use();
     const atlasTexture = gl.createTexture();
-
-    const atlasImageData = new Image();
+    GlobalWebGLItems.atlasTextureToBind = atlasTexture;
+    const atlasImageData = new Image();    
     atlasImageData.src = "/datlastest.png"
-    
-    atlasImageData.onload = () => {
+
+    atlasImageData.onload = function() {
         gl.bindTexture(gl.TEXTURE_2D, atlasTexture);
 
         // Flip the image's Y axis to match WebGL's coordinate system
@@ -71,12 +71,15 @@ function AtlasTextureBinder(gl : WebGLRenderingContext){
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.generateMipmap(gl.TEXTURE_2D);
+        console.log("Atlas Texture Loaded...");
     }
+
     //GlobalWebGLItems.atlasTextureToBind = atlasTexture;
     // Bind the texture before drawing
-    gl.activeTexture(gl.TEXTURE1);  // Activate texture unit 0
+    gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, atlasTexture);
-
+    GlobalWebGLItems.ShaderChunk.setUniform1i("u_texture", 2);
 }
 
 function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
@@ -197,13 +200,14 @@ function TextureLoader(gl : WebGLRenderingContext){//, shaderProgram : WebGLProg
 
     //Create Texture Loader
     const grassTexture = gl.createTexture();
-    GlobalWebGLItems.grassTexture = grassTexture; 
+    GlobalWebGLItems.grassTexture = grassTexture;
     
     const grassImage = new Image();
     //grassImage.src = "/grassblock/Faithful-x64/side-faithful-grass.png";
     grassImage.src = "/grassblock/grass-atlas/GrassAtlas-256.png";
 
-    grassImage.onload = () => {
+    grassImage.onload = () => 
+    {
         gl.bindTexture(gl.TEXTURE_2D, grassTexture);
 
         // Flip the image's Y axis to match WebGL's coordinate system
@@ -216,22 +220,13 @@ function TextureLoader(gl : WebGLRenderingContext){//, shaderProgram : WebGLProg
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.generateMipmap(gl.TEXTURE_2D);
     }
 
     // Bind the texture before drawing
-    gl.activeTexture(gl.TEXTURE0);  // Activate texture unit 0
+    gl.activeTexture(gl.TEXTURE1);  // Activate texture unit 0
     gl.bindTexture(gl.TEXTURE_2D, grassTexture);
-
-    // Get the location of the sampler uniform in the fragment shader
-    const isUsingTextureUniforms = false
-    if(isUsingTextureUniforms){
-        const samplerUniformLocation = GlobalWebGLItems.GrassBlock.shader?.getUniformLocation("u_texture");
-        if(samplerUniformLocation == undefined){console.error("Failed to get the sampler uniform location in the start function of the renderer...");return;}
-        GlobalWebGLItems.samplerUniformLocation = samplerUniformLocation;
-        // Set the texture unit (0 in this case)
-        GlobalWebGLItems.GrassBlock.shader?.setUniform1i("u_texture",0);
-    }
-
+    GlobalWebGLItems.GrassBlock.shader?.setUniform1i("u_texture", 1);
 }
 
 function ShaderUniforms(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
@@ -251,8 +246,9 @@ function Start(gl : WebGLRenderingContext)
     StartBinders(gl);
 
     //Load Textures
-    TextureLoader(gl);
     AtlasTextureBinder(gl);
+    TextureLoader(gl);
+
 
     //Create Uniforms
     ShaderUniforms(gl);
@@ -279,11 +275,11 @@ function Update(gl: WebGLRenderingContext)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     //gl.bindTexture(gl.TEXTURE_2D, GlobalWebGLItems.grassTexture);
 
-
     CameraManager();
     
     GrassRenderingManager(gl);
-    
+
+    /*
     {
         GlobalWebGLItems.Shader2?.use();
         // Setup uniforms
@@ -348,9 +344,11 @@ function Update(gl: WebGLRenderingContext)
         gl.drawArrays(gl.TRIANGLES, 0, 6*1);
 
         //this isnt actually needed because the same exact attributes are being used in the grass shader, but i will keep it here for reference
-        GlobalWebGLItems.Shader2?.disableAttrib("a_position");
-        GlobalWebGLItems.Shader2?.disableAttrib("a_color");
+        //GlobalWebGLItems.Shader2?.disableAttrib("a_position");
+        //GlobalWebGLItems.Shader2?.disableAttrib("a_color");
     }
+    
+    */
 
     //Debug Render Chunk
     //GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.ShaderChunk);
