@@ -1,3 +1,5 @@
+import {Shader} from './../shader-master';
+
 // Define block materials and their properties
 interface BlockProperties {
     name: string;
@@ -24,7 +26,6 @@ enum BlockType {
     Water = 7
 }
 
-// Block properties lookup table
 const BLOCK_PROPERTIES: { [key in BlockType]: BlockProperties } = {
     [BlockType.Air]: {
         name: "Air",
@@ -42,31 +43,31 @@ const BLOCK_PROPERTIES: { [key in BlockType]: BlockProperties } = {
         name: "Dirt",
         solid: true,
         textureCoords: {
-            top: [2, 0],    // Assuming your texture atlas coordinates
-            bottom: [2, 0],
-            left: [2, 0],
-            right: [2, 0],
-            front: [2, 0],
-            back: [2, 0]
+            top: [1, 0], // Cell 1 in Row 0
+            bottom: [1, 0],
+            left: [1, 0],
+            right: [1, 0],
+            front: [1, 0],
+            back: [1, 0]
         }
     },
     [BlockType.Grass]: {
         name: "Grass",
         solid: true,
         textureCoords: {
-            top: [0, 0],    // Green top
-            bottom: [2, 0],  // Dirt bottom
-            left: [1, 0],    // Grass side
-            right: [1, 0],
-            front: [1, 0],
-            back: [1, 0]
+            top: [0, 0],    // Cell 0 in Row 0 (Green top)
+            bottom: [1, 0], // Cell 1 in Row 0 (Dirt bottom)
+            left: [2, 0],   // Cell 2 in Row 0 (Grass side)
+            right: [2, 0],
+            front: [2, 0],
+            back: [2, 0]
         }
     },
     [BlockType.Stone]: {
         name: "Stone",
         solid: true,
         textureCoords: {
-            top: [3, 0],
+            top: [3, 0], // Cell 3 in Row 0
             bottom: [3, 0],
             left: [3, 0],
             right: [3, 0],
@@ -78,51 +79,52 @@ const BLOCK_PROPERTIES: { [key in BlockType]: BlockProperties } = {
         name: "Wood",
         solid: true,
         textureCoords: {
-            top: [4, 0],    // Top of log
-            bottom: [4, 0],  // Bottom of log
-            left: [4, 1],    // Side of log
-            right: [4, 1],
-            front: [4, 1],
-            back: [4, 1]
+            top: [0, 1],    // Cell 0 in Row 1 (Top of log)
+            bottom: [0, 1], // Cell 0 in Row 1 (Bottom of log)
+            left: [1, 1],   // Cell 1 in Row 1 (Log side)
+            right: [1, 1],
+            front: [1, 1],
+            back: [1, 1]
         }
     },
     [BlockType.Leaves]: {
         name: "Leaves",
         solid: true,
         textureCoords: {
-            top: [5, 0],
-            bottom: [5, 0],
-            left: [5, 0],
-            right: [5, 0],
-            front: [5, 0],
-            back: [5, 0]
+            top: [2, 1], // Cell 2 in Row 1
+            bottom: [2, 1],
+            left: [2, 1],
+            right: [2, 1],
+            front: [2, 1],
+            back: [2, 1]
         }
     },
     [BlockType.Sand]: {
         name: "Sand",
         solid: true,
         textureCoords: {
-            top: [6, 0],
-            bottom: [6, 0],
-            left: [6, 0],
-            right: [6, 0],
-            front: [6, 0],
-            back: [6, 0]
+            top: [3, 1], // Cell 3 in Row 1
+            bottom: [3, 1],
+            left: [3, 1],
+            right: [3, 1],
+            front: [3, 1],
+            back: [3, 1]
         }
     },
     [BlockType.Water]: {
         name: "Water",
         solid: false,
         textureCoords: {
-            top: [7, 0],
-            bottom: [7, 0],
-            left: [7, 0],
-            right: [7, 0],
-            front: [7, 0],
-            back: [7, 0]
+            top: [0, 2], // Cell 0 in Row 2
+            bottom: [0, 2],
+            left: [0, 2],
+            right: [0, 2],
+            front: [0, 2],
+            back: [0, 2]
         }
     }
 };
+
 
 class Block {
     private active: boolean;
@@ -167,6 +169,35 @@ class Block {
     }
 }
 
+//const texOffsetLocation = gl.getUniformLocation(shaderProgram, "u_texOffset");
+//const texScaleLocation = gl.getUniformLocation(shaderProgram, "u_texScale");
+
+function setBlockUniforms(
+    blockType: BlockType,
+    shader: Shader
+): void {
+    shader.use();
+    const texCoords = BLOCK_PROPERTIES[blockType].textureCoords.top; // Use the top face UV
+    const numColumns = 4; // Example: Texture atlas has 16x16 cells
+    const numRows = 4;
+
+    const u = texCoords[0];
+    const v = texCoords[1];
+
+    const texOffset = [
+        u / numColumns,   // Offset X
+        v / numRows       // Offset Y
+    ];
+
+    const texScale = [
+        1 / numColumns,   // Scale X
+        1 / numRows       // Scale Y
+    ];
+
+    shader.setUniform2f("u_texOffset", texOffset[0], texOffset[1]);
+    shader.setUniform2f("u_texScale", texScale[0], texScale[1]);
+}
+
 export type {
     BlockProperties
 };
@@ -174,5 +205,6 @@ export type {
 export {
     Block,
     BlockType,
-    BLOCK_PROPERTIES
+    BLOCK_PROPERTIES,
+    setBlockUniforms
 };

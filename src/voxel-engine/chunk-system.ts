@@ -1,7 +1,7 @@
 import { GlobalWebGLItems } from '../renderer';
 import { Shader } from '../shader-master';
 import Time from '../time-manager';
-import { Block, BlockType } from './block';
+import { Block, BlockType, setBlockUniforms } from './block';
 import * as glMatrix from 'gl-matrix';
 
 import { createNoise3D, NoiseFunction3D } from 'simplex-noise';
@@ -83,8 +83,16 @@ class Chunk {
                     // Convert noise to height (scale up and shift to be mostly positive)
                     const heightValue = (combinedNoise + 1) * 0.5 * CHUNK_HEIGHT;
                     
-                    // Fill blocks based on height
-                    const blockType = y < heightValue ? BlockType.Dirt : BlockType.Air;
+                    let blockType: BlockType;
+
+                    if (y < CHUNK_HEIGHT / 2) {
+                        // Below half the height, everything is stone
+                        blockType = BlockType.Stone;
+                    } else {
+                        // Above half, base it on height
+                        blockType = y < heightValue ? BlockType.Dirt : BlockType.Air;
+                    }
+                    setBlockUniforms(blockType,GlobalWebGLItems.ShaderChunk);
                     column.push(new Block(blockType));
                 }
                 plane.push(column);
@@ -119,6 +127,12 @@ class Chunk {
         // Setup uniforms
         shader.setUniform2f("u_resolution", gl.canvas.width, gl.canvas.height);
         shader.setUniform1f("u_time", Time.time);
+
+        // Bind the atlas texture to texture unit 1
+        //I dont know if this was the correct fix but this shit was fucked, seems it has to be a uid for every texture even if its a diff shader? ig?
+        //gl.activeTexture(gl.TEXTURE1);
+        //gl.bindTexture(gl.TEXTURE_2D, GlobalWebGLItems.atlasTextureToBind);
+        shader.setUniform1i("u_texture", 1); // Tell shader to use texture unit 1
 
         //Position Buffer
         const vertexBufferPos = gl.createBuffer();
@@ -264,81 +278,87 @@ function buildChunkMesh(chunk: Chunk, worldManager: WorldChunkManager): Vertex[]
     return vertices;
 }
 
-function createFace(x: number, y: number, z: number, direction: FaceDirectionKey, block: Block, size: number = 1): Vertex[] {
+function createFace(
+    x: number,
+    y: number,
+    z: number,
+    direction: FaceDirectionKey,
+    block: Block,
+    size: number = 1
+): Vertex[] {
+    // Get the normal for the face based on its direction
     const normal = [...FaceDirections[direction]] as [number, number, number];
+    
+    // Retrieve the UV coordinates for the specific block and face
     const [texU, texV] = block.getTextureCoords(direction);
 
+    // Define the face vertices based on the direction
     switch (direction) {
         case "front":
             return [
-                { position: [x, y, z], normal, uv: [1, 0] },           // Bottom-left
-                { position: [x, y + size, z], normal, uv: [1, 1] },       // Top-left
-                { position: [x + size, y, z], normal, uv: [0, 0] },       // Bottom-right
-                
+                { position: [x, y, z], normal, uv: [texU + 1, texV + 0] },          // Bottom-left
+                { position: [x, y + size, z], normal, uv: [texU + 1, texV + 1] },  // Top-left
+                { position: [x + size, y, z], normal, uv: [texU + 0, texV + 0] },  // Bottom-right
 
-                { position: [x + size, y, z], normal, uv: [0, 0] },       // Bottom-right
-                { position: [x, y + size, z], normal, uv: [1, 1] },       // Top-left
-                { position: [x + size, y + size, z], normal, uv: [0, 1] },   // Top-right
-                
+                { position: [x + size, y, z], normal, uv: [texU + 0, texV + 0] },  // Bottom-right
+                { position: [x, y + size, z], normal, uv: [texU + 1, texV + 1] },  // Top-left
+                { position: [x + size, y + size, z], normal, uv: [texU + 0, texV + 1] }, // Top-right
             ];
         case "back":
             return [
-                { position: [x, y, z + size], normal, uv: [0, 0] },
-                { position: [x + size, y, z + size], normal, uv: [1, 0] },
-                { position: [x, y + size, z + size], normal, uv: [0, 1] },
+                { position: [x, y, z + size], normal, uv: [texU + 0, texV + 0] },  // Bottom-left
+                { position: [x + size, y, z + size], normal, uv: [texU + 1, texV + 0] },  // Bottom-right
+                { position: [x, y + size, z + size], normal, uv: [texU + 0, texV + 1] },  // Top-left
 
-                { position: [x + size, y + size, z + size], normal, uv: [1, 1] },
-                { position: [x, y + size, z + size], normal, uv: [0, 1] },
-                { position: [x + size, y, z + size], normal, uv: [1, 0] },
-
-
+                { position: [x + size, y + size, z + size], normal, uv: [texU + 1, texV + 1] },  // Top-right
+                { position: [x, y + size, z + size], normal, uv: [texU + 0, texV + 1] },  // Top-left
+                { position: [x + size, y, z + size], normal, uv: [texU + 1, texV + 0] },  // Bottom-right
             ];
         case "left":
             return [
-                { position: [x, y, z], normal, uv: [0, 0] },
-                { position: [x, y, z + size], normal, uv: [1, 0] },
-                { position: [x, y + size, z], normal, uv: [0, 1] },
+                { position: [x, y, z], normal, uv: [texU + 0, texV + 0] },  // Bottom-left
+                { position: [x, y, z + size], normal, uv: [texU + 1, texV + 0] },  // Bottom-right
+                { position: [x, y + size, z], normal, uv: [texU + 0, texV + 1] },  // Top-left
 
-                { position: [x, y, z + size], normal, uv: [1, 0] },
-                { position: [x, y + size, z + size], normal, uv: [1, 1] },
-                { position: [x, y + size, z], normal, uv: [0, 1] },
+                { position: [x, y, z + size], normal, uv: [texU + 1, texV + 0] },  // Bottom-right
+                { position: [x, y + size, z + size], normal, uv: [texU + 1, texV + 1] },  // Top-right
+                { position: [x, y + size, z], normal, uv: [texU + 0, texV + 1] },  // Top-left
             ];
         case "right":
             return [
-                { position: [x + size, y, z], normal, uv: [1, 0] },
-                { position: [x + size, y + size, z], normal, uv: [1, 1] },
-                { position: [x + size, y, z + size], normal, uv: [0, 0] },
-                
+                { position: [x + size, y, z], normal, uv: [texU + 1, texV + 0] },  // Bottom-right
+                { position: [x + size, y + size, z], normal, uv: [texU + 1, texV + 1] },  // Top-right
+                { position: [x + size, y, z + size], normal, uv: [texU + 0, texV + 0] },  // Bottom-left
 
-                { position: [x + size, y + size, z], normal, uv: [1, 1] },
-                { position: [x + size, y + size, z + size], normal, uv: [0, 1] },
-                { position: [x + size, y, z + size], normal, uv: [0, 0] },
-                
+                { position: [x + size, y + size, z], normal, uv: [texU + 1, texV + 1] },  // Top-right
+                { position: [x + size, y + size, z + size], normal, uv: [texU + 0, texV + 1] },  // Top-left
+                { position: [x + size, y, z + size], normal, uv: [texU + 0, texV + 0] },  // Bottom-left
             ];
         case "top":
             return [
-                { position: [x, y + size, z], normal, uv: [1, 0] },
-                { position: [x, y + size, z + size], normal, uv: [1, 1] },
-                { position: [x + size, y + size, z], normal, uv: [0, 0] },
+                { position: [x, y + size, z], normal, uv: [texU + 1, texV + 0] },  // Bottom-left
+                { position: [x, y + size, z + size], normal, uv: [texU + 1, texV + 1] },  // Bottom-right
+                { position: [x + size, y + size, z], normal, uv: [texU + 0, texV + 0] },  // Top-left
 
-                { position: [x + size, y + size, z], normal, uv: [0, 0] },
-                { position: [x, y + size, z + size], normal, uv: [1, 1] },
-                { position: [x + size, y + size, z + size], normal, uv: [0, 1] },
+                { position: [x + size, y + size, z], normal, uv: [texU + 0, texV + 0] },  // Top-left
+                { position: [x, y + size, z + size], normal, uv: [texU + 1, texV + 1] },  // Bottom-right
+                { position: [x + size, y + size, z + size], normal, uv: [texU + 0, texV + 1] },  // Top-right
             ];
         case "bottom":
             return [
-                { position: [x, y, z], normal, uv: [1, 1] },
-                { position: [x + size, y, z], normal, uv: [0, 1] },
-                { position: [x, y, z + size], normal, uv: [1, 0] },
+                { position: [x, y, z], normal, uv: [texU + 1, texV + 1] },  // Top-left
+                { position: [x + size, y, z], normal, uv: [texU + 0, texV + 1] },  // Top-right
+                { position: [x, y, z + size], normal, uv: [texU + 1, texV + 0] },  // Bottom-left
 
-                { position: [x + size, y, z], normal, uv: [0, 1] },
-                { position: [x + size, y, z + size], normal, uv: [0, 0] },
-                { position: [x, y, z + size], normal, uv: [1, 0] },
+                { position: [x + size, y, z], normal, uv: [texU + 0, texV + 1] },  // Top-right
+                { position: [x + size, y, z + size], normal, uv: [texU + 0, texV + 0] },  // Bottom-right
+                { position: [x, y, z + size], normal, uv: [texU + 1, texV + 0] },  // Bottom-left
             ];
         default:
             return [];
     }
 }
+
 
 // Helper function to flatten vertex data into a Float32Array (by flatten we mean put all the data side by side in a long line!)
 function flattenVertices(vertices: Vertex[]): Float32Array {
@@ -364,6 +384,7 @@ class WorldChunkManager {
 
         //hash the seed if its a string
         this.seed = typeof inputSeed === 'string' ? this.hashStringToNumber(inputSeed) : inputSeed;
+        //maybe it was a bad idea to always make it a number... might change later
         const rng = seedrandom(this.seed);
         WorldChunkManager.noise3D = createNoise3D(rng);
     }
@@ -472,7 +493,9 @@ class WorldChunkManager {
             const char = input.charCodeAt(i);
 
             //I will try to explain this hash & wtf goin on
-            //Once the decimal value is retrieved it is added to the hash * by 31, 31 being a prime number
+            //Once the decimal value is retrieved it is added to the hash * by 31, 31 being a prime number it can reduce hash collisions
+            //& offsets will be more unique. Then the hash is bitwise AND with 0xffffffff to keep it in the 32-bit range.
+            //This will discard the most significant bit.
             hash = (hash * 31 + char) & 0xffffffff; // Keep it in the 32-bit range
         }
         return Math.abs(hash); // Ensure the hash is positive

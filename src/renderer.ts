@@ -7,7 +7,6 @@ import { Shader } from './shader-master';
 import Draw from './shapes-draw';
 import { WorldChunkManager } from './voxel-engine/chunk-system';
 
-
 function EngineRenderer(gl : WebGLRenderingContext)
 {
     GlobalWebGLItems.GL = gl;
@@ -46,10 +45,41 @@ class GlobalWebGLItems{
 
     //public static debugChunk = new Chunk(0,0);
     public static chunkManager : WorldChunkManager;// = new WorldChunkManager(10, 10); 
+    public static atlasTextureToBind : WebGLTexture | null = null;
+
+}
+
+function AtlasTextureBinder(gl : WebGLRenderingContext){
+    GlobalWebGLItems.ShaderChunk = new Shader(gl, Materials.Texture.vertexShader, Materials.Texture.fragmentShader);
+    GlobalWebGLItems.ShaderChunk.use();
+    const atlasTexture = gl.createTexture();
+
+    const atlasImageData = new Image();
+    atlasImageData.src = "/datlastest.png"
+    
+    atlasImageData.onload = () => {
+        gl.bindTexture(gl.TEXTURE_2D, atlasTexture);
+
+        // Flip the image's Y axis to match WebGL's coordinate system
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+        // Upload the texture data
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, atlasImageData);
+
+        // Configure texture parameters
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    }
+    //GlobalWebGLItems.atlasTextureToBind = atlasTexture;
+    // Bind the texture before drawing
+    gl.activeTexture(gl.TEXTURE1);  // Activate texture unit 0
+    gl.bindTexture(gl.TEXTURE_2D, atlasTexture);
+
 }
 
 function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
-
     GlobalWebGLItems.GrassBlock.shader = GrassShaderInstance(gl);
     function GrassShaderInstance  (gl : WebGLRenderingContext)  {
         const grassShader : Shader = new Shader(gl, Materials.Unlit.vertexShader, Materials.Unlit.fragmentShader);
@@ -205,7 +235,7 @@ function TextureLoader(gl : WebGLRenderingContext){//, shaderProgram : WebGLProg
 }
 
 function ShaderUniforms(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
-    //GlobalWebGLItems.GrassBlock.shader?.use();
+    GlobalWebGLItems.GrassBlock.shader?.use();
     //Create Model Matrix
     let modelMatrix = glMatrix.mat4.create();
     const getModelUniform = GlobalWebGLItems.GrassBlock.shader?.getUniformLocation("u_modelMatrix")
@@ -222,6 +252,7 @@ function Start(gl : WebGLRenderingContext)
 
     //Load Textures
     TextureLoader(gl);
+    AtlasTextureBinder(gl);
 
     //Create Uniforms
     ShaderUniforms(gl);
@@ -234,7 +265,8 @@ function Start(gl : WebGLRenderingContext)
 }
 
 function ChunkSetup(gl: WebGLRenderingContext){
-    GlobalWebGLItems.ShaderChunk = new Shader(gl, Materials.Texture.vertexShader, Materials.Texture.fragmentShader);
+    //Moved to start binder
+    //GlobalWebGLItems.ShaderChunk = new Shader(gl, Materials.Texture.vertexShader, Materials.Texture.fragmentShader);
     if(GlobalWebGLItems.ShaderChunk == null) {console.error("Failed to create chunk shader in the Chunk Setup function of the renderer...");return;}
     GlobalWebGLItems.chunkManager = new WorldChunkManager(4, 'your custom seed!');
     console.log('Hashed world generation seed:', GlobalWebGLItems.chunkManager.seed);
