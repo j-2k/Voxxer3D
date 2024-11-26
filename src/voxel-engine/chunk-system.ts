@@ -99,14 +99,20 @@ class Chunk {
             chunk.push(plane);
         }
         
-        return chunk;
+        //return chunk;
         
         // Not needed but was used to create ring air blocks around the chunk
+        let i = 0;
         const topLayerY = CHUNK_HEIGHT - 1;
         for (let x = 0; x < CHUNK_WIDTH; x++) {
             for (let z = 0; z < CHUNK_DEPTH; z++) {
                 if (x == 0 || x == CHUNK_WIDTH - 1 || z == 0 || z == CHUNK_DEPTH - 1) {
-                    chunk[x][topLayerY][z] = new Block(BlockType.Air);
+                    setBlockUniforms(i,GlobalWebGLItems.ShaderChunk);
+                    chunk[x][topLayerY][z] = new Block(i);
+                    i++;
+                    if (i > 7) {
+                        i = 0;
+                    }
                 }
             }
         }

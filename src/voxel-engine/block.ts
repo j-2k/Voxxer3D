@@ -172,26 +172,23 @@ class Block {
 //const texOffsetLocation = gl.getUniformLocation(shaderProgram, "u_texOffset");
 //const texScaleLocation = gl.getUniformLocation(shaderProgram, "u_texScale");
 
-function setBlockUniforms(
-    blockType: BlockType,
-    shader: Shader
-): void {
-    shader.use();
-    const texCoords = BLOCK_PROPERTIES[blockType].textureCoords.top;
-    const numColumns = 4; // Example: Texture atlas has 16x16 cells
+function setBlockUniforms(blockType: BlockType | number, shader: Shader): void {
+    shader.use();                                               //this should be textureCoords[face] but i fucked it up
+    const texCoords = BLOCK_PROPERTIES[blockType as BlockType].textureCoords.top;
+    const numColumns = 4; 
     const numRows = 4;
 
     const u = texCoords[0];
     const v = texCoords[1];
 
     const texOffset = [
-        u / numColumns,   // Offset X
-        v / numRows       // Offset Y
+        u / numColumns,
+        v / numRows
     ];
 
     const texScale = [
-        1 / numColumns,   // Scale X
-        1 / numRows       // Scale Y
+        1 / numColumns,
+        1 / numRows
     ];
 
     shader.setUniform2f("u_texOffset", texOffset[0], texOffset[1]);

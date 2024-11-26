@@ -48,35 +48,6 @@ class GlobalWebGLItems{
 
 }
 
-function LoadTexturePromise(gl: WebGLRenderingContext, url: string): Promise<WebGLTexture> {
-    return new Promise((resolve, reject) => {
-        const texture = gl.createTexture();
-        if (!texture) {
-            reject('Failed to create texture.');
-            return;
-        }
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-
-        // Temporary pixel while loading
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 255, 255]));
-
-        const image = new Image();
-        image.onload = () => {
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-
-            // Set texture parameters
-            gl.generateMipmap(gl.TEXTURE_2D);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-            resolve(texture);
-        };
-        image.onerror = (err) => reject(`Failed to load texture from ${url}: ${err}`);
-        image.src = url;
-    });
-}
-
 function TextureLoader(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
     GlobalWebGLItems.GrassBlock.shader?.use();
 
@@ -127,7 +98,7 @@ function AtlasTextureBinder(gl : WebGLRenderingContext){
         gl.bindTexture(gl.TEXTURE_2D, atlasTexture);
 
         // Flip the image's Y axis to match WebGL's coordinate system
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
         // Upload the texture data
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, atlasImageData);

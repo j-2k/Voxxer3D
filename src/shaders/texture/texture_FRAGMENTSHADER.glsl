@@ -10,10 +10,13 @@ uniform vec2 u_texOffset;    // UV offset for the current block type
 uniform vec2 u_texScale;     // UV scale for atlas cells (e.g., 1/number_of_columns, 1/number_of_rows)
 
 void main() {
-    float compiler = u_time + u_resolution.x + v_normal.x; compiler = 0.0;
+    float compiler = u_time + u_resolution.x + v_normal.x + u_texOffset.x; compiler = 0.0;
 
     // Calculate the final UV coordinates
-    vec2 uv = v_uv * u_texScale + u_texOffset;
+                                    //Im so fuckin dumb i stacked offsets from cpu side already
+    vec2 uv = (v_uv * u_texScale);// + vec2(0.0,0.25);
+
+    //uv.y = 1.0 - uv.y;
 
     // Sample the texture atlas
     vec4 texColor = texture2D(u_texture, uv);
@@ -21,5 +24,5 @@ void main() {
     
 
     // Apply lighting or other effects (optional)
-    gl_FragColor = texColor;
+    gl_FragColor = vec4(texColor.xyz,1.);
 }
