@@ -92,7 +92,7 @@ function AtlasTextureBinder(gl : WebGLRenderingContext){
     GlobalWebGLItems.atlasTextureToBind = atlasTexture;
     
     const atlasImageData = new Image();
-    atlasImageData.src = "/datlastest.png"
+    atlasImageData.src = "/datlastest_flip_y.png"
 
     atlasImageData.onload = function() {
         gl.bindTexture(gl.TEXTURE_2D, atlasTexture);
