@@ -269,8 +269,9 @@ function ChunkSetup(gl: WebGLRenderingContext){
     //Moved to start binder
     GlobalWebGLItems.ShaderChunk = new Shader(gl, Materials.Texture.vertexShader, Materials.Texture.fragmentShader);
     if(GlobalWebGLItems.ShaderChunk == null) {console.error("Failed to create chunk shader in the Chunk Setup function of the renderer...");return;}
-    GlobalWebGLItems.chunkManager = new WorldChunkManager(4, 'your custom seed!');
-    console.log('Hashed world generation seed:', GlobalWebGLItems.chunkManager.seed);
+    const userInputSeed = "MyCustomSeed123";
+    GlobalWebGLItems.chunkManager = new WorldChunkManager(4, userInputSeed);
+    console.log('Your Seed is: [' + userInputSeed +']'+ '\n' + 'The Hashed world generation seed:', GlobalWebGLItems.chunkManager.seed );
 }
 
 
