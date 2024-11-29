@@ -8,7 +8,7 @@ import { createNoise3D, NoiseFunction3D } from 'simplex-noise';
 import seedrandom from 'seedrandom';
 
 const CHUNK_WIDTH: number = 16;
-const CHUNK_HEIGHT: number = 16;
+const CHUNK_HEIGHT: number = 32;
 const CHUNK_DEPTH: number = 16;
 const CHUNK_SCALE: number = 0.5;
 
@@ -54,6 +54,9 @@ class Chunk {
 
     generateChunk(seed: number): Block[][][] {
         const chunk = [];
+        const heightBaseStrength = 0.5; // Higher values create taller mountains / Default Value is 1.0
+        const heightDetailStrength = 0.2; // Higher values raise the entire terrain / Default Value is 0.2
+        
         for (let x = 0; x < CHUNK_WIDTH; x++) {
             const plane = [];
             for (let y = 0; y < CHUNK_HEIGHT; y++) {
@@ -68,29 +71,41 @@ class Chunk {
                         (worldX + seed) * 0.02, // Reduced frequency for smoother terrain
                         0,                      // Keep y at 0 for 2D noise
                         (worldZ + seed) * 0.02
-                    );
+                    ) * heightBaseStrength;
                     
                     // Add detail with another noise layer
                     const detail = WorldChunkManager.noise3D(
                         (worldX + seed) * 0.1,
                         0,
                         (worldZ + seed) * 0.1
-                    ) * 0.2; // Reduce detail intensity
+                    ) * heightDetailStrength; // Reduce detail intensity
                     
                     // Combine noise layers
                     const combinedNoise = (baseHeight + detail);
                     
-                    // Convert noise to height (scale up and shift to be mostly positive)
-                    const heightValue = (combinedNoise + 1) * 0.5 * CHUNK_HEIGHT;
+                    // Convert noise to height (scale up and shift to be mostly positive) & Limit max height to 3/4
+                    const heightValue = (combinedNoise + 1) * 0.5 * (CHUNK_HEIGHT*0.75);
                     
                     let blockType: BlockType;
 
                     if (y === 0) {
-                        blockType = BlockType.Stone;
+                        blockType = z % 8;
                     } else {
                         // Above half, base it on height
                         blockType = y < heightValue ? BlockType.Grass : BlockType.Air;
                     }
+
+                    const treeRandom = WorldChunkManager.noise3D(worldX + seed, 0, worldZ + seed);
+
+                    if(blockType === BlockType.Air)
+                    {
+                        if(treeRandom > 0.1)
+                        {
+                            blockType = BlockType.Wood;
+                        }
+                    }
+
+
                     setBlockUniforms(blockType,GlobalWebGLItems.ShaderChunk);
                     column.push(new Block(blockType));
                 }
@@ -119,6 +134,8 @@ class Chunk {
         
         return chunk;
     }
+
+
 
     // Update method with delta time (dt)
     public Update(dt: number): void {

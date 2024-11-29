@@ -14,7 +14,7 @@ void main() {
 
     // Calculate the final UV coordinates
                                     //Im so fuckin dumb i stacked offsets from cpu side already
-    vec2 uv = (v_uv * u_texScale);// + vec2(0.0,0.25);
+    vec2 uv = (v_uv * (u_texScale));// + vec2(0.0,0.25);
 
     //uv.y = 1.0 - uv.y;
 
