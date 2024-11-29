@@ -64,7 +64,7 @@ class Chunk {
                 for (let z = 0; z < CHUNK_DEPTH; z++) {
                     // Get world coordinates
                     const worldX = x + this.position.x * CHUNK_WIDTH;
-                    const worldY = y + this.position.z * CHUNK_HEIGHT;
+                    //const worldY = y + this.position.z * CHUNK_HEIGHT;
                     const worldZ = z + this.position.z * CHUNK_DEPTH;
                     
                     // Create base terrain height using larger scale noise
@@ -97,15 +97,15 @@ class Chunk {
                     }
 
                     
+
+                    //Tree Generation Section
                     const treeRandom = WorldChunkManager.noise3D(
                         (worldX + seed) * 0.5,  // Increase the frequency multiplier
                         0, 
                         (worldZ + seed) * 0.5
                     );
-                    
-                    if(blockType === BlockType.Air && treeRandom > 0.85
-                    )
-                    {
+
+                    if(blockType === BlockType.Air && treeRandom > 0.85){
                         const groundLevel = Math.floor(heightValue);
                         const treeHeight = Math.floor(3 + treeRandom * 4);
                         
@@ -113,7 +113,8 @@ class Chunk {
                             blockType = BlockType.Wood;
                         }
                     }
-
+                    
+                    //Final setters & pushing
                     setBlockUniforms(blockType,GlobalWebGLItems.ShaderChunk);
                     column.push(new Block(blockType));
                 }
