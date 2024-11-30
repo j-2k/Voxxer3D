@@ -26,8 +26,11 @@ I will list what I used, just incase for anyone wondering what I used/platform c
 - nvm version ```nvm -v``` 0.39.0
 
 ## Project Dependencies
+  - Randomness Libraries (Not going to remake hashing)
+    - simplex-noise - https://www.npmjs.com/package/simplex-noise
+    - seedrandom - https://www.npmjs.com/package/seedrandom
   - **GL-Matrix**
-    - X
+    - For matrix math operations.
   - **Typescript**
     - For obvious reasons.  
   - **Vite**
@@ -53,6 +56,7 @@ I will list what I used, just incase for anyone wondering what I used/platform c
        - windows/cmdprompt > ```tsc filename.ts && node filename.js```
 
 # Resources
+- Learn about the Javascript runtime.
 - [MDN Docs](https://developer.mozilla.org/en-US/)
 - [MDN Docs - Learn full web development from scratch](https://developer.mozilla.org/en-US/docs/Learn)
 - [chatgpt.com](https://chatgpt.com/)
@@ -73,10 +77,6 @@ I will list what I used, just incase for anyone wondering what I used/platform c
   - [freecodecamp/learn-js&ts](https://www.freecodecamp.org/learn/) I have seen this as popularly suggested as the above resource!
   - [typescriptlang.org-ts](https://www.typescriptlang.org/docs/) a very good website for typescript related docs & learning ts in general!
   - [theodinproject-js](https://www.theodinproject.com/) popular suggestions I have seen multiple times about learning javascript!
-- Other Personal Learning Notes (Can ignore/skip this section):
-  - [stenciljs.com](https://stenciljs.com/)
-  - [MDN Docs - Web Components](https://developer.mozilla.org/en-US/docs/Web/API/Web_components)
-  - [Awesome Web Components - Learn](https://github.com/web-padawan/awesome-web-components)
   - Was looking into hosting services and found this, its a nice website! > https://wheretohostmy.app/free-tier-comparison
     - Used Netlify and it was really fast to setup. Just drag & drop the built project dist files into the host service & thats it! You can get the dist file by doing ```npm run build``` and the dist file will be created.
 
@@ -98,7 +98,7 @@ This is here to list important topics & showcase some things I went through whil
 - Important Linear Algebra + Matrix Concepts in CG!
   - The list below is things I didn't want to put separately on top of this section, but needed to be mentioned.
   - Matrix Multiplication
-  - Translation, Rotation, Scale Matricies / Homogenous Coordinates / Matrix Order
+  - Translation, Rotation, Scale Matrices / Homogenous Coordinates / Matrix Order
   - Column Major Order vs Row Major Order
   - Matrix Inverse (No need to go in deep but try to understand this concept for the camera!)
 
@@ -111,5 +111,5 @@ This is here to list important topics & showcase some things I went through whil
 | :---:        |    :---:   |
 | <img src="readme-images/1-Hello-World-Interpolated.png">   | **Fully refactored the backend from the *ORIGINALLY* forked repository *[(Webgl-trial)](https://github.com/j-2k/webgl-trial)*!** |
 
-
+more to come soon.
 
