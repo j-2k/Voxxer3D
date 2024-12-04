@@ -1,5 +1,6 @@
 attribute vec3 a_position;
 uniform mat4 u_MVP;
+uniform float u_time;
 varying vec3 v_Position;
 
 void main() {

@@ -48,6 +48,7 @@ class GlobalWebGLItems{
 
 
     public static SkyboxShader : Shader;
+    public static skyboxVertBuffer : WebGLBuffer | null = null;
 }
 
 function TextureLoader(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
@@ -285,6 +286,8 @@ function Update(gl: WebGLRenderingContext)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     CameraManager();
+
+    RenderSkybox(gl);
     
     GrassRenderingManager(gl);
 
@@ -362,7 +365,7 @@ function Update(gl: WebGLRenderingContext)
 
     GlobalWebGLItems.chunkManager.Render(gl, GlobalWebGLItems.ShaderChunk);
     
-    SkyboxRenderLoop(gl,GlobalWebGLItems.SkyboxShader)
+
 
     DebugMode();
 }
@@ -471,58 +474,94 @@ function LoadDebugChunk(gl : WebGLRenderingContext)
 }
 */
 
-function SkyboxStart(gl : WebGLRenderingContext){
+function SkyboxStart(gl: WebGLRenderingContext) {
+    // Create Skybox Shader
     GlobalWebGLItems.SkyboxShader = new Shader(gl, Materials.SkyboxShader.vertexShader, Materials.SkyboxShader.fragmentShader);
-    //GlobalWebGLItems.SkyboxShader.use();
-}
-
-function SkyboxRenderLoop(gl : WebGLRenderingContext, skyboxShader : Shader){
     GlobalWebGLItems.SkyboxShader.use();
 
-    gl.depthMask(false);
-    gl.enable(gl.DEPTH_TEST);
-    gl.depthFunc(gl.LEQUAL);
-    
-    const skyboxVertBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, skyboxVertBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(Cube3D.vertexPosData), gl.STATIC_DRAW);
+    // Skybox vertices (cubemap)
+    const skyboxVertices = new Float32Array([
+        // Positions          
+        -1.0,  1.0, -1.0,
+        -1.0, -1.0, -1.0,
+         1.0, -1.0, -1.0,
+         1.0, -1.0, -1.0,
+         1.0,  1.0, -1.0,
+        -1.0,  1.0, -1.0,
+
+        -1.0, -1.0,  1.0,
+        -1.0, -1.0, -1.0,
+        -1.0,  1.0, -1.0,
+        -1.0,  1.0, -1.0,
+        -1.0,  1.0,  1.0,
+        -1.0, -1.0,  1.0,
+
+         1.0, -1.0, -1.0,
+         1.0, -1.0,  1.0,
+         1.0,  1.0,  1.0,
+         1.0,  1.0,  1.0,
+         1.0,  1.0, -1.0,
+         1.0, -1.0, -1.0,
+
+        -1.0, -1.0,  1.0,
+        -1.0,  1.0,  1.0,
+         1.0,  1.0,  1.0,
+         1.0,  1.0,  1.0,
+         1.0, -1.0,  1.0,
+        -1.0, -1.0,  1.0,
+
+        -1.0,  1.0, -1.0,
+         1.0,  1.0, -1.0,
+         1.0,  1.0,  1.0,
+         1.0,  1.0,  1.0,
+        -1.0,  1.0,  1.0,
+        -1.0,  1.0, -1.0,
+
+        -1.0, -1.0, -1.0,
+        -1.0, -1.0,  1.0,
+         1.0, -1.0, -1.0,
+         1.0, -1.0, -1.0,
+        -1.0, -1.0,  1.0,
+         1.0, -1.0,  1.0
+    ]);
+
+    // Create vertex buffer
+    GlobalWebGLItems.skyboxVertBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, GlobalWebGLItems.skyboxVertBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, skyboxVertices, gl.STATIC_DRAW);
+
+    // Set up vertex attributes
     GlobalWebGLItems.SkyboxShader.enableAttrib("a_position");
+    gl.bindBuffer(gl.ARRAY_BUFFER, GlobalWebGLItems.skyboxVertBuffer);
     GlobalWebGLItems.SkyboxShader.setAttribPointer("a_position", 3, gl.FLOAT, false, 0, 0);
+}
 
-    /*
-    const viewProjectionMatrix = glMatrix.mat4.multiply(
-        glMatrix.mat4.create(), 
-        GlobalWebGLItems.Camera.projectionMatrix, 
-        GlobalWebGLItems.Camera.viewMatrix
-    );
+function RenderSkybox(gl: WebGLRenderingContext) {
+    if (!GlobalWebGLItems.SkyboxShader) return;
 
-    let translationMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.translate(translationMatrix, translationMatrix, glMatrix.vec3.fromValues(2.5, .5, 5.0)); //final pos
-    glMatrix.mat4.multiply(viewProjectionMatrix, viewProjectionMatrix, translationMatrix);
-    */
-    
+    // Disable depth writing, but keep depth testing
+    gl.depthMask(false);
 
-    const invViewMatrix = glMatrix.mat4.copy(glMatrix.mat4.create(), GlobalWebGLItems.Camera.viewMatrix);
-    invViewMatrix[12] = 0;
-    invViewMatrix[13] = 0;
-    invViewMatrix[14] = 0;
+    GlobalWebGLItems.SkyboxShader.use();
 
-    const invViewProjectionMatrix = glMatrix.mat4.multiply(
-        glMatrix.mat4.create(), 
-        invViewMatrix,
-        GlobalWebGLItems.Camera.projectionMatrix
-    );
+    // Create view matrix without translation (remove camera position)
+    const viewMatrixNoTranslation = glMatrix.mat4.clone(GlobalWebGLItems.Camera.viewMatrix);
+    viewMatrixNoTranslation[12] = 0;
+    viewMatrixNoTranslation[13] = 0;
+    viewMatrixNoTranslation[14] = 0;
 
-    skyboxShader.setUniformMatrix4fv("u_MVP", invViewProjectionMatrix);
-    skyboxShader.setUniform1f("u_time", Time.time);
+    // Create skybox MVP matrix
+    let skyboxMVP = glMatrix.mat4.create();
+    glMatrix.mat4.multiply(skyboxMVP, GlobalWebGLItems.Camera.projectionMatrix, viewMatrixNoTranslation);
 
-    // Optional: Cull back faces
-    gl.enable(gl.CULL_FACE);
-    gl.cullFace(gl.BACK);
+    // Set uniforms
+    GlobalWebGLItems.SkyboxShader.setUniformMatrix4fv("u_MVP", skyboxMVP);
+    GlobalWebGLItems.SkyboxShader.setUniform1f("u_time", Time.time);
 
-    // Draw
+    // Draw skybox
+    gl.bindBuffer(gl.ARRAY_BUFFER, GlobalWebGLItems.skyboxVertBuffer);
     gl.drawArrays(gl.TRIANGLES, 0, 36);
 
-    // Restore depth writing
+    // Re-enable depth writing
     gl.depthMask(true);
 }
