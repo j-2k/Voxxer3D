@@ -46,6 +46,8 @@ class GlobalWebGLItems{
     public static chunkManager : WorldChunkManager;// = new WorldChunkManager(10, 10); 
     public static atlasTextureToBind : WebGLTexture | null = null;
 
+
+    public static SkyboxShader : Shader;
 }
 
 function TextureLoader(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
@@ -134,7 +136,7 @@ function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgr
         grassShader.enableAttrib("a_position");
         gl.bindBuffer(gl.ARRAY_BUFFER, grassRef.vertexPosBuffer);
         grassShader.setAttribPointer("a_position", 3, gl.FLOAT, false, 0, 0);
-    
+        
         //Color Buffer
         grassRef.vertexColBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, grassRef.vertexColBuffer);
@@ -243,10 +245,12 @@ function ShaderUniforms(gl : WebGLRenderingContext){//, shaderProgram : WebGLPro
     GlobalWebGLItems.GrassBlock.shader?.setUniformMatrix4fv("u_modelMatrix", modelMatrix);
 }
 
-async function Start(gl : WebGLRenderingContext)
+function Start(gl : WebGLRenderingContext)
 {
     //Bind Buffers
     StartBinders(gl);
+
+    SkyboxStart(gl);
 
     //Load Textures
     //const atlasTex = await LoadTexturePromise(gl, "/datlastest.png");
@@ -284,7 +288,7 @@ function Update(gl: WebGLRenderingContext)
     
     GrassRenderingManager(gl);
 
-    /*
+    
     {
         GlobalWebGLItems.Shader2?.use();
         // Setup uniforms
@@ -352,13 +356,13 @@ function Update(gl: WebGLRenderingContext)
         //GlobalWebGLItems.Shader2?.disableAttrib("a_position");
         //GlobalWebGLItems.Shader2?.disableAttrib("a_color");
     }
-    
-    */
 
     //Debug Render Chunk
     //GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.ShaderChunk);
 
     GlobalWebGLItems.chunkManager.Render(gl, GlobalWebGLItems.ShaderChunk);
+    
+    SkyboxRenderLoop(gl,GlobalWebGLItems.SkyboxShader)
 
     DebugMode();
 }
@@ -415,7 +419,8 @@ function RenderingSettings(gl : WebGLRenderingContext)
 
     //Enable Depth Testing
     gl.enable(gl.DEPTH_TEST);
-    gl.depthFunc(gl.LEQUAL);
+    //gl.depthFunc(gl.LEQUAL);
+    gl.depthFunc(gl.LESS);
 }
 
 function DebugMode()
@@ -466,4 +471,58 @@ function LoadDebugChunk(gl : WebGLRenderingContext)
 }
 */
 
+function SkyboxStart(gl : WebGLRenderingContext){
+    GlobalWebGLItems.SkyboxShader = new Shader(gl, Materials.SkyboxShader.vertexShader, Materials.SkyboxShader.fragmentShader);
+    //GlobalWebGLItems.SkyboxShader.use();
+}
 
+function SkyboxRenderLoop(gl : WebGLRenderingContext, skyboxShader : Shader){
+    GlobalWebGLItems.SkyboxShader.use();
+
+    gl.depthMask(false);
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+    
+    const skyboxVertBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, skyboxVertBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(Cube3D.vertexPosData), gl.STATIC_DRAW);
+    GlobalWebGLItems.SkyboxShader.enableAttrib("a_position");
+    GlobalWebGLItems.SkyboxShader.setAttribPointer("a_position", 3, gl.FLOAT, false, 0, 0);
+
+    /*
+    const viewProjectionMatrix = glMatrix.mat4.multiply(
+        glMatrix.mat4.create(), 
+        GlobalWebGLItems.Camera.projectionMatrix, 
+        GlobalWebGLItems.Camera.viewMatrix
+    );
+
+    let translationMatrix = glMatrix.mat4.create();
+    glMatrix.mat4.translate(translationMatrix, translationMatrix, glMatrix.vec3.fromValues(2.5, .5, 5.0)); //final pos
+    glMatrix.mat4.multiply(viewProjectionMatrix, viewProjectionMatrix, translationMatrix);
+    */
+    
+
+    const invViewMatrix = glMatrix.mat4.copy(glMatrix.mat4.create(), GlobalWebGLItems.Camera.viewMatrix);
+    invViewMatrix[12] = 0;
+    invViewMatrix[13] = 0;
+    invViewMatrix[14] = 0;
+
+    const invViewProjectionMatrix = glMatrix.mat4.multiply(
+        glMatrix.mat4.create(), 
+        invViewMatrix,
+        GlobalWebGLItems.Camera.projectionMatrix
+    );
+
+    skyboxShader.setUniformMatrix4fv("u_MVP", invViewProjectionMatrix);
+    skyboxShader.setUniform1f("u_time", Time.time);
+
+    // Optional: Cull back faces
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
+
+    // Draw
+    gl.drawArrays(gl.TRIANGLES, 0, 36);
+
+    // Restore depth writing
+    gl.depthMask(true);
+}

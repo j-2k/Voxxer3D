@@ -12,8 +12,8 @@ uniform vec2 u_texScale;     // UV scale for atlas cells (e.g., 1/number_of_colu
 void main() {
     float compiler = u_time + u_resolution.x + v_normal.x + u_texOffset.x; compiler = 0.0;
 
-    // Calculate the final UV coordinates
-                                    //Im so fuckin dumb i stacked offsets from cpu side already
+    //Calculate the final UV coordinates
+    //Im so fuckin dumb i stacked offsets from cpu side already
     vec2 uv = (v_uv * (u_texScale));// + vec2(0.0,0.25);
 
     //uv.y = 1.0 - uv.y;

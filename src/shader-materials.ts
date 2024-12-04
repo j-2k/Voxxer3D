@@ -7,6 +7,9 @@ import Texture_FRAGMENTSHADER from "./shaders/texture/Texture_FRAGMENTSHADER.gls
 import TestShader_VERTEXSHADER from "./shaders/testshader/testshader_VERTEXSHADER.glsl?raw";
 import TestShader_FRAGMENTSHADER from "./shaders/testshader/testshader_FRAGMENTSHADER.glsl?raw";
 
+import SkyboxShader_VERTEXSHADER from "./shaders/skybox/skybox_VERTEXSHADER.glsl?raw";
+import SkyboxShader_FRAGMENTSHADER from "./shaders/skybox/skybox_FRAGMENTSHADER.glsl?raw";
+
 
 const Unlit = {
     vertexShader: Unlit_VERTEXSHADER,
@@ -23,6 +26,11 @@ const TestShader = {
     fragmentShader: TestShader_FRAGMENTSHADER
 }
 
+const SkyboxShader = {
+    vertexShader: SkyboxShader_VERTEXSHADER,
+    fragmentShader: SkyboxShader_FRAGMENTSHADER
+}
+
 // As you can see, if we add more imports, we need to create more objs & etc.
 // It might be a good idea to create a function that automatically imports all shaders
 // in the shaders folder and returns an obj with all of them. But thats not a big concern now.
@@ -32,7 +40,8 @@ const TestShader = {
 const Materials = {
     Unlit,
     Texture,
-    TestShader
+    TestShader,
+    SkyboxShader,
 }
 
 export default Materials;
