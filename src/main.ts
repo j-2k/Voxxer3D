@@ -16,10 +16,20 @@ function main() {
     return; // Early return if gl is null
   }
 
+  CanvasHandler(canvas);
+
   console.log("WebGL is available, Voxxer3D is starting with initalization then rendering...");
-  StartMessages(canvas, "Voxel Rendering Engine");
+  StartMessages(canvas, "Voxel Rendering Engine");//, false);
   InitializeInputManager(canvas);
   EngineRenderer(gl);
+}
+
+function CanvasHandler(canvas: HTMLCanvasElement) {
+  canvas.width = 900;
+  canvas.height = 600;
+  //width="900" height="600"
+  //canvas.width = window.innerWidth;
+  //canvas.height = window.innerHeight;
 }
 
 // Call the main function to start the application

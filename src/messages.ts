@@ -1,6 +1,7 @@
 function StartMessages(
   canvas: HTMLCanvasElement,
   titleWeb: string = "Title Page",
+  showTitle: boolean = true
 ): void {
 
   // Create a new text element (e.g., a paragraph)
@@ -8,8 +9,10 @@ function StartMessages(
   const titleElement = document.createElement("h1");
   titleElement.textContent = message;
 
-  //Insert the text element before the canvas
+  //Insert title text element before the canvas
+  if(showTitle){
   document.body.insertBefore(titleElement, canvas);
+}
 
   // Create the nav element
   const navBar = document.createElement("nav");
@@ -76,7 +79,7 @@ function StartMessages(
   navBar.appendChild(navContainer);
 
   // Finally, append the navBar to the body (or any other element you want)
-  document.body.insertBefore(navBar, titleElement);
+  document.body.insertBefore(navBar, canvas);
 
   const bodyMessages = [
     "This is mainly a learning project, I hope you enjoy it!",
