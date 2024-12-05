@@ -360,13 +360,8 @@ function Update(gl: WebGLRenderingContext)
         //GlobalWebGLItems.Shader2?.disableAttrib("a_color");
     }
 
-    //Debug Render Chunk
-    //GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.ShaderChunk);
-
     GlobalWebGLItems.chunkManager.Render(gl, GlobalWebGLItems.ShaderChunk);
     
-
-
     DebugMode();
 }
 
@@ -422,8 +417,8 @@ function RenderingSettings(gl : WebGLRenderingContext)
 
     //Enable Depth Testing
     gl.enable(gl.DEPTH_TEST);
-    //gl.depthFunc(gl.LEQUAL);
     gl.depthFunc(gl.LESS);
+    //gl.depthFunc(gl.LEQUAL);
 }
 
 function DebugMode()
@@ -475,93 +470,117 @@ function LoadDebugChunk(gl : WebGLRenderingContext)
 */
 
 function SkyboxStart(gl: WebGLRenderingContext) {
-    // Create Skybox Shader
     GlobalWebGLItems.SkyboxShader = new Shader(gl, Materials.SkyboxShader.vertexShader, Materials.SkyboxShader.fragmentShader);
     GlobalWebGLItems.SkyboxShader.use();
 
-    // Skybox vertices (cubemap)
-    const skyboxVertices = new Float32Array([
-        // Positions          
-        -1.0,  1.0, -1.0,
-        -1.0, -1.0, -1.0,
-         1.0, -1.0, -1.0,
-         1.0, -1.0, -1.0,
-         1.0,  1.0, -1.0,
-        -1.0,  1.0, -1.0,
+    
+  // Create a buffer for positions
+  GlobalWebGLItems.skyboxVertBuffer = gl.createBuffer();
+  // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
+  gl.bindBuffer(gl.ARRAY_BUFFER, GlobalWebGLItems.skyboxVertBuffer);
+    var positions = new Float32Array(
+        [
+          -1, -1, 
+           1, -1, 
+          -1,  1, 
+          -1,  1,
+           1, -1,
+           1,  1,
+        ]);
+    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
 
-        -1.0, -1.0,  1.0,
-        -1.0, -1.0, -1.0,
-        -1.0,  1.0, -1.0,
-        -1.0,  1.0, -1.0,
-        -1.0,  1.0,  1.0,
-        -1.0, -1.0,  1.0,
+    // Create a texture.
+    var texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
 
-         1.0, -1.0, -1.0,
-         1.0, -1.0,  1.0,
-         1.0,  1.0,  1.0,
-         1.0,  1.0,  1.0,
-         1.0,  1.0, -1.0,
-         1.0, -1.0, -1.0,
+    const faceInfos = [
+        {
+        target: gl.TEXTURE_CUBE_MAP_POSITIVE_X,
+        url: 'cubemap/pos-x.jpg',
+        },
+        {
+        target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X,
+        url: 'cubemap/neg-x.jpg',
+        },
+        {
+        target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
+        url: 'cubemap/pos-y.jpg',
+        },
+        {
+        target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
+        url: 'cubemap/neg-y.jpg',
+        },
+        {
+        target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+        url: 'cubemap/pos-z.jpg',
+        },
+        {
+        target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z,
+        url: 'cubemap/neg-z.jpg',
+        },
+    ];
+    faceInfos.forEach((faceInfo) => {
+        const {target, url} = faceInfo;
 
-        -1.0, -1.0,  1.0,
-        -1.0,  1.0,  1.0,
-         1.0,  1.0,  1.0,
-         1.0,  1.0,  1.0,
-         1.0, -1.0,  1.0,
-        -1.0, -1.0,  1.0,
+        // Upload the canvas to the cubemap face.
+        const level = 0;
+        const internalFormat = gl.RGBA;
+        const width = 512;
+        const height = 512;
+        const format = gl.RGBA;
+        const type = gl.UNSIGNED_BYTE;
 
-        -1.0,  1.0, -1.0,
-         1.0,  1.0, -1.0,
-         1.0,  1.0,  1.0,
-         1.0,  1.0,  1.0,
-        -1.0,  1.0,  1.0,
-        -1.0,  1.0, -1.0,
+        // setup each face so it's immediately renderable
+        gl.texImage2D(target, level, internalFormat, width, height, 0, format, type, null);
 
-        -1.0, -1.0, -1.0,
-        -1.0, -1.0,  1.0,
-         1.0, -1.0, -1.0,
-         1.0, -1.0, -1.0,
-        -1.0, -1.0,  1.0,
-         1.0, -1.0,  1.0
-    ]);
-
-    // Create vertex buffer
-    GlobalWebGLItems.skyboxVertBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, GlobalWebGLItems.skyboxVertBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, skyboxVertices, gl.STATIC_DRAW);
-
-    // Set up vertex attributes
-    GlobalWebGLItems.SkyboxShader.enableAttrib("a_position");
-    gl.bindBuffer(gl.ARRAY_BUFFER, GlobalWebGLItems.skyboxVertBuffer);
-    GlobalWebGLItems.SkyboxShader.setAttribPointer("a_position", 3, gl.FLOAT, false, 0, 0);
+        // Asynchronously load an image
+        const image = new Image();
+        image.src = url;
+        
+        image.addEventListener('load', function() {
+        // Now that the image has loaded make copy it to the texture.
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+        gl.texImage2D(target, level, internalFormat, format, type, image);
+        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+        });
+    });
+    gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 }
 
 function RenderSkybox(gl: WebGLRenderingContext) {
     if (!GlobalWebGLItems.SkyboxShader) return;
-
-    // Disable depth writing, but keep depth testing
-    gl.depthMask(false);
-
     GlobalWebGLItems.SkyboxShader.use();
 
-    // Create view matrix without translation (remove camera position)
-    const viewMatrixNoTranslation = glMatrix.mat4.clone(GlobalWebGLItems.Camera.viewMatrix);
-    viewMatrixNoTranslation[12] = 0;
-    viewMatrixNoTranslation[13] = 0;
-    viewMatrixNoTranslation[14] = 0;
-
-    // Create skybox MVP matrix
-    let skyboxMVP = glMatrix.mat4.create();
-    glMatrix.mat4.multiply(skyboxMVP, GlobalWebGLItems.Camera.projectionMatrix, viewMatrixNoTranslation);
-
-    // Set uniforms
-    GlobalWebGLItems.SkyboxShader.setUniformMatrix4fv("u_MVP", skyboxMVP);
-    GlobalWebGLItems.SkyboxShader.setUniform1f("u_time", Time.time);
-
-    // Draw skybox
     gl.bindBuffer(gl.ARRAY_BUFFER, GlobalWebGLItems.skyboxVertBuffer);
-    gl.drawArrays(gl.TRIANGLES, 0, 36);
+    GlobalWebGLItems.SkyboxShader.enableAttrib("a_position");
+    GlobalWebGLItems.SkyboxShader.setAttribPointer("a_position", 2, gl.FLOAT, false, 0, 0);
 
-    // Re-enable depth writing
-    gl.depthMask(true);
+    let noTransViewMatrix = glMatrix.mat4.create();
+    let cameraMatrix = glMatrix.mat4.lookAt(noTransViewMatrix,GlobalWebGLItems.Camera.cameraPosition, GlobalWebGLItems.Camera.cameraTarget, GlobalWebGLItems.Camera.upDirection);
+    
+    // Make a view matrix from the camera matrix.
+    let viewMatrix = glMatrix.mat4.invert(glMatrix.mat4.create(), cameraMatrix);
+    glMatrix.mat4.transpose(viewMatrix, viewMatrix);
+    
+    // We only care about direction so remove the translation
+    viewMatrix[3] = 0;
+    viewMatrix[7] = 0;
+    viewMatrix[11] = 0;
+    
+    let viewDirectionProjectionMatrix = glMatrix.mat4.multiply(glMatrix.mat4.create(), GlobalWebGLItems.Camera.projectionMatrix, viewMatrix);
+    let viewDirectionProjectionInverseMatrix = glMatrix.mat4.invert(glMatrix.mat4.create(), viewDirectionProjectionMatrix);
+    
+    // Set the uniforms
+    GlobalWebGLItems.SkyboxShader.setUniformMatrix4fv("u_viewDirectionProjectionInverse", viewDirectionProjectionInverseMatrix);
+
+    
+
+    // Tell the shader to use texture unit 0 for u_skybox
+    GlobalWebGLItems.SkyboxShader.setUniform1f("u_skybox", 0);
+
+    // let our quad pass the depth test at 1.0
+    gl.depthFunc(gl.LEQUAL);
+    gl.drawArrays(gl.TRIANGLES, 0, 1 * 6);
+    gl.depthFunc(gl.LESS);
 }

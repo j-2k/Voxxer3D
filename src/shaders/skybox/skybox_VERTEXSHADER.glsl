@@ -1,10 +1,7 @@
-attribute vec3 a_position;
-uniform mat4 u_MVP;
-uniform float u_time;
-varying vec3 v_Position;
-
+attribute vec4 a_position;
+varying vec4 v_position;
 void main() {
-    v_Position = a_position;
-    vec4 pos = u_MVP * vec4(a_position, 1.0);
-    gl_Position = pos.xyww;
+  v_position = a_position;
+  gl_Position = a_position;
+  gl_Position.z = 1.0;
 }
