@@ -554,8 +554,8 @@ function RenderSkybox(gl: WebGLRenderingContext) {
     GlobalWebGLItems.SkyboxShader.enableAttrib("a_position");
     GlobalWebGLItems.SkyboxShader.setAttribPointer("a_position", 2, gl.FLOAT, false, 0, 0);
 
-
     //I FIXED THE PREVIOUS CLUSTER FUCK LES GOOO
+    //APPARENTLY ITS ALREADY INVERSED??????? WTF HOW 
     let copyViewMatrix = glMatrix.mat4.clone(GlobalWebGLItems.Camera.viewMatrix);
 
     // Remove translation by setting the translation components to zero
@@ -580,12 +580,7 @@ function RenderSkybox(gl: WebGLRenderingContext) {
     // Tell the shader to use texture unit 0 for u_skybox
     GlobalWebGLItems.SkyboxShader.setUniform1f("u_skybox", 0);
 
-    /*
-    console.log("Matrix translation coordinates:");
-    console.log(`X translation: ${viewMatrix[12]}`);
-    console.log(`Y translation: ${viewMatrix[13]}`);
-    console.log(`Z translation: ${viewMatrix[14]}`);
-    */
+    GlobalWebGLItems.SkyboxShader.setUniform1f("u_time", Time.time);
 
     // let our quad pass the depth test at 1.0
     gl.depthFunc(gl.LEQUAL);
