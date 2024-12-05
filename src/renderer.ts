@@ -447,9 +447,7 @@ export {
 
 function CameraUniforms(gl: WebGLRenderingContext) {
         //Create View Matrix
-        let viewMatrix = glMatrix.mat4.create();
-        glMatrix.mat4.lookAt(viewMatrix, GlobalWebGLItems.Camera.cameraPosition, GlobalWebGLItems.Camera.cameraTarget, GlobalWebGLItems.Camera.upDirection);
-        GlobalWebGLItems.Camera.viewMatrix = viewMatrix;
+        glMatrix.mat4.lookAt(GlobalWebGLItems.Camera.viewMatrix, GlobalWebGLItems.Camera.cameraPosition, GlobalWebGLItems.Camera.cameraTarget, GlobalWebGLItems.Camera.upDirection);
     
         //Prespective Projection
         const aspectRatio = gl.canvas.width / gl.canvas.height;
@@ -556,28 +554,38 @@ function RenderSkybox(gl: WebGLRenderingContext) {
     GlobalWebGLItems.SkyboxShader.enableAttrib("a_position");
     GlobalWebGLItems.SkyboxShader.setAttribPointer("a_position", 2, gl.FLOAT, false, 0, 0);
 
-    let noTransViewMatrix = glMatrix.mat4.create();
-    let cameraMatrix = glMatrix.mat4.lookAt(noTransViewMatrix,GlobalWebGLItems.Camera.cameraPosition, GlobalWebGLItems.Camera.cameraTarget, GlobalWebGLItems.Camera.upDirection);
+
+    //I FIXED THE PREVIOUS CLUSTER FUCK LES GOOO
+    let copyViewMatrix = glMatrix.mat4.clone(GlobalWebGLItems.Camera.viewMatrix);
+
+    // Remove translation by setting the translation components to zero
+    copyViewMatrix[12] = 0;
+    copyViewMatrix[13] = 0;
+    copyViewMatrix[14] = 0;
     
-    // Make a view matrix from the camera matrix.
-    let viewMatrix = glMatrix.mat4.invert(glMatrix.mat4.create(), cameraMatrix);
-    glMatrix.mat4.transpose(viewMatrix, viewMatrix);
+    let viewDirectionProjectionMatrix = glMatrix.mat4.multiply(
+        glMatrix.mat4.create(), 
+        GlobalWebGLItems.Camera.projectionMatrix, 
+        copyViewMatrix
+    );
     
-    // We only care about direction so remove the translation
-    viewMatrix[3] = 0;
-    viewMatrix[7] = 0;
-    viewMatrix[11] = 0;
-    
-    let viewDirectionProjectionMatrix = glMatrix.mat4.multiply(glMatrix.mat4.create(), GlobalWebGLItems.Camera.projectionMatrix, viewMatrix);
-    let viewDirectionProjectionInverseMatrix = glMatrix.mat4.invert(glMatrix.mat4.create(), viewDirectionProjectionMatrix);
+    let viewDirectionProjectionInverseMatrix = glMatrix.mat4.invert(
+        glMatrix.mat4.create(), 
+        viewDirectionProjectionMatrix
+    );
     
     // Set the uniforms
     GlobalWebGLItems.SkyboxShader.setUniformMatrix4fv("u_viewDirectionProjectionInverse", viewDirectionProjectionInverseMatrix);
 
-    
-
     // Tell the shader to use texture unit 0 for u_skybox
     GlobalWebGLItems.SkyboxShader.setUniform1f("u_skybox", 0);
+
+    /*
+    console.log("Matrix translation coordinates:");
+    console.log(`X translation: ${viewMatrix[12]}`);
+    console.log(`Y translation: ${viewMatrix[13]}`);
+    console.log(`Z translation: ${viewMatrix[14]}`);
+    */
 
     // let our quad pass the depth test at 1.0
     gl.depthFunc(gl.LEQUAL);
