@@ -1,5 +1,12 @@
 # Voxxer3D
-Voxxer3D is a 3D Voxel World Rendering Engine written from "scratch" utilizing the WebGL Interface.
+Voxxer3D is a 3D Voxel World Rendering Engine written from "scratch" utilizing the WebGL Interface.  
+
+Since I'm basically creating a minecraft clone, I want to focus on the graphics part & the "hidden" features that exist. I will list all of them below that I personally had to think about when making this.
+
+ps. I had no clue to how minecraft works (rendering part of it specifically) and thus a lot of the features might seem "normal" but I never knew it was something I had to "do" that probably didn't make much sense but I hope to just showcase what I learned.
+
+- Features
+  - X
 
 # Project Requirement Notes
 - Have nodejs & npm
@@ -20,7 +27,7 @@ Voxxer3D is a 3D Voxel World Rendering Engine written from "scratch" utilizing t
 # My Platform, Versioning, & Dev environment
 I will list what I used, just incase for anyone wondering what I used/platform choice to make this project.
 - Mac (Sonoma 14) & Windows 10
-- Visual Studio Code / Cursor
+- Visual Studio Code / Cursor (Only tried out Cursor for the free trial to test out the IDE it's pretty nice ngl, went back to VSC though)
 - npm version ```npm -v```  10.8.2
 - node version ```node -v``` v20.17.0
 - nvm version ```nvm -v``` 0.39.0
@@ -56,28 +63,14 @@ I will list what I used, just incase for anyone wondering what I used/platform c
        - windows/cmdprompt > ```tsc filename.ts && node filename.js```
 
 # Resources
-- Learn about the Javascript runtime.
-- [MDN Docs](https://developer.mozilla.org/en-US/)
-- [MDN Docs - Learn full web development from scratch](https://developer.mozilla.org/en-US/docs/Learn)
+- https://github.com/j-2k/WebGL-Triangle-Boilerplate <<< This contains all the resources for everything related to web stuff what I will put below is only related to webGL & graphics stuff
 - [chatgpt.com](https://chatgpt.com/)
   - I'm going to use GPT to help me clarify shit while learning some of the topics below + I will need it especially when doing matrix multiplication & when I need an explanation on what happens when an object goes through 50 transformation calcs lmfao
-- Important things to learn!
-  - [MDN Docs - Web DOM](https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Introduction)
 - WebGL Resources
-  - [learnwebgl.brown37.net](https://learnwebgl.brown37.net/rendering/introduction.html)
-  - [webglfundamentals.org](https://webglfundamentals.org/)
+  - [learnwebgl.brown37.net](https://learnwebgl.brown37.net/rendering/introduction.html) I used this as a intro to WebGL & a refresher for the graphics pipeline. *(spent about 10-15% of my time here)*
+  - **[webglfundamentals.org](https://webglfundamentals.org/) I used this for implementation & learning everything, this resource is so fuckin good.** *(spent about 60-75% of my time here, rest of my time went into miscellaneous resources)*
   - [MDN Docs - Web GL](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Getting_started_with_WebGL) This resource is insanely good (Just my personal opinion, above 2 are suggested heavily by seasoned graphics engineers!)
-- WebGPU Resources (Advanced / Later on)
-  - [LearnWebGPU](https://eliemichel.github.io/LearnWebGPU/)
-  - [webgpufundamentals.org](https://webgpufundamentals.org/)
-- JS/TS Resources
-  - I heard MDN docs isn't "good" for learning JS/TS it's best for references, but they do have resources (I won't be listing them here!), I'm not sure of what is a popular good resource in this area (JS/TS) unlike my expertise in other fields but I will try to list what I have seen suggested by strong web developers in specializations I have delved into the past.
-  - [learn-js](https://www.learn-js.org/) / [learn-ts](https://www.learn-ts.org/)
-  - [Codecademy-js](https://www.codecademy.com/learn/introduction-to-javascript) / [Codecademy-ts](https://www.codecademy.com/learn/learn-typescript)
-  - [freecodecamp/learn-js&ts](https://www.freecodecamp.org/learn/) I have seen this as popularly suggested as the above resource!
-  - [typescriptlang.org-ts](https://www.typescriptlang.org/docs/) a very good website for typescript related docs & learning ts in general!
-  - [theodinproject-js](https://www.theodinproject.com/) popular suggestions I have seen multiple times about learning javascript!
-  - Was looking into hosting services and found this, its a nice website! > https://wheretohostmy.app/free-tier-comparison
+- Looking into hosting services and found this, its a nice website! > https://wheretohostmy.app/free-tier-comparison
     - Used Netlify and it was really fast to setup. Just drag & drop the built project dist files into the host service & thats it! You can get the dist file by doing ```npm run build``` and the dist file will be created.
 
  
