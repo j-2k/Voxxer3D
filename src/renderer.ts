@@ -23,7 +23,7 @@ class GlobalWebGLItems{
     public static modelMatrixUniformLocation : WebGLUniformLocation | null = null;
 
     public static Camera = {
-        cameraPosition: new Float32Array([0, 0, -3]),  // Initial camera position
+        cameraPosition: new Float32Array([0, 8, -3]),  // Initial camera position
         cameraTarget: new Float32Array([0, 0, 0]),    // Camera target //CHECK THE CAMERA SCRIPT, THE YAW IS STARTING ON -90 DEGREES TO POINT IN THE -Z DIRECTION
         upDirection: new Float32Array([0, 1, 0]),      // Up direction
         viewMatrix : glMatrix.mat4.create(),

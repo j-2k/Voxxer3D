@@ -7,54 +7,69 @@ uniform vec3 u_sunDirection;                   // Direction of the sun in world 
  
 varying vec4 v_position;
 
-// SD BOX
-float sdBox( in vec2 p, in vec2 b )
-{
-  vec2 d = abs(p)-b;
-  return length(max(d,0.0)) + min(max(d.x,d.y),0.0);
+float SquareDistance(float x, float y, float sunSize){
+    // Square distance calculation
+    vec2 d = abs(vec2(x, y)) - vec2(sunSize);
+    return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
 }
 
-float sdCircleFromViewDir(vec3 viewDir, vec3 sunDir, float radius) {
-    // Normalize the input directions
-    viewDir = normalize(viewDir);
-    sunDir = normalize(sunDir);
 
-    // Project view direction onto the plane of the sun's position
-    vec3 sunPlane = viewDir - sunDir * dot(viewDir, sunDir); // Remove the sunDir component
-    float distance = length(sunPlane) - radius;             // Distance from the center of the circle
 
-    return distance;
+// Hash function for pseudo-random generation
+float hash(vec2 p) {
+    p = 50.0 * fract(p * 0.3183099 + vec2(0.71, 0.113));
+    return -1.0 + 2.0 * fract(p.x * p.y * (p.x + p.y));
 }
 
-vec3 SunTest(vec3 viewDir, vec3 sunDir) {
+// Noise function for smoother randomness
+float noise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    
+    return mix(mix(hash(i + vec2(0.0, 0.0)), 
+                   hash(i + vec2(1.0, 0.0)), u.x),
+               mix(hash(i + vec2(0.0, 1.0)), 
+                   hash(i + vec2(1.0, 1.0)), u.x), u.y);
+}
+
+vec3 SquareSunTest(vec3 viewDir, vec3 sunDir) {
     // Normalize the input directions
     viewDir = normalize(viewDir);
     sunDir = normalize(sunDir);
 
     // Sun parameters
-    float sunRadius = 0.2;
+    float sunSize = 0.12; // Size of the sun
+    
+    // Create a local coordinate system aligned with the sun direction
+    vec3 up = vec3(0.0, 1.0, 0.0);
+    vec3 right = normalize(cross(sunDir, up));
+    up = normalize(cross(right, sunDir));
 
-    // Signed distance to the circular sun
-    float circle = sdCircleFromViewDir(viewDir, sunDir, sunRadius);
+    // Project view direction onto the plane perpendicular to sunDir
+    vec3 projectedView = viewDir - dot(viewDir, sunDir) * sunDir;
+    
+    // Calculate local coordinates relative to sun center
+    float x = dot(projectedView, right);
+    float y = dot(projectedView, up);
 
     // Smooth edges for the sun
-    float circleIntensity = step(0.,-circle);//smoothstep(0.01, -0.01, circle); // Smooth falloff for the edges
+    float sqDist = SquareDistance(x, y, sunSize*0.8);
+    float sqDistOL = SquareDistance(x, y, sunSize);
+    float sunMask = smoothstep(0.001, 0. , sqDist*0.8);
+    float sunMaskOL = smoothstep(0.001, 0. , sqDistOL);
 
     // Color for the sun
-    vec3 sunColor = vec3(1.0, 0.85, 0.65) * circleIntensity;
+    vec3 sunColor;
+    vec3 sunColorInner = vec3(1.0) * sunMask;
+    vec3 sunColorOuter = vec3(1.0, 1.0, 0.0) * sunMaskOL;
 
-    // Debug: Output the circle intensity as a color to verify if it’s being calculated
-    // Uncomment this line to see the intensity as a grayscale debug
-    return vec3(circleIntensity);
+    sunColor = sunColorInner + sunColorOuter;
 
-    // Simple sky gradient
-    float horizonBlend = smoothstep(-0.1, 0.3, viewDir.y); // Blend based on viewDir.y
-    vec3 skyColor = mix(vec3(0.2, 0.4, 0.8), vec3(0.0, 0.0, 0.2), horizonBlend);
-
-    // Combine sky and circular sun
-    return sunColor + skyColor;
+    // Combine sky and square sun
+    return sunColor;
 }
-
 
 void main() {
   float compiler = 0.;
@@ -68,10 +83,18 @@ void main() {
     compiler = (texCubemap.x + u_time + u_sunDirection.x + 0.0) * 0.0;    //only exists to stop compiler from optimizing out the texture lookup & giving compiling errors
   }
   
-  vec3 sunDir = normalize(vec3(sin(u_time), cos(u_time), 0.0));
-  vec3 sun = SunTest(viewDir, sunDir);
+  //vec3 sunDir = normalize(vec3(0.0, cos(u_time), sin(u_time)));
+  vec3 sunDir = vec3(0.0, 0.0, 2.0);
+  vec3 sun = SquareSunTest(viewDir, sunDir);
+  float n = (noise(viewDir.xy * 100.0 + u_time)*2.0);
+  sun *= n;
+  //if (n < 0.) {discard;}
 
-  gl_FragColor = vec4(sun, 1.0) + compiler;//skybox cubemap
+  // Simple sky gradient
+  float horizonBlend = smoothstep(-0.1, 0.3, viewDir.y);
+  vec3 skyColor = mix(vec3(0.2, 0.4, 0.8), vec3(0.0, 0.0, 0.2), horizonBlend);
+
+  gl_FragColor = vec4(vec3(sun + skyColor),1.0) + compiler;//skybox cubemap
 }
 
 
