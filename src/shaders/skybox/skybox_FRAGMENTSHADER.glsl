@@ -13,8 +13,6 @@ float SquareDistance(float x, float y, float sunSize){
     return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
 }
 
-
-
 // Hash function for pseudo-random generation
 float hash(vec2 p) {
     p = 50.0 * fract(p * 0.3183099 + vec2(0.71, 0.113));
@@ -60,15 +58,18 @@ vec3 SquareSunTest(vec3 viewDir, vec3 sunDir) {
     float sunMask = smoothstep(0.001, 0. , sqDist*0.8);
     float sunMaskOL = smoothstep(0.001, 0. , sqDistOL);
 
+    // Ensure the sun only appears in the direction of sunDir
+    float facingFactor = max(0.0, dot(viewDir, sunDir));
+
     // Color for the sun
     vec3 sunColor;
     vec3 sunColorInner = vec3(1.0) * sunMask;
     vec3 sunColorOuter = vec3(1.0, 1.0, 0.0) * sunMaskOL;
 
-    sunColor = sunColorInner + sunColorOuter;
+    sunColor = (sunColorInner + sunColorOuter) * facingFactor;
 
     // Combine sky and square sun
-    return sunColor;
+    return vec3(sunColor);
 }
 
 void main() {
@@ -87,12 +88,12 @@ void main() {
   vec3 sunDir = vec3(0.0, 0.0, 2.0);
   vec3 sun = SquareSunTest(viewDir, sunDir);
   float n = (noise(viewDir.xy * 100.0 + u_time)*2.0);
-  sun *= n;
+  //sun *= n;
   //if (n < 0.) {discard;}
 
   // Simple sky gradient
-  float horizonBlend = smoothstep(-0.1, 0.3, viewDir.y);
-  vec3 skyColor = mix(vec3(0.2, 0.4, 0.8), vec3(0.0, 0.0, 0.2), horizonBlend);
+  float horizonBlend = smoothstep(-0.5, 0.5, viewDir.y);
+  vec3 skyColor = mix(vec3(0.0, 0.5, 0.8), vec3(0.0, 0.9, 1.0), horizonBlend);
 
   gl_FragColor = vec4(vec3(sun + skyColor),1.0) + compiler;//skybox cubemap
 }
