@@ -648,7 +648,7 @@ class WorldChunkManager {
         shader.setAttribPointer("a_position", 3, gl.FLOAT, false, 0, 0);
 
         // Set a distinct color for chunk boundaries (bright green in this case)
-        shader.setUniform4f("u_color", 0.0, 1.0, 0.0, 0.8); // Bright green with some transparency
+        shader.setUniform4f("u_color", 1.0, 1.0, 1.0, 1.0); // Bright green with some transparency
 
         // MVP Matrix setup (similar to chunk rendering)
         let mvpMatrix = glMatrix.mat4.create();
