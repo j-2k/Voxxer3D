@@ -65,6 +65,11 @@ class Shader {
         this.gl.uniform2f(location, x,y);
     }
 
+    setUniform4f(name: string, x: number, y: number, z: number, w: number) {
+        const location = this.getUniformLocation(name);
+        this.gl.uniform4f(location, x,y,z,w);
+    }
+
     // Enable vertex attributes
     enableAttrib(name: string) {
         const location = this.getAttribLocation(name);

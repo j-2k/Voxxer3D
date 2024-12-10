@@ -21,8 +21,8 @@ void main() {
     // Sample the texture atlas
     vec4 texColor = texture2D(u_texture, uv);
 
-    
+    //texColor.xyz *= (sin(u_time*2.) + 1.5);
 
     // Apply lighting or other effects (optional)
-    gl_FragColor = vec4(texColor.xyz,1.);
+    gl_FragColor = vec4(texColor.xyz , 1.);
 }

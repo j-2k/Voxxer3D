@@ -361,7 +361,7 @@ function Update(gl: WebGLRenderingContext)
     }
 
     GlobalWebGLItems.chunkManager.Render(gl, GlobalWebGLItems.ShaderChunk);
-    
+    GlobalWebGLItems.chunkManager.RenderChunkBoundaries(gl, GlobalWebGLItems.ShaderChunk);
     DebugMode();
 }
 

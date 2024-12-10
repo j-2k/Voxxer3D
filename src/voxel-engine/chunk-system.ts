@@ -50,8 +50,6 @@ class Chunk {
         this.isDirty = false;
     }
 
-
-
     generateChunk(seed: number): Block[][][] {
         const chunk = [];
         const heightBaseStrength = 0.5; // Higher values create taller mountains / Default Value is 1.0
@@ -100,19 +98,25 @@ class Chunk {
 
                     //Tree Generation Section
                     const treeRandom = WorldChunkManager.noise3D(
-                        (worldX + seed) * 0.5,  // Increase the frequency multiplier
+                        (worldX + seed) * .5,  // Increase the frequency multiplier
                         0, 
-                        (worldZ + seed) * 0.5
+                        (worldZ + seed) * .5
                     );
 
                     if(blockType === BlockType.Air && treeRandom > 0.85){
                         const groundLevel = Math.floor(heightValue);
                         const treeHeight = Math.floor(3 + treeRandom * 4);
                         
+                        // Wood trunk generation
                         if (y >= groundLevel && y < groundLevel + treeHeight) {
                             blockType = BlockType.Wood;
                         }
+                        else if (y >= groundLevel + treeHeight && y < groundLevel + treeHeight + Math.abs(detail * 12))
+                        {
+                           blockType = BlockType.Leaves;
+                        }
                     }
+
                     
                     //Final setters & pushing
                     setBlockUniforms(blockType,GlobalWebGLItems.ShaderChunk);
@@ -124,6 +128,57 @@ class Chunk {
         }
         
         //return chunk;
+
+        //This part is so garbage, I need to find a way to just make it all in 1 pass but it feels so hacky and garbage, but this is worse and a quick implementation that idc about rn.
+
+        //2nd Pass Tree Leaves Generation
+        // 2nd Pass Tree Leaves Generation
+        for (let x = 0; x < CHUNK_WIDTH; x++) {
+            for (let y = 0; y < CHUNK_HEIGHT; y++) {
+                for (let z = 0; z < CHUNK_DEPTH; z++) {
+                    // Check if the current block is a wood block
+                    if (chunk[x][y][z].getBlockType() === BlockType.Wood) {
+                        // Generate leaves in a sphere-like pattern around the wood block
+                        const leafRadius = 2; // Adjust this for different leaf density
+                        
+                        for (let dx = -leafRadius; dx <= leafRadius; dx++) {
+                            for (let dy = -leafRadius; dy <= leafRadius; dy++) {
+                                for (let dz = -leafRadius; dz <= leafRadius; dz++) {
+                                    // Calculate the actual coordinates
+                                    const nx = x + dx;
+                                    const ny = y + dy;
+                                    const nz = z + dz;
+
+                                    // Check if the coordinates are within chunk bounds
+                                    if (nx >= 0 && nx < CHUNK_WIDTH && 
+                                        ny >= 0 && ny < CHUNK_HEIGHT && 
+                                        nz >= 0 && nz < CHUNK_DEPTH) {
+                                        
+                                        // Calculate distance from the wood block center
+                                        const distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                                        
+                                        // Generate leaves in a sphere-like pattern
+                                        // Use a distance-based probability to create a more natural look
+                                        if (distance <= leafRadius && 
+                                            chunk[nx][ny][nz].getBlockType() === BlockType.Air) {
+                                            // Slight randomness to make it look more organic
+                                            const leafProbability = 1 - (distance / leafRadius);
+                                            
+                                            if (Math.random() < leafProbability) {
+                                                setBlockUniforms(BlockType.Leaves, GlobalWebGLItems.ShaderChunk);
+                                                chunk[nx][ny][nz] = new Block(BlockType.Leaves);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return chunk;
         
         // Not needed but was used to create ring air blocks around the chunk
         let i = 0;
@@ -217,6 +272,8 @@ class Chunk {
         gl.deleteBuffer(vertexBufferPos);   //hmm... why does this work, when previosuly i had a worse implementation but I only added this since after doing
         //an optimization I started losing the webgl rendering context... adding this some how fixed it. Weird I have to call this manually though.
     }
+
+
 }
 
 // Function to check if a face should be generated
@@ -531,9 +588,81 @@ class WorldChunkManager {
         }
         return Math.abs(hash); // Ensure the hash is positive
     }
-}
 
-//textOverlay6.textContent = "Camera in Chunk X: " + chunkX + " | Chunk Z: " + chunkZ;
-//const textOverlay6 = document.getElementById('textOverlay6') as HTMLElement;
+
+    //textOverlay6.textContent = "Camera in Chunk X: " + chunkX + " | Chunk Z: " + chunkZ;
+    //const textOverlay6 = document.getElementById('textOverlay6') as HTMLElement;
+
+    // Add this method to the WorldChunkManager class
+    public RenderChunkBoundaries(gl: WebGLRenderingContext, shader: Shader): void {
+        const [playerChunkX, playerChunkZ] = this.getPlayerChunkCoords(GlobalWebGLItems.Camera.cameraPosition);
+        const halfDrawDistance = Math.floor(this.drawDistance / 2);
+
+        // Prepare shader for line rendering
+        shader.use();
+        gl.lineWidth(2.0); // Make boundaries more visible
+        
+        for (let x = playerChunkX - halfDrawDistance; x <= playerChunkX + halfDrawDistance; x++) {
+            for (let z = playerChunkZ - halfDrawDistance; z <= playerChunkZ + halfDrawDistance; z++) {
+                // Render chunk boundary lines
+                this.renderChunkBoundary(gl, shader, x, z);
+            }
+        }
+
+        // Reset to default line width
+        gl.lineWidth(1.0);
+    }
+
+    private renderChunkBoundary(gl: WebGLRenderingContext, shader: Shader, chunkX: number, chunkZ: number): void {
+        const CHUNK_WIDTH = 16;
+        const CHUNK_DEPTH = 16;
+        const CHUNK_SCALE = 0.5;
+
+        // Calculate world-space chunk boundary coordinates
+        const minX = chunkX * CHUNK_WIDTH * CHUNK_SCALE;
+        const minZ = chunkZ * CHUNK_DEPTH * CHUNK_SCALE;
+        const maxX = minX + (CHUNK_WIDTH * CHUNK_SCALE);
+        const maxZ = minZ + (CHUNK_DEPTH * CHUNK_SCALE);
+        const y = 0; // Ground level, you might want to adjust this
+
+        // Vertices for chunk boundary lines
+        const boundaryVertices = [
+            // Bottom square
+            minX, y, minZ,  // Bottom-left
+            maxX, y, minZ,  // Bottom-right
+            maxX, y, minZ,  // Bottom-right
+            maxX, y, maxZ,  // Top-right
+            maxX, y, maxZ,  // Top-right
+            minX, y, maxZ,  // Top-left
+            minX, y, maxZ,  // Top-left
+            minX, y, minZ,  // Back to bottom-left
+        ];
+
+        // Create a buffer for boundary lines
+        const boundaryBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, boundaryBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(boundaryVertices), gl.STATIC_DRAW);
+
+        // Set up position attribute
+        shader.enableAttrib("a_position");
+        shader.setAttribPointer("a_position", 3, gl.FLOAT, false, 0, 0);
+
+        // Set a distinct color for chunk boundaries (bright green in this case)
+        shader.setUniform4f("u_color", 0.0, 1.0, 0.0, 0.8); // Bright green with some transparency
+
+        // MVP Matrix setup (similar to chunk rendering)
+        let mvpMatrix = glMatrix.mat4.create();
+        glMatrix.mat4.multiply(mvpMatrix, GlobalWebGLItems.Camera.projectionMatrix, GlobalWebGLItems.Camera.viewMatrix);
+
+        shader.setUniformMatrix4fv("u_MVP", mvpMatrix);
+
+        // Render lines
+        gl.drawArrays(gl.LINES, 0, 8);
+
+        // Clean up
+        shader.disableAttrib("a_position");
+        gl.deleteBuffer(boundaryBuffer);
+    }
+}
 
 export { Chunk, Block, BlockType, buildChunkMesh, WorldChunkManager };
