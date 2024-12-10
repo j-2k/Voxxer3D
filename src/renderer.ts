@@ -35,7 +35,7 @@ class GlobalWebGLItems{
     
     public static Shader2 : Shader | null;
     public static ShaderChunk : Shader;
-    public static ShaderBoundary: Shader;
+    public static ShaderChunkBoundDebug: Shader;
 
     public static GrassBlock = {
         shader : null as Shader | null,
@@ -124,8 +124,6 @@ function AtlasTextureBinder(gl : WebGLRenderingContext){
 }
 
 function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
-    GlobalWebGLItems.ShaderBoundary = new Shader(gl, Materials.ChunkboundShader.vertexShader, Materials.ChunkboundShader.fragmentShader);
-
     GlobalWebGLItems.GrassBlock.shader = GrassShaderInstance(gl);
     function GrassShaderInstance  (gl : WebGLRenderingContext)  {
         const grassShader : Shader = new Shader(gl, Materials.Unlit.vertexShader, Materials.Unlit.fragmentShader);
@@ -274,6 +272,7 @@ function Start(gl : WebGLRenderingContext)
 }
 
 function ChunkSetup(gl: WebGLRenderingContext){
+    GlobalWebGLItems.ShaderChunkBoundDebug = new Shader(gl, Materials.ChunkboundShader.vertexShader, Materials.ChunkboundShader.fragmentShader);
     //Moved to start binder
     GlobalWebGLItems.ShaderChunk = new Shader(gl, Materials.Texture.vertexShader, Materials.Texture.fragmentShader);
     if(GlobalWebGLItems.ShaderChunk == null) {console.error("Failed to create chunk shader in the Chunk Setup function of the renderer...");return;}
@@ -364,8 +363,8 @@ function Update(gl: WebGLRenderingContext)
     }
 
     GlobalWebGLItems.chunkManager.Render(gl, GlobalWebGLItems.ShaderChunk);
-    GlobalWebGLItems.chunkManager.RenderChunkBoundaries(gl, GlobalWebGLItems.ShaderBoundary);
-    DebugMode();
+
+    DebugMode(true);
 }
 
 
@@ -424,8 +423,10 @@ function RenderingSettings(gl : WebGLRenderingContext)
     //gl.depthFunc(gl.LEQUAL);
 }
 
-function DebugMode()
+function DebugMode(showChunkBoundaries : boolean = false)
 {
+    if (showChunkBoundaries) {GlobalWebGLItems.chunkManager.RenderChunkBoundaries(GlobalWebGLItems.GL, GlobalWebGLItems.ShaderChunkBoundDebug);}
+    
     const debugChunkCoords = GlobalWebGLItems.chunkManager.getPlayerChunkCoords(GlobalWebGLItems.Camera.cameraPosition);
     textOverlay1.textContent = `Camera Position: ${GlobalWebGLItems.Camera.cameraPosition[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[2].toFixed(2)}`
      + " | " + `Camera Chunk Position: ChunkX: ${debugChunkCoords[0]} | ChunkZ: ${debugChunkCoords[1]}`;  
@@ -581,7 +582,8 @@ function RenderSkybox(gl: WebGLRenderingContext) {
     GlobalWebGLItems.SkyboxShader.setUniformMatrix4fv("u_viewDirectionProjectionInverse", viewDirectionProjectionInverseMatrix);
 
     // Tell the shader to use texture unit 0 for u_skybox
-    GlobalWebGLItems.SkyboxShader.setUniform1f("u_skybox", 0);
+    // This is raising a uniform warning in the inspector idfk what to do about this so im leaving it commented out for now
+    //GlobalWebGLItems.SkyboxShader.setUniform1f("u_skybox", 0);
 
     GlobalWebGLItems.SkyboxShader.setUniform1f("u_time", Time.time);
 

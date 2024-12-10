@@ -593,7 +593,8 @@ class WorldChunkManager {
     //textOverlay6.textContent = "Camera in Chunk X: " + chunkX + " | Chunk Z: " + chunkZ;
     //const textOverlay6 = document.getElementById('textOverlay6') as HTMLElement;
 
-    // Add this method to the WorldChunkManager class
+    //These 2 chunk boundary drawing functions are unoptimized as shit and i cbf fixing them since im only using them for debugging so im leaving this as it is.
+    //Dont use unless necessary to see chunk boundaries, this function is really unoptimized because of the multiple forloops it does for every single frame (if ur rend dist is high the webpage might explode :D).
     public RenderChunkBoundaries(gl: WebGLRenderingContext, shader: Shader): void {
         const [playerChunkX, playerChunkZ] = this.getPlayerChunkCoords(GlobalWebGLItems.Camera.cameraPosition);
         const halfDrawDistance = Math.floor(this.drawDistance / 2);
@@ -623,20 +624,26 @@ class WorldChunkManager {
         const minZ = chunkZ * CHUNK_DEPTH * CHUNK_SCALE;
         const maxX = minX + (CHUNK_WIDTH * CHUNK_SCALE);
         const maxZ = minZ + (CHUNK_DEPTH * CHUNK_SCALE);
-        const y = -5; // Ground level, you might want to adjust this
+        //const y = -5; // Ground level, you might want to adjust this
 
         // Vertices for chunk boundary lines
-        const boundaryVertices = [
-            // Bottom square
-            minX, y, minZ,  // Bottom-left
-            maxX, y, minZ,  // Bottom-right
-            maxX, y, minZ,  // Bottom-right
-            maxX, y, maxZ,  // Top-right
-            maxX, y, maxZ,  // Top-right
-            minX, y, maxZ,  // Top-left
-            minX, y, maxZ,  // Top-left
-            minX, y, minZ,  // Back to bottom-left
-        ];
+        const boundaryVertices = [];
+        const maxLines = 10;
+        const offset = 0.5;
+
+        for (let i = 0; i > -maxLines; i--) {
+            const y = (i * offset) - 5;
+            boundaryVertices.push(
+                minX, y, minZ,  // Bottom-left
+                maxX, y, minZ,  // Bottom-right
+                maxX, y, minZ,  // Bottom-right
+                maxX, y, maxZ,  // Top-right
+                maxX, y, maxZ,  // Top-right
+                minX, y, maxZ,  // Top-left
+                minX, y, maxZ,  // Top-left
+                minX, y, minZ,  // Back to bottom-left
+            );
+        }
 
         // Create a buffer for boundary lines
         const boundaryBuffer = gl.createBuffer();
@@ -657,7 +664,7 @@ class WorldChunkManager {
         shader.setUniformMatrix4fv("u_MVP", mvpMatrix);
 
         // Render lines
-        gl.drawArrays(gl.LINES, 0, 8);
+        gl.drawArrays(gl.LINES, 0, 8 * maxLines);
 
         // Clean up
         shader.disableAttrib("a_position");
