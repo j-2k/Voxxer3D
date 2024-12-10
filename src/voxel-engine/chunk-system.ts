@@ -623,7 +623,7 @@ class WorldChunkManager {
         const minZ = chunkZ * CHUNK_DEPTH * CHUNK_SCALE;
         const maxX = minX + (CHUNK_WIDTH * CHUNK_SCALE);
         const maxZ = minZ + (CHUNK_DEPTH * CHUNK_SCALE);
-        const y = 0; // Ground level, you might want to adjust this
+        const y = -5; // Ground level, you might want to adjust this
 
         // Vertices for chunk boundary lines
         const boundaryVertices = [

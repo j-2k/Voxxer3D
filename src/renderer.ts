@@ -35,6 +35,7 @@ class GlobalWebGLItems{
     
     public static Shader2 : Shader | null;
     public static ShaderChunk : Shader;
+    public static ShaderBoundary: Shader;
 
     public static GrassBlock = {
         shader : null as Shader | null,
@@ -123,6 +124,8 @@ function AtlasTextureBinder(gl : WebGLRenderingContext){
 }
 
 function StartBinders(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
+    GlobalWebGLItems.ShaderBoundary = new Shader(gl, Materials.ChunkboundShader.vertexShader, Materials.ChunkboundShader.fragmentShader);
+
     GlobalWebGLItems.GrassBlock.shader = GrassShaderInstance(gl);
     function GrassShaderInstance  (gl : WebGLRenderingContext)  {
         const grassShader : Shader = new Shader(gl, Materials.Unlit.vertexShader, Materials.Unlit.fragmentShader);
@@ -361,7 +364,7 @@ function Update(gl: WebGLRenderingContext)
     }
 
     GlobalWebGLItems.chunkManager.Render(gl, GlobalWebGLItems.ShaderChunk);
-    GlobalWebGLItems.chunkManager.RenderChunkBoundaries(gl, GlobalWebGLItems.ShaderChunk);
+    GlobalWebGLItems.chunkManager.RenderChunkBoundaries(gl, GlobalWebGLItems.ShaderBoundary);
     DebugMode();
 }
 
