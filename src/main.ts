@@ -2,8 +2,11 @@ import { initializeCanvas } from "./canvas";
 import { StartMessages } from "./messages";
 import { EngineRenderer } from "./renderer";
 import { InitializeInputManager } from "./input-manager";
+import { ExtraDebugCanvas } from "./debug-canvas";
 
 function main() {
+
+
   const canvasId = "webglCanvas";
   const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
   
@@ -22,6 +25,8 @@ function main() {
   StartMessages(canvas, "Voxel Rendering Engine");//, false);
   InitializeInputManager(canvas);
   EngineRenderer(gl);
+
+  ExtraDebugCanvas();
 }
 
 function CanvasHandler(canvas: HTMLCanvasElement) {
