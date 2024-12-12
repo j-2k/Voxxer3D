@@ -85,6 +85,8 @@ class Chunk {
                     // Convert noise to height (scale up and shift to be mostly positive) & Limit max height to 3/4
                     const heightValue = (combinedNoise + 1) * 0.5 * (CHUNK_HEIGHT*0.75);
                     
+                    const treeAmount = 0.8; //Good range is from 0.5 to 0.9, default is 0.8
+
                     let blockType: BlockType;
 
                     if (y === 0) {
@@ -103,7 +105,11 @@ class Chunk {
                         (worldZ + seed) * .5
                     );
 
-                    if(blockType === BlockType.Air && treeRandom > 0.85){
+                    if(blockType === BlockType.Air && treeRandom > treeAmount &&
+                        //x ranges from 0 to 15, z ranges from 0 to 15 | Thus only check if it is in the middle section (a shit fix for leaves that overlap chunk bounds since i cbf finding a good implementation :D)
+                        //x & z will not spawn a tree shaft on edge of chunks, offset to check within chunk boundary is offset by 2 (x & z range is 2 to 13 (0, 1 & 14, 15 excluded))
+                        (x > 1 && x < CHUNK_WIDTH - 2 && z > 1 && z < CHUNK_DEPTH - 2) 
+                    ){
                         const groundLevel = Math.floor(heightValue);
                         const treeHeight = Math.floor(3 + treeRandom * 4);
                         
@@ -290,7 +296,7 @@ function buildChunkMesh(chunk: Chunk, worldManager: WorldChunkManager): Vertex[]
                 const currentBlock = chunk.chunkBlocks[x][y][z];
 
                 const size = 1;
-                const pX = x * size, pY = (y * size) - CHUNK_HEIGHT*size, pZ = z * size;
+                const pX = x * size, pY = (y * size) - CHUNK_HEIGHT * size, pZ = z * size;
 
                 if (currentBlock.getBlockType() === BlockType.Air) {
                     continue;
@@ -304,7 +310,7 @@ function buildChunkMesh(chunk: Chunk, worldManager: WorldChunkManager): Vertex[]
                     }
 
                     // If within current chunk bounds, use current chunk
-                    if (localX >= 0 && localX < CHUNK_WIDTH && 
+                    if (localX >= 0 && localX < CHUNK_WIDTH &&
                         localZ >= 0 && localZ < CHUNK_DEPTH) {
                         return chunk.chunkBlocks[localX][localY][localZ].getBlockType();
                     }
