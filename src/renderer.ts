@@ -6,6 +6,7 @@ import { CameraManager } from './camera';
 import { Shader } from './shader-master';
 import Draw from './shapes-draw';
 import { WorldChunkManager } from './voxel-engine/chunk-system';
+import { ExtraDebugCanvas } from "./debug-canvas";
 
 function EngineRenderer(gl : WebGLRenderingContext)
 {
@@ -16,6 +17,8 @@ function EngineRenderer(gl : WebGLRenderingContext)
     Start(gl);
     
     UpdateCore(gl);
+    
+    ExtraDebugCanvas();
 }
 
 class GlobalWebGLItems{

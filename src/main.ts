@@ -2,7 +2,6 @@ import { initializeCanvas } from "./canvas";
 import { StartMessages } from "./messages";
 import { EngineRenderer } from "./renderer";
 import { InitializeInputManager } from "./input-manager";
-import { ExtraDebugCanvas } from "./debug-canvas";
 
 function main() {
 
@@ -25,10 +24,9 @@ function main() {
   StartMessages(canvas, "Voxel Rendering Engine");//, false);
   InitializeInputManager(canvas);
   EngineRenderer(gl);
-
-  ExtraDebugCanvas();
 }
 
+//For later use
 function CanvasHandler(canvas: HTMLCanvasElement) {
   canvas.width = 900;
   canvas.height = 600;

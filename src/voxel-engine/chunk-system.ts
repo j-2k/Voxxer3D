@@ -506,6 +506,7 @@ class WorldChunkManager {
         }
     }
 
+    //This rendering function the way its built is horrid in terms of optimization but keeping it for now
     public Render(gl: WebGLRenderingContext, shader: Shader): void {
         const [playerChunkX, playerChunkZ] = this.getPlayerChunkCoords(GlobalWebGLItems.Camera.cameraPosition);
         const halfDrawDistance = Math.floor(this.drawDistance / 2);
