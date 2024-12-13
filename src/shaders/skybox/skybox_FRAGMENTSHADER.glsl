@@ -83,19 +83,25 @@ void main() {
     texCubemap = textureCube(u_skybox, viewDir);
     compiler = (texCubemap.x + u_time + u_sunDirection.x + 0.0) * 0.0;    //only exists to stop compiler from optimizing out the texture lookup & giving compiling errors
   }
-  
-  //vec3 sunDir = normalize(vec3(0.0, cos(u_time), sin(u_time)));
-  vec3 sunDir = vec3(0.0, 0.0, 2.0);
+  float zd = sin(u_time);
+  float yd = cos(u_time);
+  vec3 sunDir = normalize(vec3(0.0, yd, zd));
+  //vec3 sunDir = vec3(0.0, 0., 1);
   vec3 sun = SquareSunTest(viewDir, sunDir);
   float n = (noise(viewDir.xy * 100.0 + u_time)*2.0);
   //sun *= n;
   //if (n < 0.) {discard;}
 
+
+
   // Simple sky gradient
   float horizonBlend = smoothstep(-0.5, 0.5, viewDir.y);
   vec3 skyColor = mix(vec3(0.0, 0.5, 0.8), vec3(0.0, 0.9, 1.0), horizonBlend);
 
-  gl_FragColor = vec4(vec3(sun + skyColor),1.0) + compiler;//skybox cubemap
+  //y=\left(\sin\left(x\right)\cdot0.5+0.5\ \right)
+  float lerpDir = mix(0.,1.,(yd*0.5+0.5));
+
+  gl_FragColor = vec4(vec3(sun + (skyColor * lerpDir)),1.0) + compiler;//skybox cubemap
 }
 
 

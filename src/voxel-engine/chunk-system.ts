@@ -85,7 +85,7 @@ class Chunk {
                     // Convert noise to height (scale up and shift to be mostly positive) & Limit max height to 3/4
                     const heightValue = (combinedNoise + 1) * 0.5 * (CHUNK_HEIGHT*0.75);
                     
-                    const treeAmount = 0.8; //Good range is from 0.5 to 0.9, default is 0.8
+                    const treeAmount = 0.83; //Good range is from 0.5 to 0.9, default is 0.8
 
                     let blockType: BlockType;
 
@@ -137,7 +137,6 @@ class Chunk {
 
         //This part is so garbage, I need to find a way to just make it all in 1 pass but it feels so hacky and garbage, but this is worse and a quick implementation that idc about rn.
 
-        //2nd Pass Tree Leaves Generation
         // 2nd Pass Tree Leaves Generation
         for (let x = 0; x < CHUNK_WIDTH; x++) {
             for (let y = 0; y < CHUNK_HEIGHT; y++) {
@@ -152,7 +151,7 @@ class Chunk {
                                 for (let dz = -leafRadius; dz <= leafRadius; dz++) {
                                     // Calculate the actual coordinates
                                     const nx = x + dx;
-                                    const ny = y + dy;
+                                    const ny = y + dy + 3;
                                     const nz = z + dz;
 
                                     // Check if the coordinates are within chunk bounds
