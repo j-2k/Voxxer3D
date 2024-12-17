@@ -1,7 +1,8 @@
 function StartMessages(
   canvas: HTMLCanvasElement,
   titleWeb: string = "Title Page",
-  showTitle: boolean = true
+  showTitle: boolean = true,
+  showDescription: boolean = true
 ): void {
 
   // Create a new text element (e.g., a paragraph)
@@ -24,7 +25,7 @@ function StartMessages(
   // Create a logo or brand name
   const logo = document.createElement("a");
   logo.href = "#";
-  logo.textContent = "Voxxer"; // Replace with your brand name
+  logo.textContent = "Voxxer3D"; // Replace with your brand name
   logo.classList.add("logo");
 
   // Create an unordered list for the navigation links
@@ -81,15 +82,17 @@ function StartMessages(
   // Finally, append the navBar to the body (or any other element you want)
   document.body.insertBefore(navBar, canvas);
 
-  const bodyMessages = [
-    "This is mainly a learning project, I hope you enjoy it!",
-  ];
+    if(showDescription){
+    const bodyMessages = [
+      "This is mainly a learning project, I hope you enjoy it!",
+    ];
 
-  bodyMessages.forEach((msg) => {
-    const paragraphElement = document.createElement("p");
-    paragraphElement.textContent = msg;
-    document.body.appendChild(paragraphElement);
-  });
+    bodyMessages.forEach((msg) => {
+      const paragraphElement = document.createElement("p");
+      paragraphElement.textContent = msg;
+      document.body.appendChild(paragraphElement);
+    });
+  }
   return;
 }
 

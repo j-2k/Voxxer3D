@@ -62,11 +62,16 @@ p {
 
 canvas {
     
+    display: block;
+    width: 100%;
+    height: 100%;
+
     /*
     background: blanchedalmond;
-    */
+    
     box-shadow: 0 0 25px 5px rgba(255, 255, 255, 1);
     border: 4px solid rgb(255, 255, 255);
+    */
 
     /*
     border: 4px solid rgb(255, 255, 255);
