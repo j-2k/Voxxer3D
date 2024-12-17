@@ -8,6 +8,7 @@ let mouseSensitivity = 30; // Adjust this for sensitivity
 let yaw = 90;//-90; // Rotation around the Y-axis based on the X-axis of the mouse
 let pitch = 0; // Rotation around the X-axis based on the Y-axis of the mouse
 
+let camRelativeFrontVec = [0,0,0];
 
 function CameraManager() {
   const cameraSpeed = 10 * Time.deltaTime; // Define camera speed
@@ -17,6 +18,7 @@ function CameraManager() {
   front[0] = Math.cos(glMatrix.glMatrix.toRadian(yaw)) * Math.cos(glMatrix.glMatrix.toRadian(pitch));
   front[1] = Math.sin(glMatrix.glMatrix.toRadian(pitch));
   front[2] = Math.sin(glMatrix.glMatrix.toRadian(yaw)) * Math.cos(glMatrix.glMatrix.toRadian(pitch));
+  camRelativeFrontVec = front;
   glMatrix.vec3.normalize(GlobalWebGLItems.Camera.cameraTarget, front);
 
   const front32A = front as Float32Array;
@@ -53,7 +55,7 @@ function CameraManager() {
   //Set Camera Target
   glMatrix.vec3.add(GlobalWebGLItems.Camera.cameraTarget, GlobalWebGLItems.Camera.cameraPosition, front32A);
 
-  textOverlay4.textContent = "Camera Relative Front: " + front[0].toFixed(2) + ", " + front[1].toFixed(2) + ", " + front[2].toFixed(2);
+  //textOverlay4.textContent = "Camera Relative Front: " + front[0].toFixed(2) + ", " + front[1].toFixed(2) + ", " + front[2].toFixed(2);
 
   // View matrix (camera transformation)
   let viewMatrix = GlobalWebGLItems.Camera.viewMatrix; // Retrieve the camera view matrix
@@ -106,9 +108,9 @@ function CameraWASD(front: glMatrix.vec3, right: glMatrix.vec3, cameraSpeed = 0.
 }
 
 
-
-const textOverlay4 = document.getElementById('textOverlay4') as HTMLElement;
+//const textOverlay4 = document.getElementById('textOverlay4') as HTMLElement;
 
 export {
-  CameraManager
+  CameraManager,
+  camRelativeFrontVec
 };

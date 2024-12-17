@@ -367,7 +367,7 @@ function Update(gl: WebGLRenderingContext)
 
     GlobalWebGLItems.chunkManager.Render(gl, GlobalWebGLItems.ShaderChunk);
 
-    DebugMode(true);
+    //DebugMode(true);
 }
 
 
@@ -426,6 +426,7 @@ function RenderingSettings(gl : WebGLRenderingContext)
     //gl.depthFunc(gl.LEQUAL);
 }
 
+/*
 function DebugMode(showChunkBoundaries : boolean = false)
 {
     if (showChunkBoundaries) {GlobalWebGLItems.chunkManager.RenderChunkBoundaries(GlobalWebGLItems.GL, GlobalWebGLItems.ShaderChunkBoundDebug);}
@@ -444,7 +445,7 @@ let timeFuture = 0;
 const textOverlay1 = document.getElementById('textOverlay1') as HTMLElement;
 const textOverlay2 = document.getElementById('textOverlay2') as HTMLElement;
 const textOverlay3 = document.getElementById('textOverlay3') as HTMLElement;
-
+*/
 
 
 export {

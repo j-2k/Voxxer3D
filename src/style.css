@@ -30,6 +30,7 @@ body {
     place-items: center;
     display: grid;
     margin: 0;
+    overflow: hidden;
 }
 
 h1 {
@@ -109,6 +110,7 @@ nav {
     position: fixed;
     top: 0;
     text-shadow: 0 0 5px black;
+
 }
 
 .nav-container {

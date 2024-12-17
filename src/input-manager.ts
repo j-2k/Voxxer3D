@@ -43,12 +43,12 @@ class InputManager {
         // Initialize previous mouse position
         canvas.addEventListener('mousemove', (event: MouseEvent) => {
             if(!InputManager.mouse.isPressed) {
-                textOverlay5.textContent = "IsMouseDown : " + this.mouse.isPressed;
+                //textOverlay5.textContent = "IsMouseDown : " + this.mouse.isPressed;
                 return;
             }
             const rect = canvas.getBoundingClientRect();
 
-            textOverlay5.textContent = "IsMouseDown : " + this.mouse.isPressed;
+            //textOverlay5.textContent = "IsMouseDown : " + this.mouse.isPressed;
 
             InputManager.mouse.x = event.clientX - rect.left;
             InputManager.mouse.y = event.clientY - rect.top;
@@ -60,7 +60,7 @@ class InputManager {
 
         canvas.addEventListener('mouseleave', (event: MouseEvent) => {
             // Handle mouse leaving the canvas
-            textOverlay5.textContent = "Mouse left the canvas";
+            //textOverlay5.textContent = "Mouse left the canvas";
             InputManager.mouse.isPressed = false; // Optionally reset mouse pressed state
             InputManager.mouse.deltaX = 0;
             InputManager.mouse.deltaY = 0;
@@ -85,7 +85,7 @@ function InitializeInputManager(canvas: HTMLCanvasElement) {
     InputManager.init(canvas); 
 }
 
-const textOverlay5 = document.getElementById('textOverlay5') as HTMLElement;
-textOverlay5.textContent = "IsMouseDown : " + InputManager.mouse.isPressed;
+//const textOverlay5 = document.getElementById('textOverlay5') as HTMLElement;
+//textOverlay5.textContent = "IsMouseDown : " + InputManager.mouse.isPressed;
 
 export { InitializeInputManager, InputManager };

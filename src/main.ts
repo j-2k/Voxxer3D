@@ -4,6 +4,8 @@ import { EngineRenderer, GlobalWebGLItems } from "./renderer";
 import { InitializeInputManager } from "./input-manager";
 import * as glMatrix from "gl-matrix";
 
+import { debugConsole } from "./debug-mode";
+
 function main() {
 
 
@@ -20,6 +22,8 @@ function main() {
   }
 
   CanvasHandler(canvas, gl);
+
+  debugConsole;
 
   console.log("WebGL is available, Voxxer3D is starting with initalization then rendering...");
   StartMessages(canvas, "Voxel Rendering Engine", false, false);
