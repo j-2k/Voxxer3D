@@ -1,62 +1,154 @@
 class DebugConsole{
-    debugItems = [];
+    private watchedVariables: Map<string, {
+        value: any;
+        type: string;
+        formatter?: (value: any) => string;
+      }> = new Map();
+
+    private debugElement: HTMLDivElement = document.createElement("div");
+
+    private updateRate : number = 10; // ms
+    private intervalId: number | null = null;
+
+
+
 
     constructor(){
         console.log("DebugConsole constructor");
-
-        const divElement: HTMLDivElement = document.createElement("div");
+        this.ToggleKeyDown();
+        this.CreateDebugElement();
         const pElement : HTMLParagraphElement = document.createElement("p");
-        
-        divElement.style.bottom = "0";
-        divElement.style.position = "fixed";
-
-        pElement.textContent = "DebugConsole initialized";
-        divElement.appendChild(pElement);
-        document.body.appendChild(divElement);
+        pElement.textContent = "Debugger Loading...";
+        this.debugElement.appendChild(pElement);
+    }
 
 
-        
-        //this is the garbage i did before going to change it now
-        document.body.innerHTML += `
-        <!-- Debugging Purposes--> 
-        <div style="
-                display: transparent;
-                width: 100%;
-                position: fixed;
-                top: 0;
-                padding: 5px;
-                padding-left: 30px;
-                background-color: rgb(0, 0, 0,0.5);
-                border: 2px solid rgb(0, 0, 0);">
-            <div>
-                <p id="textOverlay3">textOverlay3</p>
-            </div>
-            <div >
-                <p id="textOverlay3">textOverlay3</p>
-                <style>p {font-size: 20px; margin: -5px;}</style>
-                <p id="textOverlay1">textOverlay1</p>
-                <p id="textOverlay2">textOverlay2</p>
-                <p id="textOverlay4">textOverlay4</p>
-                <p id="textOverlay5">textOverlay5</p>
-                <p id="textOverlay6">textOverlay6</p>
-            </div> 
+    //Getting from a param??? this is crazy, explanation of "getter: () => T" Defines a function that will be called to get the current value, so once we do value: getter() it will call the function and get the value
+    public Watch<T>(
+        variableName: string, 
+        getter : () => T, 
+        options : { 
+            type?: string,
+            formatter?: (value: T) => string;
+        } = {})
+    {
+        const formattedValue = options.formatter?.(getter()) || JSON.stringify(getter(), null, 2);
+
+        this.watchedVariables.set(variableName, {
+          value: getter(),
+          type: options.type || typeof getter(),
+          formatter: options.formatter || ((value) => formattedValue),
+        });
+
+        // Start updating if not already running
+        if (!this.intervalId) {
+            this.StartWatching();
+          }
+      
+          return this;
+    }
+
+    private StartWatching() {
+        this.intervalId = window.setInterval(() => {
+          this.UpdateValues();
+          this.RenderDebug();
+        }, this.updateRate);
+    }
+
+    private UpdateValues() {
+        for (const [name, variable] of this.watchedVariables.entries()) {
+          // Re-fetch the current value
+          const currentValue = this.GetVariableValue(name);
+          variable.value = currentValue;
+        }
+    }
+
+    // Render debug information
+    private RenderDebug() {
+      if (!this.debugElement) return;
+
+      const debugContent = Array.from(this.watchedVariables.entries())
+        .map(([name, variable]) => {
+          // Format value
+          let displayValue = variable.formatter 
+            ? variable.formatter(variable.value)
+            : this.formatValue(variable.value);
+
+          return `<div>
+            <strong>${name}</strong>: 
+            <span style="color: ${this.getColorForType(variable.type)}">${displayValue}</span>
+          </div>`;
+        })
+        .join('');
+
+      this.debugElement.innerHTML = `
+        <div style="font-weight: bold; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,1)">
+          Debug Watcher v1.0.0
         </div>
-        <!-- Debugging Purposes-->'`
+        ${debugContent}
+      `;
+    }
 
+    // Color code based on type
+    private getColorForType(type: string): string {
+        const typeColors: {[key: string]: string} = {
+        'number': '#4CAF50',   // Green
+        'string': '#2196F3',   // Blue
+        'boolean': '#FF9800',  // Orange
+        'object': '#9C27B0',   // Purple
+        'function': '#FFFF00'  // Yellow
+        };
+        return typeColors[type] || '#FFFFFF';
+    }
+
+    private formatValue(value: any): string {
+        if (value === null || value === undefined) return String(value);
         
+        if (typeof value === 'object') {
+          // Handle vector/position objects
+          if ('x' in value && 'y' in value && 'z' in value) {
+            return `(${value.x.toFixed(2)}, ${value.y.toFixed(2)}, ${value.z.toFixed(2)})`;
+          }
+          
+          // Fallback for other objects
+          return JSON.stringify(value);
+        }
+        
+        return value.toString();
+      }
+
+    private GetVariableValue(name: string): any {
+        const variable = this.watchedVariables.get(name);
+        return variable ? (typeof variable.value === 'function' ? variable.value() : variable.value) : undefined;
+      }
+      
+
+    private CreateDebugElement() {
+        this.debugElement = document.createElement('div');
+        this.debugElement.style.position = 'fixed';
+        this.debugElement.style.top = '0px';
+        this.debugElement.style.left = '0px';
+        this.debugElement.style.backgroundColor = 'rgba(0,0,0,0.7)';
+        this.debugElement.style.color = 'white';
+        this.debugElement.style.padding = '10px';
+        this.debugElement.style.fontFamily = 'monospace';
+        this.debugElement.style.zIndex = '1000';
+        this.debugElement.style.maxWidth = '300px';
+        this.debugElement.style.overflow = 'auto';
+        document.body.appendChild(this.debugElement);
     }
 
-    public log(message: string){
-        console.log("DebugConsole log: " + message);
+    public ToggleKeyDown(){
+        document.addEventListener('keydown', (event) => {
+            if(event.key === 'F3'){
+                this.ToggleConsole();
+            }
+        });
     }
-
-    public error(message: string){
-        console.error("DebugConsole error: " + message);
-    }
-
-    public warn(message: string){
-        console.warn("DebugConsole warn: " + message);
+    public ToggleConsole() {
+        this.debugElement.style.display = this.debugElement.style.display === 'none' ? 'block' : 'none';
     }
 }
 
-export const debugConsole = new DebugConsole();
+const debugConsole = new DebugConsole();
+export default debugConsole;

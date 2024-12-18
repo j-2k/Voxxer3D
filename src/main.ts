@@ -4,7 +4,7 @@ import { EngineRenderer, GlobalWebGLItems } from "./renderer";
 import { InitializeInputManager } from "./input-manager";
 import * as glMatrix from "gl-matrix";
 
-import { debugConsole } from "./debug-mode";
+import debug from "./debug-mode";
 
 function main() {
 
@@ -23,7 +23,7 @@ function main() {
 
   CanvasHandler(canvas, gl);
 
-  debugConsole;
+
 
   console.log("WebGL is available, Voxxer3D is starting with initalization then rendering...");
   StartMessages(canvas, "Voxel Rendering Engine", false, false);
@@ -37,6 +37,8 @@ function CanvasHandler(canvas: HTMLCanvasElement, gl: WebGLRenderingContext) {
   //width="900" height="600"
   //canvas.width = window.innerWidth;
   //canvas.height = window.innerHeight;
+
+  debug.Watch("Canvas Size", () => canvas, { type: "number" ,formatter: (c) => JSON.parse(JSON.stringify(c.width + " " + c.height)) } );
 
   setupResize();
   resizeCanvas();
