@@ -2,6 +2,7 @@ import { GlobalWebGLItems } from "./renderer";
 import Time from "./time-manager";
 import * as glMatrix from "gl-matrix";
 import { InputManager } from "./input-manager";
+import debug from "./debug-mode";
 
 // Variables to hold mouse movement data
 let mouseSensitivity = 30; // Adjust this for sensitivity
@@ -53,7 +54,7 @@ function CameraManager() {
   //Set Camera Target
   glMatrix.vec3.add(GlobalWebGLItems.Camera.cameraTarget, GlobalWebGLItems.Camera.cameraPosition, front32A);
 
-  //textOverlay4.textContent = "Camera Relative Front: " + front[0].toFixed(2) + ", " + front[1].toFixed(2) + ", " + front[2].toFixed(2);
+  debug.Watch("Camera Relative Front", () => front, { type: "vec3" });//, formatter: (f) => JSON.parse(JSON.stringify(f[0].toFixed(2) + " | " + f[1].toFixed(2) + " | " + f[2].toFixed(2))) });
 
   // View matrix (camera transformation)
   let viewMatrix = GlobalWebGLItems.Camera.viewMatrix; // Retrieve the camera view matrix

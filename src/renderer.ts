@@ -430,27 +430,24 @@ function RenderingSettings(gl : WebGLRenderingContext)
 
 
 function StartDebuggers(){
-    const debugChunkCoords = GlobalWebGLItems.chunkManager.getPlayerChunkCoords(GlobalWebGLItems.Camera.cameraPosition);
-    debug.Watch("Camera Chunk Position XZ", () => debugChunkCoords, { type: "number" ,formatter: (c) => JSON.parse(JSON.stringify(c[0] + " | " + c[1])) } );
-    debug.Watch("Camera Position XYZ", () => GlobalWebGLItems.Camera.cameraPosition, { type: "number" ,formatter: (c) => JSON.parse(JSON.stringify(c[0].toFixed(2) + " | " + c[1].toFixed(2) + " | " + c[2].toFixed(2)) ) } );
-    debug.Watch("Camera Target From Position XYZ", () => GlobalWebGLItems.Camera.cameraTarget, { type: "number" ,formatter: (c) => JSON.parse(JSON.stringify(c[0].toFixed(2) + " | " + c[1].toFixed(2) + " | " + c[2].toFixed(2)) ) } );
+    debug.Watch("Camera Position XYZ", () => GlobalWebGLItems.Camera.cameraPosition, {type: "vec3"})//, formatter: (c) => JSON.parse(JSON.stringify(c[0].toFixed(2) + " | " + c[1].toFixed(2) + " | " + c[2].toFixed(2)) ) } );
+    debug.Watch("Camera Target From Position XYZ", () => GlobalWebGLItems.Camera.cameraTarget, {type: "vec3"});// ,formatter: (c) => JSON.parse(JSON.stringify(c[0].toFixed(2) + " | " + c[1].toFixed(2) + " | " + c[2].toFixed(2)) ) } );
 }
 
 let futureTime = 0;
 function DebugMode(showChunkBoundaries : boolean = false, fpsUpdateRate : number = 0.25)
 {
     if (showChunkBoundaries) {GlobalWebGLItems.chunkManager.RenderChunkBoundaries(GlobalWebGLItems.GL, GlobalWebGLItems.ShaderChunkBoundDebug);}
-    const fps = Time.GetFPS().toFixed(0);//.toFixed(2);
+    const fps = Time.GetFPS();
     
     if(futureTime < Time.time){
         futureTime = Time.time + fpsUpdateRate;
-        debug.Watch("FPS (.25 update)", () => fps, {type: "number", formatter: (c) => JSON.parse(JSON.stringify(c))});
+        debug.Watch("FPS (.25ms update)", () => fps,{type: "number", formatter: (fps) => fps.toFixed(2)});
+        const debugChunkCoords = GlobalWebGLItems.chunkManager.getPlayerChunkCoords(GlobalWebGLItems.Camera.cameraPosition);
+        debug.Watch("Camera Chunk Position XZ (.25ms update)", () => debugChunkCoords, { type: "number" ,formatter: (c) => JSON.parse(JSON.stringify(c[0] + " | " + c[1])) } );
     }
     debug.Watch("Time.time", () => Time.time, {type: "number", formatter: (c) => JSON.parse(JSON.stringify(c.toFixed(2)))});
-    //debug.Watch("FPS", () => fps, {type: "function", formatter: (c) => JSON.parse(JSON.stringify(c))});
 }
-
-
 
 
 export {
@@ -459,13 +456,13 @@ export {
 }
 
 function CameraUniforms(gl: WebGLRenderingContext) {
-        //Create View Matrix
-        glMatrix.mat4.lookAt(GlobalWebGLItems.Camera.viewMatrix, GlobalWebGLItems.Camera.cameraPosition, GlobalWebGLItems.Camera.cameraTarget, GlobalWebGLItems.Camera.upDirection);
-    
-        //Prespective Projection
-        const aspectRatio = gl.canvas.width / gl.canvas.height;
-        const fovRADIAN = 70 * Math.PI / 180;
-        glMatrix.mat4.perspective(GlobalWebGLItems.Camera.projectionMatrix, fovRADIAN, aspectRatio, 0.1, 100.0);
+    //Create View Matrix
+    glMatrix.mat4.lookAt(GlobalWebGLItems.Camera.viewMatrix, GlobalWebGLItems.Camera.cameraPosition, GlobalWebGLItems.Camera.cameraTarget, GlobalWebGLItems.Camera.upDirection);
+
+    //Prespective Projection
+    const aspectRatio = gl.canvas.width / gl.canvas.height;
+    const fovRADIAN = 70 * Math.PI / 180;
+    glMatrix.mat4.perspective(GlobalWebGLItems.Camera.projectionMatrix, fovRADIAN, aspectRatio, 0.1, 100.0);
 }
 
 //old
@@ -475,7 +472,7 @@ function LoadDebugChunk(gl : WebGLRenderingContext)
 {
     GlobalWebGLItems.ShaderChunk?.use();
     const chunkDebug = GlobalWebGLItems.debugChunk;
-    const chunkMesh = buildChunkMesh(chunkDebug);//CHUNK BUILDER IS NOW HAPPENING IN THE CHUNK INSTANCE ITSELF!
+    const chunkMesh = buildChunkMesh(chunkDebug);           //CHUNK BUILDER IS NOW HAPPENING IN THE CHUNK INSTANCE ITSELF!
     GlobalWebGLItems.debugChunk.Render(gl, GlobalWebGLItems.ShaderChunk);
 }
 */

@@ -11,8 +11,6 @@ class DebugConsole{
     private intervalId: number | null = null;
 
 
-
-
     constructor(){
         console.log("DebugConsole constructor");
         this.ToggleKeyDown();
@@ -34,18 +32,16 @@ class DebugConsole{
     {
         if(this.debugElement.style.display === 'none') return;
 
-        const formattedValue = options.formatter?.(getter()) || JSON.stringify(getter(), null, 2);
-
         this.watchedVariables.set(variableName, {
           value: getter(),
           type: options.type || typeof getter(),
-          formatter: options.formatter || ((value) => formattedValue),
+          formatter: options.formatter, //fixed to keep user-defined formatter
         });
 
         // Start updating if not already running
         if (!this.intervalId) {
             this.StartWatching();
-          }
+        }
       
         return this;
     }
@@ -71,15 +67,15 @@ class DebugConsole{
 
       const debugContent = Array.from(this.watchedVariables.entries())
         .map(([name, variable]) => {
-          // Format value
-          let displayValue = variable.formatter 
-            ? variable.formatter(variable.value)
-            : this.formatValue(variable.value);
 
-          return `<div>
+            const formattedDisplayValue = variable.formatter
+                ? variable.formatter(variable.value)  // Dynamically apply formatter
+                : this.formatValue(variable.value, variable.type);
+    
+            return `<div>
             <strong>${name}</strong>: 
-            <span style="color: ${this.getColorForType(variable.type)}">${displayValue}</span>
-          </div>`;
+            <span style="color: ${this.getColorForType(variable.type)}">${formattedDisplayValue}</span>
+            </div>`;
         })
         .join('');
 
@@ -98,32 +94,29 @@ class DebugConsole{
         'string': '#2196F3',   // Blue
         'boolean': '#FF9800',  // Orange
         'object': '#9C27B0',   // Purple
-        'function': '#FFFF00'  // Yellow
+        'function': '#FFFF00',  // Yellow
         };
         return typeColors[type] || '#FFFFFF';
     }
 
-    private formatValue(value: any): string {
-        if (value === null || value === undefined) return String(value);
-        
-        if (typeof value === 'object') {
-          // Handle vector/position objects
-          if ('x' in value && 'y' in value && 'z' in value) {
-            return `(${value.x.toFixed(2)}, ${value.y.toFixed(2)}, ${value.z.toFixed(2)})`;
-          }
-          
-          // Fallback for other objects
-          return JSON.stringify(value);
+    private formatValue(variable: any, type: string): string {
+        if (type === 'vec3') {
+            const parsedJSON = JSON.parse(JSON.stringify(variable));
+          return `
+            <span style="color: #FF0000">x: ${parsedJSON[0].toFixed(2)}</span>, 
+            <span style="color: #4CAF50">y: ${parsedJSON[1].toFixed(2)}</span>, 
+            <span style="color: #2196F3">z: ${parsedJSON[2].toFixed(2)}</span>,
+          `;
         }
-        
-        return value.toString();
-      }
+      
+        // Default formatting
+        return JSON.stringify(variable);
+    }
 
     private GetVariableValue(name: string): any {
         const variable = this.watchedVariables.get(name);
         return variable ? (typeof variable.value === 'function' ? variable.value() : variable.value) : undefined;
-      }
-      
+    }
 
     private CreateDebugElement() {
         this.debugElement = document.createElement('div');
@@ -147,6 +140,7 @@ class DebugConsole{
             }
         });
     }
+
     public ToggleConsole() {
         this.debugElement.style.display = this.debugElement.style.display === 'none' ? 'block' : 'none';
     }
