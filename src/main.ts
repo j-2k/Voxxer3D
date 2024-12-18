@@ -38,7 +38,7 @@ function CanvasHandler(canvas: HTMLCanvasElement, gl: WebGLRenderingContext) {
   //canvas.width = window.innerWidth;
   //canvas.height = window.innerHeight;
 
-  debug.Watch("Canvas Size", () => canvas, { type: "number" ,formatter: (c) => JSON.parse(JSON.stringify(c.width + " " + c.height)) } );
+  debug.Watch("Canvas Size", () => canvas, { type: "number" ,formatter: (c) => JSON.parse(JSON.stringify(c.width + " | " + c.height)) } );
 
   setupResize();
   resizeCanvas();

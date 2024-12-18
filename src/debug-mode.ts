@@ -18,7 +18,7 @@ class DebugConsole{
         this.ToggleKeyDown();
         this.CreateDebugElement();
         const pElement : HTMLParagraphElement = document.createElement("p");
-        pElement.textContent = "Debugger Loading...";
+        pElement.textContent = "You should not be seeing this message... Unless your canvas explodes :D";
         this.debugElement.appendChild(pElement);
     }
 
@@ -32,6 +32,8 @@ class DebugConsole{
             formatter?: (value: T) => string;
         } = {})
     {
+        if(this.debugElement.style.display === 'none') return;
+
         const formattedValue = options.formatter?.(getter()) || JSON.stringify(getter(), null, 2);
 
         this.watchedVariables.set(variableName, {
@@ -45,7 +47,7 @@ class DebugConsole{
             this.StartWatching();
           }
       
-          return this;
+        return this;
     }
 
     private StartWatching() {
@@ -83,7 +85,7 @@ class DebugConsole{
 
       this.debugElement.innerHTML = `
         <div style="font-weight: bold; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,1)">
-          Debug Watcher v1.0.0
+          Debug Watcher v1.0.0 (f3 to toggle)
         </div>
         ${debugContent}
       `;
@@ -133,7 +135,7 @@ class DebugConsole{
         this.debugElement.style.padding = '10px';
         this.debugElement.style.fontFamily = 'monospace';
         this.debugElement.style.zIndex = '1000';
-        this.debugElement.style.maxWidth = '300px';
+        this.debugElement.style.maxWidth = '50%';
         this.debugElement.style.overflow = 'auto';
         document.body.appendChild(this.debugElement);
     }

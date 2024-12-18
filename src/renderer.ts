@@ -7,6 +7,7 @@ import { Shader } from './shader-master';
 import Draw from './shapes-draw';
 import { WorldChunkManager } from './voxel-engine/chunk-system';
 import { ExtraDebugCanvas } from "./debug-canvas";
+import debug from './debug-mode';
 
 function EngineRenderer(gl : WebGLRenderingContext)
 {
@@ -19,6 +20,7 @@ function EngineRenderer(gl : WebGLRenderingContext)
     UpdateCore(gl);
     
     ExtraDebugCanvas();
+    StartDebuggers();
 }
 
 class GlobalWebGLItems{
@@ -367,7 +369,7 @@ function Update(gl: WebGLRenderingContext)
 
     GlobalWebGLItems.chunkManager.Render(gl, GlobalWebGLItems.ShaderChunk);
 
-    //DebugMode(true);
+    DebugMode(true);
 }
 
 
@@ -426,26 +428,29 @@ function RenderingSettings(gl : WebGLRenderingContext)
     //gl.depthFunc(gl.LEQUAL);
 }
 
-/*
-function DebugMode(showChunkBoundaries : boolean = false)
+
+function StartDebuggers(){
+    const debugChunkCoords = GlobalWebGLItems.chunkManager.getPlayerChunkCoords(GlobalWebGLItems.Camera.cameraPosition);
+    debug.Watch("Camera Chunk Position XZ", () => debugChunkCoords, { type: "number" ,formatter: (c) => JSON.parse(JSON.stringify(c[0] + " | " + c[1])) } );
+    debug.Watch("Camera Position XYZ", () => GlobalWebGLItems.Camera.cameraPosition, { type: "number" ,formatter: (c) => JSON.parse(JSON.stringify(c[0].toFixed(2) + " | " + c[1].toFixed(2) + " | " + c[2].toFixed(2)) ) } );
+    debug.Watch("Camera Target From Position XYZ", () => GlobalWebGLItems.Camera.cameraTarget, { type: "number" ,formatter: (c) => JSON.parse(JSON.stringify(c[0].toFixed(2) + " | " + c[1].toFixed(2) + " | " + c[2].toFixed(2)) ) } );
+}
+
+let futureTime = 0;
+function DebugMode(showChunkBoundaries : boolean = false, fpsUpdateRate : number = 0.25)
 {
     if (showChunkBoundaries) {GlobalWebGLItems.chunkManager.RenderChunkBoundaries(GlobalWebGLItems.GL, GlobalWebGLItems.ShaderChunkBoundDebug);}
+    const fps = Time.GetFPS().toFixed(0);//.toFixed(2);
     
-    const debugChunkCoords = GlobalWebGLItems.chunkManager.getPlayerChunkCoords(GlobalWebGLItems.Camera.cameraPosition);
-    textOverlay1.textContent = `Camera Position: ${GlobalWebGLItems.Camera.cameraPosition[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraPosition[2].toFixed(2)}`
-     + " | " + `Camera Chunk Position: ChunkX: ${debugChunkCoords[0]} | ChunkZ: ${debugChunkCoords[1]}`;  
-    textOverlay2.textContent = `Camera Target From Position: ${GlobalWebGLItems.Camera.cameraTarget[0].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraTarget[1].toFixed(2)}, ${GlobalWebGLItems.Camera.cameraTarget[2].toFixed(2)}`;
-    if(timeFuture <= Time.time)
-    {
-        timeFuture = Time.time + 0.1;
-        textOverlay3.textContent = "Debug Mode - FPS: " + Time.GetFPS().toFixed(2);
+    if(futureTime < Time.time){
+        futureTime = Time.time + fpsUpdateRate;
+        debug.Watch("FPS (.25 update)", () => fps, {type: "number", formatter: (c) => JSON.parse(JSON.stringify(c))});
     }
+    debug.Watch("Time.time", () => Time.time, {type: "number", formatter: (c) => JSON.parse(JSON.stringify(c.toFixed(2)))});
+    //debug.Watch("FPS", () => fps, {type: "function", formatter: (c) => JSON.parse(JSON.stringify(c))});
 }
-let timeFuture = 0;
-const textOverlay1 = document.getElementById('textOverlay1') as HTMLElement;
-const textOverlay2 = document.getElementById('textOverlay2') as HTMLElement;
-const textOverlay3 = document.getElementById('textOverlay3') as HTMLElement;
-*/
+
+
 
 
 export {

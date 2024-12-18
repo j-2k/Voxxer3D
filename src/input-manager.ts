@@ -44,7 +44,7 @@ class InputManager {
 
         // Initialize previous mouse position
         canvas.addEventListener('mousemove', (event: MouseEvent) => {
-            debug.Watch("MouseXY", () => InputManager.mouse, { type: "number", formatter: (m) => JSON.parse(JSON.stringify(m.x + ", " + m.y + " >> Check Console for DOM Exception!")) } );
+            debug.Watch("MouseXY", () => InputManager.mouse, { type: "number", formatter: (m) => JSON.parse(JSON.stringify(m.x + " | " + m.y + " >> Check Console for DOM Exception!")) } );
 
             if(!InputManager.mouse.isPressed) {
                 debug.Watch("IsMouseDown", () => this.mouse.isPressed);
