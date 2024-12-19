@@ -1,15 +1,18 @@
+import { ToggleDebugCanvas } from "./debug-canvas";
+
 class DebugConsole{
     private watchedVariables: Map<string, {
         value: any;
         type: string;
         formatter?: (value: any) => string;
-      }> = new Map();
+    }> = new Map();
+
+    private isActive : boolean = true;
 
     private debugElement: HTMLDivElement = document.createElement("div");
 
     private updateRate : number = 10; // ms
     private intervalId: number | null = null;
-
 
     constructor(){
         console.log("DebugConsole constructor");
@@ -18,6 +21,8 @@ class DebugConsole{
         const pElement : HTMLParagraphElement = document.createElement("p");
         pElement.textContent = "You should not be seeing this message... Unless your canvas explodes :D";
         this.debugElement.appendChild(pElement);
+
+        this.StartWatching(); //Start watching at initialization, not really needed but whatever (it already does w/o it).
     }
 
 
@@ -30,7 +35,7 @@ class DebugConsole{
             formatter?: (value: T) => string;
         } = {})
     {
-        if(this.debugElement.style.display === 'none') return;
+        if (!this.isActive) return; // Do nothing if the debug console is inactive
 
         this.watchedVariables.set(variableName, {
           value: getter(),
@@ -47,10 +52,19 @@ class DebugConsole{
     }
 
     private StartWatching() {
+        if (!this.isActive) return; // Only start watching if the console is active
         this.intervalId = window.setInterval(() => {
           this.UpdateValues();
           this.RenderDebug();
         }, this.updateRate);
+    }
+
+    public StopWatching() {
+        if (this.intervalId) {
+          clearInterval(this.intervalId);
+          this.intervalId = null;
+        }
+        return this;
     }
 
     private UpdateValues() {
@@ -63,8 +77,8 @@ class DebugConsole{
 
     // Render debug information
     private RenderDebug() {
-      if (!this.debugElement) return;
-      const debugContent = Array.from(this.watchedVariables.entries())
+        if (!this.isActive || !this.debugElement) return; // Skip rendering if inactive
+        const debugContent = Array.from(this.watchedVariables.entries())
         .map(([name, variable]) => {
 
             //If there is a pre-defined formatter, use it, otherwise use the default formatter
@@ -171,19 +185,39 @@ class DebugConsole{
         });
     }
 
-    public ToggleConsole() {
-        this.debugElement.style.display = this.debugElement.style.display === 'none' ? 'block' : 'none';
+    private easteregg : HTMLDivElement = document.createElement("div");
+    private EasterEgg(state : boolean = false){
+        
+        if(state){
+            this.easteregg = document.createElement("div");
+            this.easteregg.innerHTML = `<p> 
+            hey you why did u enable the paused debugger??? u tryna judge my code ik you
+            </p>`;
+            this.debugElement.appendChild(this.easteregg);
+        }else{
+            this.easteregg.innerHTML = '';
+            this.easteregg.remove();
+        }
     }
 
-    public StopWatching() {
-        if (this.intervalId) {
-          clearInterval(this.intervalId);
-          this.intervalId = null;
+
+    public ToggleConsole() {
+        this.isActive = !this.isActive; // Toggle the active state
+        this.debugElement.style.display = this.isActive ? 'block' : 'none';
+
+        if (this.isActive) {
+            this.EasterEgg(false);
+            this.StartWatching(); // Resume background tasks
+            ToggleDebugCanvas(); // Resume the canvas
+        } else {
+            this.EasterEgg(true)
+            this.StopWatching(); // Stop background tasks
+            this.ClearDots(); // Stop dots rendering
+            ToggleDebugCanvas(); // Pause the canvas
         }
-        return this;
-      }
+    }
     
-      // Clear all watched variables
+    // Clear all watched variables
     public ClearWatchedVariables() {
         this.watchedVariables.clear();
         this.StopWatching();
@@ -202,20 +236,27 @@ class DebugConsole{
     private str = "";
     private dotInterval : any = null;
     public Dots() : string {
-        if (!this.dotInterval) {
-            this.dotInterval = setInterval(() => {
-                this.str += ".";
-                if(this.str.length > 3){
-                    this.str = "";
-                }
-            }, (333));
+        if (!this.isActive || !this.dotInterval) {
+            if (!this.dotInterval) {
+                this.dotInterval = setInterval(() => {
+                    this.str += ".";
+                    if(this.str.length > 3){
+                        this.str = "";
+                    }
+                }, (333));
+            }
         }
         return this.str;
     }
 
     public ClearDots() {
         clearInterval(this.dotInterval);
+        this.dotInterval = null;
         this.str = "";
+    }
+
+    public ShowDebugCanvas(){
+        ToggleDebugCanvas();
     }
 
     //A reminder to not forget that function declarations are not actually ran,

@@ -6,7 +6,7 @@ import { CameraManager } from './camera';
 import { Shader } from './shader-master';
 import Draw from './shapes-draw';
 import { WorldChunkManager } from './voxel-engine/chunk-system';
-import { ExtraDebugCanvas } from "./debug-canvas";
+
 import debug from './debug-mode';
 
 function EngineRenderer(gl : WebGLRenderingContext)
@@ -19,7 +19,6 @@ function EngineRenderer(gl : WebGLRenderingContext)
     
     UpdateCore(gl);
     
-    ExtraDebugCanvas();
     StartDebuggers();
 }
 
@@ -430,6 +429,7 @@ function RenderingSettings(gl : WebGLRenderingContext)
 
 
 function StartDebuggers(){
+    debug.ShowDebugCanvas();
     debug.Watch("Camera Position XYZ", () => GlobalWebGLItems.Camera.cameraPosition, {type: "vec3"})//, formatter: (c) => JSON.parse(JSON.stringify(c[0].toFixed(2) + " | " + c[1].toFixed(2) + " | " + c[2].toFixed(2)) ) } );
     debug.Watch("Camera Target From Position XYZ", () => GlobalWebGLItems.Camera.cameraTarget, {type: "vec3"});// ,formatter: (c) => JSON.parse(JSON.stringify(c[0].toFixed(2) + " | " + c[1].toFixed(2) + " | " + c[2].toFixed(2)) ) } );
 }
