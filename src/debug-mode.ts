@@ -64,7 +64,6 @@ class DebugConsole{
     // Render debug information
     private RenderDebug() {
       if (!this.debugElement) return;
-
       const debugContent = Array.from(this.watchedVariables.entries())
         .map(([name, variable]) => {
 
@@ -74,7 +73,7 @@ class DebugConsole{
                 : this.formatValue(variable.value, variable.type); // This is the default formatter
             //I thought the user-defined formatter would be useless but I found 1 case where I had use for it, but you can check
             //how the canvas sizes are being retrieved, passing the canvas interface wont actually update the canvas in real time
-            //even passing it into a object didnt work because its a reference, so I had to pass the canvas element and then use a formatter
+            //even passing it into a object didnt work, so I had to pass the canvas element and then use a formatter
             //to get the width and height of the canvas in real time, so I guess it has its uses. The custom formatter implementation might not be 
             //"good" but I think it does a decent job for now.
     
@@ -88,6 +87,9 @@ class DebugConsole{
       this.debugElement.innerHTML = `
         <div style="font-weight: bold; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,1)">
           Debug Watcher v1.0.0 (f3 to toggle)
+          <div style="font-weight: 300;">
+                Watching ${this.GetWatchedVars().size} variables${this.Dots()}
+          </div>
         </div>
         ${debugContent}
       `;
@@ -172,7 +174,71 @@ class DebugConsole{
     public ToggleConsole() {
         this.debugElement.style.display = this.debugElement.style.display === 'none' ? 'block' : 'none';
     }
+
+    public StopWatching() {
+        if (this.intervalId) {
+          clearInterval(this.intervalId);
+          this.intervalId = null;
+        }
+        return this;
+      }
+    
+      // Clear all watched variables
+    public ClearWatchedVariables() {
+        this.watchedVariables.clear();
+        this.StopWatching();
+        if (this.debugElement) {
+          this.debugElement.innerHTML = '';
+        }
+        return this;
+    }
+
+    public GetWatchedVars(){
+        return this.watchedVariables;
+    }
+
+
+    //Trying to learn a little about setinterval & clearinterval, very useful functions including timeout!
+    private str = "";
+    private dotInterval : any = null;
+    public Dots() : string {
+        if (!this.dotInterval) {
+            this.dotInterval = setInterval(() => {
+                this.str += ".";
+                if(this.str.length > 3){
+                    this.str = "";
+                }
+            }, (333));
+        }
+        return this.str;
+    }
+
+    public ClearDots() {
+        clearInterval(this.dotInterval);
+        this.str = "";
+    }
+
+    //A reminder to not forget that function declarations are not actually ran,
+    //but arrow functions are, a small note for myself since this is crazy to me, pretty cool though.
+    /*
+    public clearAllFunction() : void
+    {
+        const clearAll = setTimeout(() => {
+            this.ClearDots();
+            this.ClearWatchedVariables();
+            console.log("Stopped all intervals using the Clear All Delcaration Function");
+        }, 3000);
+    }
+    //This is the same as the above function, but it is ran immediately, the above function is not ran until it is called.
+    public clearAll = setTimeout(() => {
+            this.ClearDots();
+            this.ClearWatchedVariables();
+            console.log("Stopped all intervals by set arrow function");
+    }, 3000);
+    */
+
 }
+
 
 const debugConsole = new DebugConsole();
 export default debugConsole;

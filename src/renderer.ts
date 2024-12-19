@@ -447,6 +447,7 @@ function DebugMode(showChunkBoundaries : boolean = false, fpsUpdateRate : number
         debug.Watch("Camera Chunk Position XZ (.25ms update)", () => debugChunkCoords, { type: "vec2xz"});// ,formatter: (c) => JSON.parse(JSON.stringify(c[0] + " | " + c[1])) } );
     }
     debug.Watch("Time.time", () => Time.time, {type: "number", formatter: (c) => JSON.parse(JSON.stringify(c.toFixed(2)))});
+    //console.log(debug.GetWatchedVars());
 }
 
 
