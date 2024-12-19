@@ -444,7 +444,7 @@ function DebugMode(showChunkBoundaries : boolean = false, fpsUpdateRate : number
         futureTime = Time.time + fpsUpdateRate;
         debug.Watch("FPS (.25ms update)", () => fps,{type: "number", formatter: (fps) => fps.toFixed(2)});
         const debugChunkCoords = GlobalWebGLItems.chunkManager.getPlayerChunkCoords(GlobalWebGLItems.Camera.cameraPosition);
-        debug.Watch("Camera Chunk Position XZ (.25ms update)", () => debugChunkCoords, { type: "number" ,formatter: (c) => JSON.parse(JSON.stringify(c[0] + " | " + c[1])) } );
+        debug.Watch("Camera Chunk Position XZ (.25ms update)", () => debugChunkCoords, { type: "vec2xz"});// ,formatter: (c) => JSON.parse(JSON.stringify(c[0] + " | " + c[1])) } );
     }
     debug.Watch("Time.time", () => Time.time, {type: "number", formatter: (c) => JSON.parse(JSON.stringify(c.toFixed(2)))});
 }

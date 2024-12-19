@@ -38,7 +38,10 @@ function CanvasHandler(canvas: HTMLCanvasElement, gl: WebGLRenderingContext) {
   //canvas.width = window.innerWidth;
   //canvas.height = window.innerHeight;
 
-  debug.Watch("Canvas Size", () => canvas, { type: "number" ,formatter: (c) => JSON.parse(JSON.stringify(c.width + " | " + c.height)) } );
+  //uncomment the formatter side to see how it changes the debug shown for canvas size 
+  debug.Watch("Canvas Size", () => canvas, { type: "vec2xy" , formatter: (c) => 
+  `<span style="color: #FF0000">x: ${JSON.parse(JSON.stringify(c.width))}</span>, ` +
+  `<span style="color: #4CAF50">y: ${JSON.parse(JSON.stringify(c.height))}</span>`});
 
   setupResize();
   resizeCanvas();

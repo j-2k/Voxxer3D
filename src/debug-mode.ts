@@ -68,9 +68,15 @@ class DebugConsole{
       const debugContent = Array.from(this.watchedVariables.entries())
         .map(([name, variable]) => {
 
+            //If there is a pre-defined formatter, use it, otherwise use the default formatter
             const formattedDisplayValue = variable.formatter
-                ? variable.formatter(variable.value)  // Dynamically apply formatter
-                : this.formatValue(variable.value, variable.type);
+                ? variable.formatter(variable.value)  // This is the user-defined formatter
+                : this.formatValue(variable.value, variable.type); // This is the default formatter
+            //I thought the user-defined formatter would be useless but I found 1 case where I had use for it, but you can check
+            //how the canvas sizes are being retrieved, passing the canvas interface wont actually update the canvas in real time
+            //even passing it into a object didnt work because its a reference, so I had to pass the canvas element and then use a formatter
+            //to get the width and height of the canvas in real time, so I guess it has its uses. The custom formatter implementation might not be 
+            //"good" but I think it does a decent job for now.
     
             return `<div>
             <strong>${name}</strong>: 
@@ -100,17 +106,39 @@ class DebugConsole{
     }
 
     private formatValue(variable: any, type: string): string {
-        if (type === 'vec3') {
-            const parsedJSON = JSON.parse(JSON.stringify(variable));
-          return `
-            <span style="color: #FF0000">x: ${parsedJSON[0].toFixed(2)}</span>, 
-            <span style="color: #4CAF50">y: ${parsedJSON[1].toFixed(2)}</span>, 
-            <span style="color: #2196F3">z: ${parsedJSON[2].toFixed(2)}</span>,
-          `;
+        // Convert incoming var to array if it's an object
+        let parsed: any;
+    
+        if (Array.isArray(variable)) {
+            parsed = variable; // Already an array
+        } else if (typeof variable === 'object') {
+            parsed = Object.values(variable); // Convert object to array
+        } else {
+            // Fallback to a generic structure
+            return JSON.stringify(variable, null, 2);
         }
-      
-        // Default formatting
-        return JSON.stringify(variable);
+    
+        // Handle the parsed structure consistently
+        if (type === 'vec3' && parsed.length >= 3) {
+            return `
+                <span style="color: #FF0000">x: ${parsed[0].toFixed(2)}</span>, 
+                <span style="color: #4CAF50">y: ${parsed[1].toFixed(2)}</span>, 
+                <span style="color: #2196F3">z: ${parsed[2].toFixed(2)}</span>
+            `;
+        } else if (type === 'vec2xz' && parsed.length >= 2) {
+            return `
+                <span style="color: #FF0000">x: ${parsed[0]}</span>, 
+                <span style="color: #2196F3">z: ${parsed[1]}</span>
+            `;
+        } else if (type === 'vec2xy' && parsed.length >= 2) {
+            return `
+                <span style="color: #FF0000">x: ${parsed[0]}</span>, 
+                <span style="color: #4CAF50">y: ${parsed[1]}</span>
+            `;
+        }
+    
+        // Default fallback for unhandled cases
+        return JSON.stringify(parsed, null, 2); // Pretty-print as a JSON string
     }
 
     private GetVariableValue(name: string): any {
