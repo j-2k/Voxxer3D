@@ -21,13 +21,18 @@ function main() {
     return; // Early return if gl is null
   }
 
+  const dtExtension = gl.getExtension("WEBGL_depth_texture");
+  if (!dtExtension) {
+    return alert("Failed to retrieve the WEBGL_depth_texture");
+  }
+
   CanvasHandler(canvas, gl);
 
 
   console.log("WebGL is available, Voxxer3D is starting with initalization then rendering...");
   StartMessages(canvas, "Voxel Rendering Engine", false, false);
   InitializeInputManager(canvas);
-  EngineRenderer(gl);
+  EngineRenderer(gl,dtExtension);
 }
 
 function CanvasHandler(canvas: HTMLCanvasElement, gl: WebGLRenderingContext) {

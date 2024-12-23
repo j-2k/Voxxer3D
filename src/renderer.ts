@@ -9,9 +9,14 @@ import { WorldChunkManager } from './voxel-engine/chunk-system';
 
 import debug from './debug-mode';
 
-function EngineRenderer(gl : WebGLRenderingContext)
+import { DepthTexture } from './depth-texture';
+
+function EngineRenderer(gl : WebGLRenderingContext, dt : WEBGL_depth_texture)
 {
     GlobalWebGLItems.GL = gl;
+    GlobalWebGLItems.DT = dt;
+
+    DepthTexture(gl,dt);
 
     RenderingSettings(gl);
     
@@ -35,7 +40,7 @@ class GlobalWebGLItems{
     };
 
     public static GL : WebGLRenderingContext;
-
+    public static DT : WEBGL_depth_texture;
     
     public static Shader2 : Shader | null;
     public static ShaderChunk : Shader;
