@@ -11,12 +11,12 @@ import debug from './debug-mode';
 
 import { DepthTexture } from './depth-texture';
 
-function EngineRenderer(gl : WebGLRenderingContext, dt : WEBGL_depth_texture)
+function EngineRenderer(gl : WebGLRenderingContext)
 {
     GlobalWebGLItems.GL = gl;
-    GlobalWebGLItems.DT = dt;
 
-    DepthTexture(gl,dt);
+    //Need to first sort out how I will handle this ontop of rendering other trash
+    //DepthTexture(gl);
 
     RenderingSettings(gl);
     
