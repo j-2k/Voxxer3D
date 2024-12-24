@@ -1,11 +1,24 @@
+import Materials from './shader-materials';
+import { Shader } from './shader-master';
+
 class DepthRenderer {
     private depthTexture : WebGLTexture | null = null;
     private depthFramebuffer : WebGLFramebuffer | null = null;
     private depthTextureSize : number;
+    private depthShader : Shader | null = null;
     //private colorTexture : WebGLTexture | null = null;
 
     constructor(_depthTextureSize : number = 512) {
         this.depthTextureSize = _depthTextureSize;
+    }
+
+    public CreateDepthShader(gl : WebGLRenderingContext) : void{
+        this.depthShader = new Shader(gl, Materials.DepthShader.vertexShader, Materials.DepthShader.fragmentShader);
+        this.depthShader.use();
+    }
+
+    public GetDepthShader() : Shader | null{
+        return this.depthShader;
     }
 
     public CreateDepthTexture(gl:WebGLRenderingContext) {

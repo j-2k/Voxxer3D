@@ -9,15 +9,9 @@ import { WorldChunkManager } from './voxel-engine/chunk-system';
 
 import debug from './debug-mode';
 
-import DepthRenderer from './depth-texture';
-
 function EngineRenderer(gl : WebGLRenderingContext)
 {
     GlobalWebGLItems.GL = gl;
-
-    //Need to first sort out how I will handle this ontop of rendering other trash
-    DepthRenderer.CreateDepthTexture(gl);
-    DepthRenderer.DrawDepthBuffer(gl);
 
     RenderingSettings(gl);
     
@@ -41,7 +35,6 @@ class GlobalWebGLItems{
     };
 
     public static GL : WebGLRenderingContext;
-    public static DT : WEBGL_depth_texture;
     
     public static Shader2 : Shader | null;
     public static ShaderChunk : Shader;
@@ -56,7 +49,6 @@ class GlobalWebGLItems{
     //public static debugChunk = new Chunk(0,0);
     public static chunkManager : WorldChunkManager;// = new WorldChunkManager(10, 10); 
     public static atlasTextureToBind : WebGLTexture | null = null;
-
 
     public static SkyboxShader : Shader;
     public static skyboxVertBuffer : WebGLBuffer | null = null;
@@ -289,17 +281,13 @@ function ChunkSetup(gl: WebGLRenderingContext){
     const userInputSeed = "MyCustomSeed123";
     GlobalWebGLItems.chunkManager = new WorldChunkManager(4, userInputSeed);
     console.log('Your Seed is: [' + userInputSeed +']'+ '\n' + 'The Hashed world generation seed:', GlobalWebGLItems.chunkManager.seed );
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 }
 
 
 function Update(gl: WebGLRenderingContext)
 {
     console.log("Update Call...");
-    //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     CameraManager();
 
@@ -376,6 +364,7 @@ function Update(gl: WebGLRenderingContext)
         //GlobalWebGLItems.Shader2?.disableAttrib("a_color");
     }
 
+
     GlobalWebGLItems.chunkManager.Render(gl, GlobalWebGLItems.ShaderChunk);
 
     DebugMode(true);
@@ -412,10 +401,7 @@ function UpdateCore(gl: WebGLRenderingContext) {
     requestAnimationFrame(function() {
         Time.CalculateTimeVariables();
 
-        //DepthRenderer.DrawDepthBuffer(gl);
         Update(gl);
-        //DepthRenderer.DrawColorBuffer(gl);
-        //Update(gl);
 
         UpdateCore(gl);
     });
