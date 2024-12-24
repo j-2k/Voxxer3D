@@ -9,14 +9,15 @@ import { WorldChunkManager } from './voxel-engine/chunk-system';
 
 import debug from './debug-mode';
 
-import { DepthTexture } from './depth-texture';
+import DepthRenderer from './depth-texture';
 
 function EngineRenderer(gl : WebGLRenderingContext)
 {
     GlobalWebGLItems.GL = gl;
 
     //Need to first sort out how I will handle this ontop of rendering other trash
-    //DepthTexture(gl);
+    DepthRenderer.CreateDepthTexture(gl);
+    DepthRenderer.DrawDepthBuffer(gl);
 
     RenderingSettings(gl);
     
@@ -288,13 +289,17 @@ function ChunkSetup(gl: WebGLRenderingContext){
     const userInputSeed = "MyCustomSeed123";
     GlobalWebGLItems.chunkManager = new WorldChunkManager(4, userInputSeed);
     console.log('Your Seed is: [' + userInputSeed +']'+ '\n' + 'The Hashed world generation seed:', GlobalWebGLItems.chunkManager.seed );
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 }
 
 
 function Update(gl: WebGLRenderingContext)
 {
     console.log("Update Call...");
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     CameraManager();
 
@@ -407,7 +412,10 @@ function UpdateCore(gl: WebGLRenderingContext) {
     requestAnimationFrame(function() {
         Time.CalculateTimeVariables();
 
+        //DepthRenderer.DrawDepthBuffer(gl);
         Update(gl);
+        //DepthRenderer.DrawColorBuffer(gl);
+        //Update(gl);
 
         UpdateCore(gl);
     });
@@ -415,7 +423,11 @@ function UpdateCore(gl: WebGLRenderingContext) {
 
 function RenderingSettings(gl : WebGLRenderingContext)
 {
-     // Set the viewport to match the canvas size
+    //Set framebuffer to null to render scene normally (Before it was drawing to the depth frame buffer)
+    //Only do this AFTER rendering shit into the scene, this can be thought of just coloring
+    //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    // Set the viewport to match the canvas size
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
     //Set Clear Color
