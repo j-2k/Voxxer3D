@@ -24,6 +24,17 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
+
+@font-face {
+    font-family: 'mcfont';
+    src: url('/fonts/minecraftia-regular.ttf') format('truetype');
+}
+
+.cmdInput {
+    font-family: 'mcfont';
+}
+
+
 body {
     font-family: "Open Sans", sans-serif;
     text-shadow: 10px solid red;

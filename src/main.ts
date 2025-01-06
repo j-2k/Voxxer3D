@@ -3,6 +3,7 @@ import { StartMessages } from "./messages";
 import { EngineRenderer, GlobalWebGLItems } from "./renderer";
 import { InitializeInputManager } from "./input-manager";
 import * as glMatrix from "gl-matrix";
+import { CMDBox } from "./chatbox";
 
 import debug from "./debug-mode";
 
@@ -24,6 +25,7 @@ function main() {
 
   console.log("WebGL is available, Voxxer3D is starting with initalization then rendering...");
   StartMessages(canvas, "Voxel Rendering Engine", false, false);
+  CMDBox();
   InitializeInputManager(canvas);
   EngineRenderer(gl);
 }

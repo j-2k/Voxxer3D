@@ -467,13 +467,18 @@ function flattenVertices(vertices: Vertex[]): Float32Array {
 
 class WorldChunkManager {
     chunks: Map<string, Chunk>;
-    drawDistance: number;
+    static drawDistance: number;
     seed: number;
     static noise3D : NoiseFunction3D;
 
+    public static ChangeDrawDistance(newDrawDistance: number): void
+    {
+        this.drawDistance = newDrawDistance;
+    }
+
     constructor(_drawDistance: number = 4, inputSeed : number | string = Math.random() * 10000) {
         this.chunks = new Map();
-        this.drawDistance = _drawDistance;
+        WorldChunkManager.drawDistance = _drawDistance;
 
         //hash the seed if its a string
         this.seed = typeof inputSeed === 'string' ? this.hashStringToNumber(inputSeed) : inputSeed;
@@ -514,7 +519,7 @@ class WorldChunkManager {
     //This rendering function the way its built is horrid in terms of optimization but keeping it for now
     public Render(gl: WebGLRenderingContext, shader: Shader): void {
         const [playerChunkX, playerChunkZ] = this.getPlayerChunkCoords(GlobalWebGLItems.Camera.cameraPosition);
-        const halfDrawDistance = Math.floor(this.drawDistance / 2);
+        const halfDrawDistance = Math.floor(WorldChunkManager.drawDistance / 2);
 
         // Keep track of chunks that are currently visible
         const visibleChunkKeys = new Set<string>();
@@ -563,7 +568,7 @@ class WorldChunkManager {
                     Math.abs(x - playerChunkX),
                     Math.abs(z - playerChunkZ)
                 );
-                if (distance > this.drawDistance * 2) {
+                if (distance > WorldChunkManager.drawDistance * 2) {
                     this.chunks.delete(key);
                 }
             }
@@ -603,7 +608,7 @@ class WorldChunkManager {
     //Dont use unless necessary to see chunk boundaries, this function is really unoptimized because of the multiple forloops it does for every single frame (if ur rend dist is high the webpage might explode :D).
     public RenderChunkBoundaries(gl: WebGLRenderingContext, shader: Shader): void {
         const [playerChunkX, playerChunkZ] = this.getPlayerChunkCoords(GlobalWebGLItems.Camera.cameraPosition);
-        const halfDrawDistance = Math.floor(this.drawDistance / 2);
+        const halfDrawDistance = Math.floor(WorldChunkManager.drawDistance / 2);
 
         // Prepare shader for line rendering
         shader.use();
