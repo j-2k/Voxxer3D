@@ -52,6 +52,8 @@ class GlobalWebGLItems{
 
     public static SkyboxShader : Shader;
     public static skyboxVertBuffer : WebGLBuffer | null = null;
+
+    public static RendererDebugToggle : boolean = true;
 }
 
 function TextureLoader(gl : WebGLRenderingContext){//, shaderProgram : WebGLProgram){
@@ -367,7 +369,7 @@ function Update(gl: WebGLRenderingContext)
 
     GlobalWebGLItems.chunkManager.Render(gl, GlobalWebGLItems.ShaderChunk);
 
-    DebugMode(true);
+    DebugMode(GlobalWebGLItems.RendererDebugToggle);
 }
 
 

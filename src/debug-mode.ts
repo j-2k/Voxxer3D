@@ -1,4 +1,5 @@
 import { ToggleDebugCanvas } from "./debug-canvas";
+import { GlobalWebGLItems } from "./renderer";
 
 class DebugConsole{
     private watchedVariables: Map<string, {
@@ -209,11 +210,13 @@ class DebugConsole{
             this.EasterEgg(false);
             this.StartWatching(); // Resume background tasks
             ToggleDebugCanvas(); // Resume the canvas
+            GlobalWebGLItems.RendererDebugToggle = this.isActive;
         } else {
             this.EasterEgg(true)
             this.StopWatching(); // Stop background tasks
             this.ClearDots(); // Stop dots rendering
             ToggleDebugCanvas(); // Pause the canvas
+            GlobalWebGLItems.RendererDebugToggle = this.isActive;
         }
     }
     
