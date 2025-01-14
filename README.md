@@ -93,7 +93,7 @@ This is here to list important topics & showcase some things I went through whil
 - Following the guide of WebGL Fundamentals on https://webglfundamentals.org/
 - Showcasing my progress through the guide. I'm mostly going by order but sometimes I skip around.
 
-## Part 1 - Interpolated Triangle
+## The journey from start to end
 | Image      | Description |
 | :---:        |    :---:   |
 | <img src="readme-images/1-Hello-World-Interpolated.png" width=50%>   | **Fully refactored the backend from the *ORIGINALLY* forked repository *[(Webgl-trial)](https://github.com/j-2k/webgl-trial)*!** |
