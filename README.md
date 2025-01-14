@@ -1,12 +1,20 @@
 # Voxxer3D
 Voxxer3D is a 3D Voxel World Rendering Engine written from "scratch" utilizing the WebGL Interface.  
 
-Since I'm basically creating a minecraft clone, I want to focus on the graphics part & the "hidden" features that exist. I will list all of them below that I personally had to think about when making this.
+Since I'm basically creating a minecraft clone, I want to focus on the graphics part & the "hidden" features that exist that isn't obvious at first.
 
 ps. I had no clue to how minecraft works (rendering part of it specifically) and thus a lot of the features might seem "normal" but I never knew it was something I had to "do" that probably didn't make much sense but I hope to just showcase what I learned.
 
 - Features
-  - X
+  - Culling of the following types
+    - Backface
+    - Chunk bordering faces
+    - Inside chunk faces
+  - Random procedural terrain generation
+    - 2D Noise currently, however 3D was actually possible and created caves
+  - Chunk Vertex Builder & Chunk Blocks Array
+  - UV Mapping Chunks to specific Texture/Block Type
+  - & more...
 
 # Project Requirement Notes
 - Have nodejs & npm
@@ -47,21 +55,6 @@ I will list what I used, just incase for anyone wondering what I used/platform c
   - *Old/Previous Packages (IGNORE THIS)*
     - Was using lite-server & watcher (replaced by vite).
 
-## Guide to run Typescript code locally in VSC
-***SKIP THIS IF YOU DONT CARE ABOUT COMPILING PURE TS CODE BY ITSELF!***
-  1. Pre-pre-requsite note, please if you are on windows just use a cmdprompt terminal in VSC & not powershell, for some reason powershell was auto defaulted for me & it made things worse.
-  2. Pre-requsites have nodejs & npm check by doing: 
-       - mac/terminal > ```node -v && npm -v```
-       - windows/powershell > ```node -v ; npm -v```
-       - windows/cmdprompt > ```node -v && npm -v```
-  3. Install typescript compiler globally via npm ```npm install -g typescript```
-  4. Compile typescript code ```tsc filename.ts```
-  5. Run compiled javascript code ```node filename.js```
-     - ```tsc``` converts your TS to JS & ultimately we just run the JS file, you can do all this with just this 1 command that just merges the two together, check below:
-       - mac/terminal > ```tsc filename.ts && node filename.js```
-       - windows/powershell > ```tsc.cmd filename.ts ; node filename.js```
-       - windows/cmdprompt > ```tsc filename.ts && node filename.js```
-
 # Resources
 - https://github.com/j-2k/WebGL-Triangle-Boilerplate <<< This contains all the resources for everything related to web stuff what I will put below is only related to webGL & graphics stuff
 - [chatgpt.com](https://chatgpt.com/)
@@ -73,7 +66,7 @@ I will list what I used, just incase for anyone wondering what I used/platform c
 - Looking into hosting services and found this, its a nice website! > https://wheretohostmy.app/free-tier-comparison
     - Used Netlify and it was really fast to setup. Just drag & drop the built project dist files into the host service & thats it! You can get the dist file by doing ```npm run build``` and the dist file will be created.
 
- 
+
 # Graphics Rendering Pipeline Process
 Very important, I will write this out once I fully/almost understand everything in the pipeline.
 
@@ -102,7 +95,14 @@ This is here to list important topics & showcase some things I went through whil
 ## Part 1 - Interpolated Triangle
 | Image      | Description |
 | :---:        |    :---:   |
-| <img src="readme-images/1-Hello-World-Interpolated.png">   | **Fully refactored the backend from the *ORIGINALLY* forked repository *[(Webgl-trial)](https://github.com/j-2k/webgl-trial)*!** |
+| <img src="readme-images/1-Hello-World-Interpolated.png" width=50%>   | **Fully refactored the backend from the *ORIGINALLY* forked repository *[(Webgl-trial)](https://github.com/j-2k/webgl-trial)*!** |
+| <img src="readme-images/lerpedtris.png" width=43.3%><img width=50% src="readme-images/uvquadscaled.png"> | A |
+| <img src="readme-images/hellyeah.gif" width=46%><img src="readme-images/RAAHCUBE.gif" width=45%>| B |
+| <img src="readme-images/PRESP PROJ.gif" width=46%><img src="readme-images/camera+debug+multiplecubes.png" width=48%>| C |
+| <img src="readme-images/Screenshot 2024-10-10 at 2.01.21 PM.png" width=46%><img src="readme-images/Screenshot 2024-10-10 at 2.39.16 PM.png" width=46%> | D |
+| <img src="readme-images/Screenshot 2024-10-10 at 2.03.08 PM.png" width=46%><img src="readme-images/WHATSGIOINGON.gif" width=46%> | E |
+| <img src="readme-images/Screenshot 2024-10-17 at 8.33.36 AM.png" width=47%><img src="readme-images/Oct-17-2024 09-02-34.gif" width=46%> | F |
+| G | G |
+| H | H |
 
-more to come soon.
 
