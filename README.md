@@ -1,5 +1,9 @@
 # Voxxer3D
-<img src="readme-images/Screenshot_5.png">
+
+<div align="center">
+<img src="readme-images/Screenshot_5.png" width=47%><img src="readme-images/Screenshot_4.png"width=40%> 
+</div>
+  
 Voxxer3D is a 3D Voxel World Rendering Engine written from "scratch" utilizing the WebGL Interface.  
 
 Since I'm basically creating a minecraft clone, I want to focus on the graphics part & the "hidden" features that exist that isn't obvious at first.
