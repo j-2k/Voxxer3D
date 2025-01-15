@@ -1,7 +1,7 @@
 # Voxxer3D
 
 <div align="center">
-<img src="readme-images/Screenshot_5.png" width=47%><img src="readme-images/Screenshot_4.png"width=40%> 
+<img src="readme-images/Screenshot_5.png" width=54%><img src="readme-images/Screenshot_4.png"width=46%> 
 </div>
   
 Voxxer3D is a 3D Voxel World Rendering Engine written from "scratch" utilizing the WebGL Interface.  
