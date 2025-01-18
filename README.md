@@ -101,16 +101,16 @@ This is here to list important topics & showcase some things I went through whil
 | Image      | Description |
 | :---:        |    :---:   |
 | <img src="readme-images/1-Hello-World-Interpolated.png" width=50%>   | **Fully refactored the backend from the *ORIGINALLY* forked repository *[(Webgl-trial)](https://github.com/j-2k/webgl-trial)*!** |
-| <img src="readme-images/lerpedtris.png" width=43.3%><img width=50% src="readme-images/uvquadscaled.png"> | A |
-| <img src="readme-images/hellyeah.gif" width=46%><img src="readme-images/RAAHCUBE.gif" width=45%>| B |
-| <img src="readme-images/PRESP PROJ.gif" width=46%><img src="readme-images/camera+debug+multiplecubes.png" width=48%>| C |
-| <img src="readme-images/Screenshot 2024-10-10 at 2.01.21 PM.png" width=46%><img src="readme-images/Screenshot 2024-10-10 at 2.39.16 PM.png" width=46%> | D |
-| <img src="readme-images/Screenshot 2024-10-10 at 2.03.08 PM.png" width=46%><img src="readme-images/WHATSGIOINGON.gif" width=47.5%> | E |
-| <img src="readme-images/Screenshot 2024-10-17 at 8.33.36 AM.png" width=47%><img src="readme-images/Oct-17-2024 09-02-34.gif" width=46%> | F |
-| <img src="readme-images/Screenshot 2024-11-27 at 7.51.49 AM.png" width=47%><img src="readme-images/Screenshot 2024-12-04 at 1.31.11 PM.png" width=49.5%> | G |
-| <img src="readme-images/Screenshot 2024-12-05 at 10.48.56 AM.png" width=43.5%><img src="readme-images/Screenshot 2024-12-11 at 2.15.55 PM.png" width=49.5%> | H |
-| <img src="readme-images/Screenshot 2024-12-19 at 9.25.10 AM.png" width=42.5%><img src="readme-images/Screenshot 2024-12-12 at 2.06.35 PM.png" width=51.5%> | I |
-| <img src="readme-images/Screenshot_4.png"><img src="readme-images/Screenshot_5.png"><img src="readme-images/combined.png"> | J |
+| <img src="readme-images/lerpedtris.png" width=43.3%><img width=50% src="readme-images/uvquadscaled.png"> | Making UVs |
+| <img src="readme-images/hellyeah.gif" width=46%><img src="readme-images/RAAHCUBE.gif" width=45%>| Making Cubes (Orthographic) |
+| <img src="readme-images/PRESP PROJ.gif" width=46%><img src="readme-images/camera+debug+multiplecubes.png" width=48%>| Prespective + Multiple Objects |
+| <img src="readme-images/Screenshot 2024-10-10 at 2.01.21 PM.png" width=46%><img src="readme-images/Screenshot 2024-10-10 at 2.39.16 PM.png" width=46%> | Failing to create a small chunk |
+| <img src="readme-images/Screenshot 2024-10-10 at 2.03.08 PM.png" width=46%><img src="readme-images/WHATSGIOINGON.gif" width=47.5%> | Failing to make a big chunk and everything blowing up + custom shader :) |
+| <img src="readme-images/Screenshot 2024-10-17 at 8.33.36 AM.png" width=47%><img src="readme-images/Oct-17-2024 09-02-34.gif" width=46%> | The first chunk! |
+| <img src="readme-images/Screenshot 2024-11-27 at 7.51.49 AM.png" width=47%><img src="readme-images/Screenshot 2024-12-04 at 1.31.11 PM.png" width=49.5%> | Mainly failing to create a skybox! + A lot of additions, forgot to take images, but added terrain loading, culling, block shapes & UV Offsets |
+| <img src="readme-images/Screenshot 2024-12-05 at 10.48.56 AM.png" width=43.5%><img src="readme-images/Screenshot 2024-12-11 at 2.15.55 PM.png" width=49.5%> | Added skybox + failing to make leaves on trees work properly |
+| <img src="readme-images/Screenshot 2024-12-19 at 9.25.10 AM.png" width=42.5%><img src="readme-images/Screenshot 2024-12-12 at 2.06.35 PM.png" width=51.5%> | Wrote a huge debugger, added chunk boundaries, & here I made a garbage fix to add leaves to trees (the implementation can be seen on the image its kinda horrid LOL)  |
+| <img src="readme-images/Screenshot_4.png"><img src="readme-images/Screenshot_5.png"><img src="readme-images/combined.png"> | The final result + a mashup of images to showcase the journey! |
 
 
 
