@@ -32,10 +32,9 @@ ps. I had no clue to how minecraft works (rendering part of it specifically) and
     - ```npm -v```
 
 # Building the project
-1. Enter the correct directory WebGL-Trial/webgl-main
-2. Install dependencies using ```npm i``` in your terminal
-3. Run & start the project using ```npm run dev``` in terminal again
-4. The website should automatically open on ```localhost:5173```! (Check the terminal incase its a different port! If it is taken Vite will automatically try the next available port.)
+1. Install dependencies using ```npm i``` in your terminal
+2. Run & start the project using ```npm run dev``` in terminal again
+3. The website should automatically open on ```localhost:5173```! (Check the terminal incase its a different port! If it is taken Vite will automatically try the next available port.)
 
 # My Platform, Versioning, & Dev environment
 I will list what I used, just incase for anyone wondering what I used/platform choice to make this project.
@@ -57,8 +56,6 @@ I will list what I used, just incase for anyone wondering what I used/platform c
     - Vite fixed many issues I had previously.
   - **WebGL**
     - Make sure your browser/machine supports WebGL! 
-  - *Old/Previous Packages (IGNORE THIS)*
-    - Was using lite-server & watcher (replaced by vite).
 
 # Resources
 - https://github.com/j-2k/WebGL-Triangle-Boilerplate <<< This contains all the resources for everything related to web stuff what I will put below is only related to webGL & graphics stuff
